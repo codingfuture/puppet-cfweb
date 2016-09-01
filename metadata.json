@@ -1,0 +1,15 @@
+{
+  "name": "codingfuture-cfweb",
+  "version": "0.1.0",
+  "author": "codingfuture",
+  "summary": "All-in-one universal setup of web and application servers/daemons",
+  "license": "Apache-2.0",
+  "source": "https://github.com/codingfuture/puppet-cfweb",
+  "project_page": "https://github.com/codingfuture/puppet-cfweb",
+  "issues_url": "https://github.com/codingfuture/puppet-cfweb/issues",
+  "dependencies": [
+    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
+  ],
+  "data_provider": null
+}
+
