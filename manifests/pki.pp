@@ -6,6 +6,13 @@ class cfweb::pki(
     $ssh_user = 'cfwebpki',
     $ssh_key_type = 'ed25519',
     $ssh_key_bits = 2048, # for rsa
+    
+    $tls_ticket_key_count = 3,
+    $tls_ticket_key_age = 1440,
+    $tls_ticket_cron = {
+        hour   => '*/3',
+        minute => 1
+    },
 ) {
     $cluster = $cfweb::cluster
     
@@ -45,7 +52,6 @@ class cfweb::pki(
     $vhost_dir = "${root_dir}/vhosts"
     
     include cfweb::pki::dir
-    include cfweb::pki::cron
     
     #---
     cfsystem_info { 'cfwebpki':

@@ -8,6 +8,7 @@ class cfweb::pki::dir {
     $root_dir = $cfweb::pki::root_dir
     $ssh_user = $cfweb::pki::ssh_user
     $cfweb_sync_pki = "${cfsystem::custombin::bin_dir}/cfweb_sync_pki"
+    $cfweb_update_tls_ticket = "${cfsystem::custombin::bin_dir}/cfweb_update_tls_ticket"
     
     #---
     if $cfweb::is_secondary {
@@ -23,6 +24,10 @@ class cfweb::pki::dir {
         }
         
         file { $cfweb_sync_pki:
+            ensure => absent,
+        }
+        
+        file { $cfweb_update_tls_ticket:
             ensure => absent,
         }
     } else {
@@ -79,6 +84,42 @@ class cfweb::pki::dir {
                     }
                 },
             }),
+        }
+        
+        #---
+        if $cfweb::pki::tls_ticket_key_count < 2 {
+            fail('$cfweb::pki::tls_ticket_key_count must be at least 2')
+        }
+        
+        file { $cfweb_update_tls_ticket:
+            owner   => root,
+            group   => root,
+            mode    => '0700',
+            content => epp('cfweb/cfweb_update_tls_ticket.sh.epp', {
+                ticket_dir     => $ticket_dir,
+                user           => $ssh_user,
+                cfweb_sync_pki => $cfweb_sync_pki,
+                old_age        => $cfweb::pki::tls_ticket_key_age,
+                key_count      => $cfweb::pki::tls_ticket_key_count,
+            }),
+        }
+        
+        create_resources( 'cron', {
+            cfweb_update_tls_ticket => merge( $cfweb::pki::tls_ticket_cron, {
+                command => $cfweb_update_tls_ticket,
+            })
+        })
+        
+        exec { 'cfweb_update_tls_ticket':
+            command => $cfweb_update_tls_ticket,
+            creates => [
+                "${ticket_dir}/ticket1.key",
+                "${ticket_dir}/ticket2.key",
+            ],
+            require => [
+                File[$ticket_dir],
+                File[$cfweb_update_tls_ticket],
+            ],
         }
     }
 }

@@ -1,0 +1,39 @@
+<% |
+    String $ticket_dir,
+    String $user,
+    String $cfweb_sync_pki,
+    Integer $old_age,
+    Integer $key_count
+| -%>
+#!/bin/bash
+
+set -e
+ticket_dir=<%= $ticket_dir %>
+do_sync=n
+
+cd $ticket_dir
+
+for n in $(seq 1 <%= $key_count %>); do
+    tf=ticket${n}.key
+    if test ! -e $tf; then
+        /usr/bin/openssl rand 48 >$tf &&
+            echo "Generated missing $tf"
+        do_sync=y
+    fi
+done
+
+if find $ticket_dir/ticket1.key -type f -mmin +<%= $old_age %> | read; then
+    echo "Regenerating primary key due to old age"
+    
+    for n in $(seq <%= ($key_count - 1) %> -1 1); do
+        /bin/mv -f ticket${n}.key ticket$(( $n + 1 )).key
+    done
+    
+    /usr/bin/openssl rand 48 >ticket1.key
+    do_sync=y
+fi
+
+if test "$do_sync" = y; then
+    /bin/systemctl reload cfnginx.service
+    $cfweb_sync_pki reload
+fi
