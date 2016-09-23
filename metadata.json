@@ -1,15 +1,49 @@
 {
   "name": "codingfuture-cfweb",
   "version": "0.1.0",
-  "author": "codingfuture",
-  "summary": "All-in-one universal setup of web and application servers/daemons",
+  "author": "Andrey Galkin",
+  "summary": "All-in-one universal setup of web and application servers",
   "license": "Apache-2.0",
   "source": "https://github.com/codingfuture/puppet-cfweb",
   "project_page": "https://github.com/codingfuture/puppet-cfweb",
   "issues_url": "https://github.com/codingfuture/puppet-cfweb/issues",
-  "dependencies": [
-    {"name":"puppetlabs-stdlib","version_requirement":">= 1.0.0"}
+  "operatingsystem_support": [
+    {
+      "operatingsystem": "Debian",
+      "operatingsystemrelease": [
+        "8",
+        "9"
+      ]
+    },
+    {
+      "operatingsystem": "Ubuntu",
+      "operatingsystemrelease": [
+        "15.10",
+        "16.04",
+        "16.10"
+      ]
+    }
   ],
-  "data_provider": null
+  "requirements": [
+    {
+      "name": "puppet",
+      "version_requirement": ">=4.0.0 <5.0.0"
+    }
+  ],
+  "dependencies": [
+    {
+      "name": "puppetlabs-stdlib",
+      "version_requirement": ">= 4.12.0"
+    },
+    {
+      "name": "puppetlabs-apt",
+      "version_requirement": ">= 2.3.0"
+    },
+    {
+      "name": "codingfuture-cfsystem",
+      "version_requirement": ">= 0.9.23"
+    }
+  ],
+  "data_provider": "hiera"
 }
 

@@ -1,0 +1,42 @@
+<%- |
+    String $ssh_user,
+    String $pki_dir,
+    Array[String] $hosts,
+| -%>
+#!/bin/bash
+
+<% if size($hosts) > 0 { -%>
+
+if test "$(/usr/bin/id -u)" = 0; then
+    exec /usr/bin/sudo -H -u <%= $ssh_user %> $0 "$@"
+    # should not reach here
+    exit -1
+fi
+
+for h in <%= $hosts.join(' ') %>; do
+    /usr/bin/rsync \
+        --quiet \
+        --checksum \
+        --recursive \
+        --links \
+        --safe-links \
+        --perms \
+        --times \
+        --whole-file \
+        --delete \
+        --force \
+        --timeout=5 \
+        <%= $pki_dir %>/ \
+        <%= $ssh_user %>@${h}:<%= $pki_dir %> &
+done
+
+wait
+
+if test "$1" = "reload"; then
+    for h in <%= $hosts.join(' ') %>; do
+        /usr/bin/ssh <%= $ssh_user %>@${h} \
+            /bin/systemctl reload cfnginx
+    done
+fi
+
+<% } -%>

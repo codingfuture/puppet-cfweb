@@ -1,0 +1,7 @@
+---
+lookup_options:
+  cfweb::global::sites:
+    merge: hash
+  cfweb::global::pki:
+    merge: hash
+
