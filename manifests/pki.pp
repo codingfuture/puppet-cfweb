@@ -3,7 +3,9 @@ class cfweb::pki(
     $dhparam_bits = 2048,
     
     $key_name = 'multi',
+    $key_type = 'rsa',
     $key_bits = 2048,
+    $key_curve = 'prime256v1',
     
     $ssh_user = 'cfwebpki',
     $ssh_key_type = 'ed25519',
@@ -76,7 +78,9 @@ class cfweb::pki(
     
     #---
     ensure_resource('cfweb::pki::key', $key_name, {
-        key_bits => $key_bits,
+        key_type  => $key_type,
+        key_bits  => $key_bits,
+        key_curve => $key_curve,
     })
     ensure_resource('cfweb::pki::cert', 'default', {
         key_name => $key_name,
