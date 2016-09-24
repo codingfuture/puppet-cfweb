@@ -12,7 +12,7 @@ class cfweb::pki::dir {
     
     #---
     if $cfweb::is_secondary {
-        exec { 'cfweb sync PKI':
+        exec { 'cfweb_sync_pki_init':
             user    => $ssh_user,
             command => [
                 '/usr/bin/ssh',
@@ -20,6 +20,17 @@ class cfweb::pki::dir {
                 $cfweb_sync_pki,
             ].join(' '),
             creates => $root_dir,
+            require => User[$ssh_user],
+        }
+        
+        exec { 'cfweb_sync_pki':
+            user    => $ssh_user,
+            command => [
+                '/usr/bin/ssh',
+                "${ssh_user}@${cfweb::pki::primary_host}",
+                $cfweb_sync_pki,
+            ].join(' '),
+            refreshonly => true,
             require => User[$ssh_user],
         }
         
@@ -32,7 +43,8 @@ class cfweb::pki::dir {
         }
     } else {
         $ticket_dir = $cfweb::pki::ticket_dir
-        $vhost_dir = $cfweb::pki::vhost_dir
+        $key_dir = $cfweb::pki::key_dir
+        $cert_dir = $cfweb::pki::cert_dir
         
         file { $root_dir:
             ensure => directory,
@@ -46,7 +58,13 @@ class cfweb::pki::dir {
             group => $ssh_user,
             mode => '0700',
         } ->
-        file { $vhost_dir:
+        file { $key_dir:
+            ensure => directory,
+            owner => $ssh_user,
+            group => $ssh_user,
+            mode => '0700',
+        } ->
+        file { $cert_dir:
             ensure => directory,
             owner => $ssh_user,
             group => $ssh_user,
@@ -58,7 +76,7 @@ class cfweb::pki::dir {
         
         exec { 'cfweb DH params':
             command => [
-                '/usr/bin/openssl dhparam -rand /dev/urandom',
+                "${cfweb::pki::openssl} dhparam -rand /dev/urandom",
                 '-out', $dhparam,
                 $cfweb::pki::dhparam_bits
             ].join(' '),
@@ -72,9 +90,9 @@ class cfweb::pki::dir {
             group   => root,
             mode    => '0755',
             content => epp('cfweb/cfweb_sync_pki.sh.epp', {
-                pki_dir => $root_dir,
-                ssh_user => $ssh_user,
-                hosts => $cfweb::pki::cluster_hosts.reduce([]) |$memo, $v| {
+                pki_dir     => $root_dir,
+                ssh_user    => $ssh_user,
+                hosts       => $cfweb::pki::cluster_hosts.reduce([]) |$memo, $v| {
                     $host = $v[0]
                     
                     if $host != $::trusted['certname'] {
@@ -83,6 +101,7 @@ class cfweb::pki::dir {
                         $memo
                     }
                 },
+                web_service => $cfweb::web_service,
             }),
         }
         
@@ -101,6 +120,8 @@ class cfweb::pki::dir {
                 cfweb_sync_pki => $cfweb_sync_pki,
                 old_age        => $cfweb::pki::tls_ticket_key_age,
                 key_count      => $cfweb::pki::tls_ticket_key_count,
+                web_service    => $cfweb::web_service,
+                openssl        => $cfweb::pki::openssl,
             }),
         }
         
@@ -120,6 +141,14 @@ class cfweb::pki::dir {
                 File[$ticket_dir],
                 File[$cfweb_update_tls_ticket],
             ],
+        }
+        
+        #---
+        exec { 'cfweb_sync_pki':
+            user    => $ssh_user,
+            command => $cfweb_sync_pki,
+            refreshonly => true,
+            require => User[$ssh_user],
         }
     }
 }

@@ -41,7 +41,7 @@
     },
     {
       "name": "codingfuture-cfsystem",
-      "version_requirement": ">= 0.9.23"
+      "version_requirement": ">= 0.9.24"
     }
   ],
   "data_provider": "hiera"

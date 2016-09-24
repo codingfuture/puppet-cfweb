@@ -3,7 +3,9 @@
     String $user,
     String $cfweb_sync_pki,
     Integer $old_age,
-    Integer $key_count
+    Integer $key_count,
+    String $web_service,
+    String $openssl,
 | -%>
 #!/bin/bash
 
@@ -16,7 +18,7 @@ cd $ticket_dir
 for n in $(seq 1 <%= $key_count %>); do
     tf=ticket${n}.key
     if test ! -e $tf; then
-        /usr/bin/openssl rand 48 >$tf &&
+        <%= $openssl %> rand 48 >$tf &&
             echo "Generated missing $tf"
         do_sync=y
     fi
@@ -29,11 +31,11 @@ if find $ticket_dir/ticket1.key -type f -mmin +<%= $old_age %> | read; then
         /bin/mv -f ticket${n}.key ticket$(( $n + 1 )).key
     done
     
-    /usr/bin/openssl rand 48 >ticket1.key
+    <%= $openssl %> rand 48 >ticket1.key
     do_sync=y
 fi
 
 if test "$do_sync" = y; then
-    /bin/systemctl reload cfnginx.service
+    /bin/systemctl reload <%= $web_service %>.service
     $cfweb_sync_pki reload
 fi

@@ -2,6 +2,7 @@
     String $ssh_user,
     String $pki_dir,
     Array[String] $hosts,
+    String $web_service
 | -%>
 #!/bin/bash
 
@@ -41,7 +42,7 @@ wait
 if test "$1" = "reload"; then
     for h in $HOSTS; do
         /usr/bin/ssh <%= $ssh_user %>@${h} \
-            /bin/systemctl reload cfnginx
+            /bin/systemctl reload <%= $web_service %>.service
     done
 fi
 

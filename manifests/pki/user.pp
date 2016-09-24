@@ -24,7 +24,7 @@ class cfweb::pki::user {
         mode    => '0400',
         replace => true,
         content => "
-${user}   ALL=(ALL:ALL) NOPASSWD: /bin/systemctl reload cfnginx
+${user}   ALL=(ALL:ALL) NOPASSWD: /bin/systemctl reload ${cfweb::web_service}.service
 ",
         require => Package['sudo'],
     }

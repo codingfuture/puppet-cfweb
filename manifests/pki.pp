@@ -1,6 +1,8 @@
 
 class cfweb::pki(
     $dhparam_bits = 2048,
+    
+    $key_name = 'multi',
     $key_bits = 2048,
     
     $ssh_user = 'cfwebpki',
@@ -13,7 +15,15 @@ class cfweb::pki(
         hour   => '*/3',
         minute => 1
     },
+    
+    $cert_source = undef,
+    $x509_C = 'US',
+    $x509_ST = 'Denial',
+    $x509_L = 'Springfield',
+    $x509_O = 'SomeOrg',
 ) {
+    include stdlib
+
     $cluster = $cfweb::cluster
     
     $host_facts = cf_query_facts("cfweb.cluster=\"${cluster}\"", ['cfweb'])
@@ -46,10 +56,12 @@ class cfweb::pki(
     include cfweb::pki::user
 
     #---
+    $openssl = '/usr/bin/openssl'
     $root_dir = "${cfweb::pki::user::home_dir}/shared"
     $dhparam = "${root_dir}/dh${dhparam_bits}.pem"
     $ticket_dir = "${root_dir}/tickets"
-    $vhost_dir = "${root_dir}/vhosts"
+    $key_dir = "${root_dir}/keys"
+    $cert_dir = "${root_dir}/certs"
     
     include cfweb::pki::dir
     
@@ -61,4 +73,13 @@ class cfweb::pki(
             user => $ssh_user,
         }
     }
+    
+    #---
+    ensure_resource('cfweb::pki::key', $key_name, {
+        key_bits => $key_bits,
+    })
+    ensure_resource('cfweb::pki::cert', 'default', {
+        key_name => $key_name,
+        x509_CN => 'www.example.com',
+    })
 }
