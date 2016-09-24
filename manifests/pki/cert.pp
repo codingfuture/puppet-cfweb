@@ -31,7 +31,8 @@ define cfweb::pki::cert(
         $x_CN = pick($x509_CN, $cert_name)
         
         # CSR must always be available
-        exec { "${exec_name}::csr":
+        $csr_exec = "${exec_name}::csr"
+        exec { $csr_exec:
             command => [
                 "${cfweb::pki::openssl} req",
                 "-out ${csr_file}",
@@ -40,14 +41,31 @@ define cfweb::pki::cert(
                 "-subj '/C=${x_C}/ST=${x_ST}/L=${x_L}/O=${x_O}/CN=${x_CN}'",
             ].join(' '),
             creates => $csr_file,
+            require => Exec["cfweb::pki::key::${key_name}"],
             notify => Exec['cfweb_sync_pki']
         }
         
-        if pick_default($cert_source, $cfweb::pki::cert_source) == 'letsencrypt' {
-            fail('TODO: implement letsencrypt support')
-        } elsif $cert_source {
+        
+        #---
+        $cert_source_act = pick_default($cert_source, $cfweb::pki::cert_source)
+        
+        $dyn_cert = $cert_source_act ? {
+            'letsencrypt' => true,
+            'wosign' => true,
+            default => false,
+        }
+        
+        #---
+        if $cert_source and !$dyn_cert {
+            $certs = cf_nginx_cert(file($cert_source), $x_CN)
+                
             file { $crt_file:
-                content => file($cert_source),
+                content => $certs['chained'],
+                notify => Exec['cfweb_sync_pki'],
+            }
+            
+            file { "${crt_file}.trusted":
+                content => $certs['trusted'],
                 notify => Exec['cfweb_sync_pki'],
             }
         } else {
@@ -60,7 +78,25 @@ define cfweb::pki::cert(
                     "-out ${crt_file}",
                 ].join(' '),
                 creates => $crt_file,
-                notify => Exec['cfweb_sync_pki']
+                require => Exec[$csr_exec],
+                notify => Exec['cfweb_sync_pki'],
+            }
+        }
+        
+        #---
+        if $dyn_cert {
+            include "cfweb::pki::${cert_source_act}"
+            
+            exec { "${exec_name}.${cert_source_act}":
+                command => [
+                    getvar("cfweb::pki::${cert_source_act}::command"),
+                    $key_file,
+                    $csr_file,
+                    $crt_file,
+                ].join(' '),
+                creates => "${crt_file},${cert_source_act}",
+                require => Exec[$csr_exec],
+                # no notify, sync should be done internally
             }
         }
     }
