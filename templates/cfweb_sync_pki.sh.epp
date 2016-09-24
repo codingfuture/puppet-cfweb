@@ -5,7 +5,13 @@
 | -%>
 #!/bin/bash
 
+HOSTS=
+
 <% if size($hosts) > 0 { -%>
+
+<% $hosts.each() |$v| { -%>
+HOSTS+=" <%= $v %>"
+<% } -%>
 
 if test "$(/usr/bin/id -u)" = 0; then
     exec /usr/bin/sudo -H -u <%= $ssh_user %> $0 "$@"
@@ -13,7 +19,7 @@ if test "$(/usr/bin/id -u)" = 0; then
     exit -1
 fi
 
-for h in <%= $hosts.join(' ') %>; do
+for h in $HOSTS; do
     /usr/bin/rsync \
         --quiet \
         --checksum \
@@ -33,7 +39,7 @@ done
 wait
 
 if test "$1" = "reload"; then
-    for h in <%= $hosts.join(' ') %>; do
+    for h in $HOSTS; do
         /usr/bin/ssh <%= $ssh_user %>@${h} \
             /bin/systemctl reload cfnginx
     done
