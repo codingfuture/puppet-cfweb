@@ -17,12 +17,12 @@ Facter.add('cfweb') do
             
             # Generic
             #---
-            ret = sections['info']['cfweb']['info']
+            ret = sections['info']['cfweb']
             
             # PKI
             #---
             begin
-                cfwebpki = sections['info']['cfwebpki']['info']
+                cfwebpki = sections['info']['cfwebpki']
                 home_dir = cfwebpki['home']
                 user = cfwebpki['user']
                 ssh_dir = "#{home_dir}/.ssh"
