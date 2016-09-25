@@ -2,6 +2,11 @@
 class cfweb::nginx::debian {
     include cfsystem
 
+    case $::cfsystem::debian::release {
+        'stretch': { $release = 'jessie' }
+        default: { $release = $::cfsystem::debian::release }
+    }
+   
     # Nginx official
     #---
     apt::key { 'nginx_signing':
@@ -11,7 +16,7 @@ class cfweb::nginx::debian {
 
     apt::source { 'nginx':
         location => 'http://nginx.org/packages/mainline/debian/',
-        release  => $::cfsystem::debian::release,
+        release  => $release,
         repos    => 'nginx',
         pin      => $cfsystem::apt_pin + 1,
         require => Apt::Key['nginx_signing'],
