@@ -1,0 +1,59 @@
+<% |
+    String $listen,
+    Integer $port,
+    Integer $backlog,
+    Boolean $tls,
+    Boolean $proxy_protocol,
+    Array[String] $trusted_proxy,
+    Array $certs,
+| -%>
+
+server {
+    server_name _;
+    
+    listen <%= $listen %>:<%= $port %>
+        backlog=<%= $backlog %>
+        default_server
+        deferred
+        bind
+        so_keepalive=5m::2
+<% if $tls { -%>
+        ssl http2
+<% } -%>
+<% if $proxy_protocol { -%>
+        proxy_protocol
+<% } -%>
+        ;
+        
+        
+<% if $proxy_protocol { -%>
+<%  $trusted_proxy.each |$p| { -%>
+    set_real_ip_from <%= $p %>;
+<%  } -%>
+    real_ip_header proxy_protocol;
+    real_ip_recursive off;
+<% } -%>
+
+<% if $tls { -%>
+<%  $certs.each |$c| { -%>
+    ssl_certificate <%= $c['crt_file'] %>;
+    ssl_certificate_key <%= $c['key_file'] %>;
+<%  } -%>
+
+<%  if pick($certs[0], {})['trusted_file'] { -%>
+
+    ssl_trusted_certificate <%= $certs[0]['trusted_file'] %>;
+    ssl_stapling_verify on;    
+    ssl_stapling on;
+<%  } -%>
+
+    add_header Strict-Transport-Security 'max-age=15768000; includeSubdomains; preload';
+<% } -%>
+
+        
+    limit_conn peraddr 2;
+    
+    location / {
+        deny all;
+    }
+}

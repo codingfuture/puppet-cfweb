@@ -33,14 +33,18 @@ Puppet::Type.type(:cfweb_nginx).provide(
         
         user = service_name
         settings_tune = newconf[:settings_tune]
+        limits = newconf[:limits]
 
         # Config File
         #==================================================
         cfweb_tune = settings_tune.fetch('cfweb', {})
-        extra_files = cfweb_tune.fetch('extra_files', 10000).to_i
+        extra_files = cfweb_tune.fetch('extra_files', 20000).to_i
         worker_processes = Facter['processors'].value['count']
         mem_limit = cf_system.getMemory(service_name)
-        mem_per_conn = cfweb_tune.fetch('mem_per_conn', 32).to_i
+        mem_per_conn = cfweb_tune.fetch('mem_per_conn', 128).to_i
+        worker_connections = (mem_limit * 1024 / mem_per_conn / worker_processes).to_i
+        ssl_sess_factor = cfweb_tune.fetch('ssl_sess_factor', 3).to_i
+        ssl_sess_per_mb = 4000
         
         
         global_conf = {
@@ -54,40 +58,89 @@ Puppet::Type.type(:cfweb_nginx).provide(
         events_conf = {
             'accept_mutex' => 'off',
             'multi_accept' => 'on',
-            'worker_connections' => (mem_limit * 1024 / mem_per_conn / worker_processes).to_i,
+            'worker_connections' => worker_connections,
         }.merge(settings_tune.fetch('events', {}))
         
+        max_conn = global_conf['worker_processes'].to_i *
+                   events_conf['worker_connections'].to_i
+        ssl_sess_cache = (max_conn * ssl_sess_factor / ssl_sess_per_mb).to_i
+        
         http_conf = {
-            'limit_req_status' => 429,
-            'limit_conn_status' => 429,
-            'default_type' => 'default_type',
+            'default_type' => 'application/octet-stream',
+            #
             'log_format main' => [
                     '\'$remote_addr - $remote_user [$time_local]',
                     '"$request" $status $body_bytes_sent "$http_referer"',
                     '"$http_user_agent" "$http_x_forwarded_for"\''
             ].join(' '),
             'access_log' => '/var/log/nginx/access.log main',
-            'keepalive_timeout' => '125 120',
+            #
+            'keepalive_timeout' => '65 60',
             'keepalive_requests' => 100,
             'client_header_timeout' => '10s',
             'client_body_timeout' => '30s',
             'send_timeout' => '60s',
             'lingering_close' => 'off',
             'lingering_time' => '10s',
-            'open_file_cache' => 'max=20000 inactive=10m',
+            'open_file_cache' => "max=#{extra_files} inactive=10m",
+            'open_file_cache_valid' => '60s',
             'open_file_cache_errors' => 'on',
             'output_buffers' => '2 32k',
             'reset_timedout_connection' => 'on',
             'server_tokens' => 'off',
+            'root' => '/www/empty',
+            'etag' => 'off',
+            #
+            'ssl_session_cache' => "shared:SSL:#{ssl_sess_cache}m",
+            'ssl_session_timeout' => '1d',
+            #
+            'resolver_timeout' => '5s',
+            #
+            'limit_req_status' => 429,
+            'limit_conn_status' => 429,
         }.merge(settings_tune.fetch('http', {}))
+
+        # Limits
+        #---
         
+        # one entry = 64 bytes @ 64-bit
+        limit_conn_size = ((64 * max_conn + 1024^2) / 1024^2).to_i
+        # one entry = 128 bytes @ 64-bit
+        limit_req_size = ((128 * max_conn + 1024^2) / 1024^2).to_i
+        
+        http_conf["# global limits"] = ''
+        limits.each do |zone, info|
+            fail("Missing var option for limit #{zone}") unless info.has_key? 'var'
+            
+            if info['type'] == 'conn'
+                limit = "limit_conn_zone #{info['var']} zone=#{zone}:#{limit_conn_size}m"
+            elsif info['type'] == 'req'
+                fail("Missing rate option for limit #{zone}") unless info.has_key? 'rate'
+                limit = "limit_req_zone #{info['var']} zone=#{zone}:#{limit_conn_size}m rate=#{info['rate']}"
+            else
+                fail("Invalid zone limit defintion #{zone}")
+            end
+            
+            http_conf[limit] = ''
+        end
+        
+        # Misc. forced
+        http_conf.merge!({
+            "# use for WS & other proxing" => '',
+            'map $http_upgrade $connection_upgrade' => {
+                'default' => 'upgrade',
+                "''" => 'close',
+            },
+            "# misc" => '',
+            'include /etc/nginx/cf_mime.types' => '',
+            'include /etc/nginx/cf_tls.conf' => '',
+            'include /etc/nginx/sites/*.conf' => '',
+        })        
+        
+        #---
         global_conf.merge!({
             'user' => service_name,
-            'worker_rlimit_nofile' => (
-                    global_conf['worker_processes'].to_i *
-                    events_conf['worker_connections'].to_i +
-                    extra_files
-            ),
+            'worker_rlimit_nofile' => (max_conn + extra_files),
             'pid' => pid_file,
         })
         
@@ -95,16 +148,7 @@ Puppet::Type.type(:cfweb_nginx).provide(
             "# events" => '',
             'events' => events_conf,
             "# http" => '',
-            'http' => http_conf.merge({
-                "# use for WS & other proxing" => '',
-                'map $http_upgrade $connection_upgrade' => {
-                    'default' => 'upgrade',
-                    "''" => 'close',
-                },
-                "# misc" => '',
-                'include /etc/nginx/mime.types' => '',
-                'include /etc/nginx/sites/*.conf' => '',
-            })
+            'http' => http_conf,
         })
         
         conf = nginxConf(conf, 0)

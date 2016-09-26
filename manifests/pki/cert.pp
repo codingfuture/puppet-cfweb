@@ -1,7 +1,7 @@
 
 define cfweb::pki::cert(
     $cert_name = $title,
-    $key_name,
+    $key_name = undef,
     $cert_source = undef,
     $x509_C = undef,
     $x509_ST = undef,
@@ -11,8 +11,9 @@ define cfweb::pki::cert(
 ){
     include cfweb::pki
     
+    $key_name_act = pick($key_name, $cfweb::pki::key_name)
     $exec_name = "cfweb::pki::cert::${cert_name}"
-    $key_file = "${cfweb::pki::key_dir}/${key_name}.key"
+    $key_file = "${cfweb::pki::key_dir}/${key_name_act}.key"
     $cert_base = "${cfweb::pki::cert_dir}/${cert_name}"
     $crt_file = "${cert_base}.crt"
     $csr_file = "${cert_base}.csr"
@@ -41,7 +42,7 @@ define cfweb::pki::cert(
                 "-subj '/C=${x_C}/ST=${x_ST}/L=${x_L}/O=${x_O}/CN=${x_CN}'",
             ].join(' '),
             creates => $csr_file,
-            require => Exec["cfweb::pki::key::${key_name}"],
+            require => Exec["cfweb::pki::key::${key_name_act}"],
             notify => Exec['cfweb_sync_pki']
         }
         
@@ -94,7 +95,7 @@ define cfweb::pki::cert(
                     $csr_file,
                     $crt_file,
                 ].join(' '),
-                creates => "${crt_file},${cert_source_act}",
+                creates => "${crt_file}.${cert_source_act}",
                 require => Exec[$csr_exec],
                 # no notify, sync should be done internally
             }

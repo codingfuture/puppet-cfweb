@@ -1,6 +1,7 @@
 
 class cfweb::global (
     $sites = {},
-    $pki = {},
+    $keys = {},
+    $certs = {},
 ) {
 }

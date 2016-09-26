@@ -1,7 +1,30 @@
 ---
 lookup_options:
   cfweb::global::sites:
-    merge: hash
-  cfweb::global::pki:
-    merge: hash
+    merge: deep
+  cfweb::global::keys:
+    merge: deep
+  cfweb::global::certs:
+    merge: deep
+  cfweb::nginx::limits:
+    merge: deep
 
+cfweb::nginx::limits:
+    peraddr:
+        type: conn
+        var: '$binary_remote_addr'
+    static:
+        type: req
+        var: '$binary_remote_addr'
+        rate: '100r/s'
+        burst: 200
+    dynamic:
+        type: req
+        var: '$binary_remote_addr'
+        rate: '10r/s'
+        burst: 20
+    api:
+        type: req
+        var: '$binary_remote_addr'
+        rate: '64r/s'
+        burst: 64

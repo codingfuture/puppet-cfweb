@@ -15,7 +15,7 @@ class cfweb::nginx::debian {
     }
 
     apt::source { 'nginx':
-        location => 'http://nginx.org/packages/mainline/debian/',
+        location => "${cfweb::nginx::nginx_repo}/debian/",
         release  => $release,
         repos    => 'nginx',
         pin      => $cfsystem::apt_pin + 1,

@@ -15,7 +15,7 @@ class cfweb::nginx::ubuntu {
     }
 
     apt::source { 'nginx':
-        location => 'http://nginx.org/packages/mainline/ubuntu/',
+        location => "${cfweb::nginx::nginx_repo}/ubuntu/",
         release  => $release,
         repos    => 'nginx',
         pin      => $cfsystem::apt_pin + 1,

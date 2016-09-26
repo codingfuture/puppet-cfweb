@@ -58,4 +58,10 @@ Puppet::Type.newtype(:cfweb_nginx) do
             end
         end
     end
+    
+    newproperty(:limits) do
+        validate do |value|
+            value.is_a? Hash
+        end
+    end
 end

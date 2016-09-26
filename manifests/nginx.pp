@@ -5,9 +5,24 @@ class cfweb::nginx (
     $cpu_weight = 100,
     $io_weight = 100,
     $settings_tune = {},
+    $trusted_proxy = [],
+    $default_certs = {},
+    $backlog = 4096,
+    $limits,
+    $bleeding_edge_security = false,
+    
+    $repo = 'http://nginx.org/packages/',
+    $mainline = false,
 ) {
     include stdlib
+    include cfnetwork
     include cfweb
+    include cfweb::pki
+    
+    $nginx_repo = $mainline ? {
+        true => "${repo}mainline/",
+        default => $repo,
+    }
     
     case $::operatingsystem {
         'Debian': {
@@ -50,12 +65,23 @@ class cfweb::nginx (
     file { $conf_dir:
         ensure => directory,
         mode => '0750',
+        purge   => true,
+        recurse => true,
+        force   => true,
     } ->
+    file { "${conf_dir}/cf_tls.conf":
+        mode => '0640',
+        content => epp('cfweb/cf_tls.conf.epp', {
+            dhparam       => $cfweb::pki::dhparam,
+            ticket_count  => $cfweb::pki::tls_ticket_key_count,
+            ticket_dir    => $cfweb::pki::ticket_dir,
+            dns_servers   => join(any2array($cfnetwork::dns_servers), ' '),
+            bleeding_edge => $bleeding_edge_security,
+        })
+    }
     file { $sites_dir:
         ensure  => directory,
         mode    => '0750',
-        purge   => true,
-        recurse => true,
     } ->
     file { [$web_dir, $empty_root, $errors_root]:
         ensure => directory,
@@ -70,8 +96,22 @@ class cfweb::nginx (
         io_weight     => $io_weight,
         settings_tune => $settings_tune,
         service_name  => $service_name,
+        limits        => $limits,
     } ->
     service { $service_name: }
+    
+    [
+        'cf_mime.types',
+        'cf_fastcgi_params',
+        'cf_scgi_params',
+        'cf_uwsgi_params'
+    ].each |$v| {
+        file { "${conf_dir}/${v}":
+            mode    => '0640',
+            content => file("cfweb/${v}"),
+            notify  => Cfweb_nginx[$service_name]
+        }
+    }
     
     
     ['forbidden', 'notfound', 'oops'].each |$v| {
