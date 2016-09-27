@@ -1,0 +1,139 @@
+<% |
+    String $site,
+            
+    String $server_name,
+    Array[String] $alt_names,
+    Boolean $redirect_alt_names,
+    Array[String] $bind,
+    Array[Integer] $plain_ports,
+    Array[Integer] $tls_ports,
+    Boolean $redirect_plain,
+    Boolean $proxy_protocol,
+    Optional[Array[String]] $trusted_proxy,
+            
+    Array[Hash] $certs,
+    Hash $apps,
+|
+
+$redirect_plain_act = $redirect_plain and size($plain_ports) and size($tls_ports)
+
+$all_server_names = ([$server_name] + $alt_names).join(' ')
+$cond_server_names = $redirect_alt_names ? {
+    true => $server_name,
+    default => $all_server_names
+}
+
+# Bind addresses
+#---
+$proxy_protocol_param = $proxy_protocol ? {
+    true => 'proxy_protocol',
+    default => ''
+}
+$listen_plain = flatten($bind.map |$b| {
+    $plain_ports.map |$p| {
+        "${b}:${p} ${proxy_protocol_param}"
+    }
+})
+$listen_tls = flatten($bind.map |$b| {
+    $tls_ports.map |$p| {
+        "${b}:${p} ssl http2 ${proxy_protocol_param}"
+    }
+})
+
+# Trust proxy protocol
+#---
+$trust_proxy_snippet = inline_epp('
+<% if $proxy_protocol { -%>
+<%  $trusted_proxy.each |$p| { -%>
+    set_real_ip_from <%= $p %>;
+<%  } -%>
+    real_ip_header proxy_protocol;
+    real_ip_recursive off;
+<% } -%>    
+', {
+    proxy_protocol => $proxy_protocol,
+    trusted_proxy => $trusted_proxy,
+})
+
+# SSL certs
+#---
+$tls_snippet = inline_epp('
+<% if size($tls_ports) { -%>
+<%  $certs.each |$c| { -%>
+    ssl_certificate <%= $c[\'crt_file\'] %>;
+    ssl_certificate_key <%= $c[\'key_file\'] %>;
+<%  } -%>
+
+<%  if pick($certs[0], {})[\'trusted_file\'] { -%>
+
+    ssl_trusted_certificate <%= $certs[0][\'trusted_file\'] %>;
+    ssl_stapling_verify on;    
+    ssl_stapling on;
+<%  } -%>
+
+    add_header Strict-Transport-Security \'max-age=15768000; includeSubdomains; preload\';
+<% } -%>
+', {
+})
+
+-%>
+
+server {
+    server_name <%= $cond_server_names %>;
+    
+<%  if !$redirect_plain_act { $listen_plain.each |$l| { -%>
+    listen <%= $l %>;
+<%  } } -%>
+<%  $listen_tls.each |$l| { -%>
+    listen <%= $l %>;
+<%  } -%>
+
+<%= $tls_snippet -%>
+<%= $trust_proxy_snippet -%>
+
+}
+
+
+<% if $redirect_plain_act { -%>
+# standalone host should be faster
+# redirect HTTP -> HTTPS
+#---------------------------------
+server {
+    server_name <%= $cond_server_names %>;
+    
+<%  $listen_plain.each |$l| { -%>
+    listen <%= $l %>;
+<%  } -%>
+
+    
+<%= $trust_proxy_snippet -%>
+
+    return 302 https://$host$request_uri;
+}
+<% } -%>
+
+<% if $redirect_alt_names and size($alt_names) { -%>
+# standalone host should be faster
+# redirect ALT names -> main name
+#---------------------------------
+server {
+    server_name <%= $alt_names.join(' ') %>;
+    
+<%  $listen_plain.each |$l| { -%>
+    listen <%= $l %>;
+<%  } -%>
+<%  $listen_tls.each |$l| { -%>
+    listen <%= $l %>;
+<%  } -%>
+    
+<%= $tls_snippet -%>
+<%= $trust_proxy_snippet -%>
+
+<% if $redirect_plain_act { -%>
+    return 302 https://<%= $server_name %>$request_uri;
+<% } else { -%>
+    return 302 $scheme://<%= $server_name %>$request_uri;
+<% } -%>
+}
+<% } -%>
+

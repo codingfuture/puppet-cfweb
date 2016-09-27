@@ -43,6 +43,7 @@ class cfweb::nginx (
     $sites_dir = "${conf_dir}/sites"
     
     $web_dir = '/www'
+    $persistent_dir = '/www/persistent'
     $empty_root = "${web_dir}/empty"
     $errors_root = "${web_dir}/error"
     
@@ -69,6 +70,11 @@ class cfweb::nginx (
         recurse => true,
         force   => true,
     } ->
+    file { "${conf_dir}/nginx.conf":
+        mode    => '0640',
+        replace => false,
+        content => '',
+    } ->
     file { "${conf_dir}/cf_tls.conf":
         mode => '0640',
         content => epp('cfweb/cf_tls.conf.epp', {
@@ -78,12 +84,12 @@ class cfweb::nginx (
             dns_servers   => join(any2array($cfnetwork::dns_servers), ' '),
             bleeding_edge => $bleeding_edge_security,
         })
-    }
+    } ->
     file { $sites_dir:
         ensure  => directory,
         mode    => '0750',
     } ->
-    file { [$web_dir, $empty_root, $errors_root]:
+    file { [$web_dir, $empty_root, $errors_root, $persistent_dir]:
         ensure => directory,
         owner => root,
         group => $user,

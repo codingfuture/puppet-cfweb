@@ -17,6 +17,7 @@ define cfweb::pki::cert(
     $cert_base = "${cfweb::pki::cert_dir}/${cert_name}"
     $crt_file = "${cert_base}.crt"
     $csr_file = "${cert_base}.csr"
+    $trusted_file = "${crt_file}.trusted"
     
     if $cfweb::is_secondary {
         exec { $exec_name:
@@ -65,7 +66,7 @@ define cfweb::pki::cert(
                 notify => Exec['cfweb_sync_pki'],
             }
             
-            file { "${crt_file}.trusted":
+            file { $trusted_file:
                 content => $certs['trusted'],
                 notify => Exec['cfweb_sync_pki'],
             }
@@ -98,6 +99,19 @@ define cfweb::pki::cert(
                 creates => "${crt_file}.${cert_source_act}",
                 require => Exec[$csr_exec],
                 # no notify, sync should be done internally
+            }
+        }
+    }
+    
+    cfweb::pki::certinfo { $title:
+        info => {
+            cert_name    => $cert_name,
+            key_file     => $key_file,
+            crt_file     => $crt_file,
+            trusted_file => $cert_source ? {
+                undef => undef,
+                '' => undef,
+                default => $trusted_file,
             }
         }
     }

@@ -103,10 +103,11 @@ Puppet::Type.type(:cfweb_nginx).provide(
         # Limits
         #---
         
+        one_mb = 1024**2
         # one entry = 64 bytes @ 64-bit
-        limit_conn_size = ((64 * max_conn + 1024^2) / 1024^2).to_i
+        limit_conn_size = ((64 * max_conn + one_mb) / one_mb).to_i
         # one entry = 128 bytes @ 64-bit
-        limit_req_size = ((128 * max_conn + 1024^2) / 1024^2).to_i
+        limit_req_size = ((128 * max_conn + one_mb) / one_mb).to_i
         
         http_conf["# global limits"] = ''
         limits.each do |zone, info|

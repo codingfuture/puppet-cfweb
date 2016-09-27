@@ -21,32 +21,7 @@ define cfweb::nginx::defaulthost (
             try_get_value($default_certs, "any"),
             'default'
         )).map |$cert_name| {
-            $key_name = pick(
-                    getparam(Cfweb::Pki::Cert[$cert_name], 'key_name'),
-                    $cfweb::pki::key_name
-            )
-            
-            $key_file = "${cfweb::pki::key_dir}/${key_name}.key"
-            $crt_file = "${cfweb::pki::cert_dir}/${cert_name}.crt"
-            
-            $cert_source = pick_default(
-                    getparam(Cfweb::Pki::Cert[$cert_name], 'cert_source'),
-                    $cfweb::pki::cert_source
-            )
-
-            if $cert_source and $cert_source != '' {
-                $trusted_file = "${crt_file}.trusted"
-            } else {
-                $trusted_file = undef
-            };
-            
-            # PUP-4464
-            ({
-                cert_name    => $cert_name,
-                key_file     => $key_file,
-                crt_file     => $crt_file,
-                trusted_file => $trusted_file,
-            })
+            getparam(Cfweb::Pki::Certinfo[$cert_name], 'info')
         }
     } else {
         $certs = []
@@ -67,7 +42,7 @@ define cfweb::nginx::defaulthost (
     }
     
     file { "${sites_dir}/default__${iface}_${port}.conf":
-        mode => '640',
+        mode => '0640',
         content => epp('cfweb/default_vhost.epp', {
             listen         => $listen,
             port           => $port,

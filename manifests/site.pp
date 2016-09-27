@@ -23,6 +23,8 @@ define cfweb::site (
 ) {
     include cfweb::nginx
     
+    validate_re($title, '^[a-z][a-z0-9_]*$')
+    
     #---
     if !$shared_certs and size($tls_ports) > 0 {
         $auto_cert_name = "auto__${server_name}"
@@ -48,7 +50,7 @@ define cfweb::site (
     # Default hosts configure listen socket
     #---
     $ifaces.each |$iface| {
-        $plain_ports.each |$port| {
+        $plain = $plain_ports.each |$port| {
             ensure_resource('cfweb::nginx::defaulthost', "${iface}:${port}", {
                 iface      => $iface,
                 port       => $port,
@@ -56,7 +58,7 @@ define cfweb::site (
                 is_backend => $is_backend,
             })
         }
-        $tls_ports.each |$port| {
+        $tls = $tls_ports.each |$port| {
             ensure_resource('cfweb::nginx::defaulthost', "${iface}:${port}", {
                 iface      => $iface,
                 port       => $port,
@@ -67,16 +69,109 @@ define cfweb::site (
         }
     }
     
+    # Basic file structure
+    #---
+    $site = "app_${title}"
+    $is_dynamic = (size(keys($apps) - ['static']) > 0)
+    $user = $is_dynamic ? {
+        true => $site,
+        default => $cfweb::nginx::user
+    }
+    
+    $site_dir = "${cfweb::nginx::web_dir}/${site}"
+    $bin_dir = "${site_dir}/bin"
+    $persistent_dir = "${cfweb::nginx::persistent_dir}/${site}"
+    # This must be created by deploy script
+    $document_root = "${site_dir}/current"
+    
+    if $is_dynamic {
+        group { $user:
+            ensure => present,
+        } ->
+        user { $user:
+            ensure => present,
+            gid => $user,
+            home => $site_dir,
+            require => Group[$user],
+        }
+    }
+    
+    file { [$site_dir, $bin_dir, $persistent_dir]:
+        ensure  => directory,
+        mode    => '0750',
+        owner   => $user,
+        group   => $user,
+        require => User[$user],
+    }
+        
+    
     # DB access
     #---
+    # global site DB access not tied to sub-app
+    # should be avoided in general due to manual
+    # $max_connections configuration
+    if $is_dynamic and $dbaccess {
+        $dbaccess.each |$da| {
+            create_resources(
+                'cfdb::access',
+                { local_user => $user },
+                $da
+            )
+        }
+    }
 
-    # Define vhost
+    # Define apps
     #---
-    if size(keys($apps) - ['static']) > 0 {
-        cfsystem_memory_weight { "cfweb-${title}":
+    if $is_dynamic {
+        cfsystem_memory_weight { $site:
             ensure => present,
             weight => $memory_weight,
             max_mb => $memory_max,
         }
+    }
+    
+    # Create vhost file
+    #---
+    if size($dep_certs) {
+        include cfweb::pki
+        
+        $certs = $dep_certs.map |$cert_name| {
+            getparam(Cfweb::Pki::Certinfo[$cert_name], 'info')
+        }
+    } else {
+        $certs = []
+    }
+    
+    $bind = $ifaces.map |$iface| {
+        $iface ? {
+            'any' => '*',
+            default => regsubst(getparam(Cfnetwork::Iface[$iface], 'address'), '/[0-9]+', ''),
+        }
+    }
+    
+    $trusted_proxy = $is_backend ? {
+        true => any2array($cfweb::nginx::trusted_proxy),
+        default => undef
+    }
+
+    file { "${cfweb::nginx::sites_dir}/${site}.conf":
+        mode    => '0640',
+        content => epp('cfweb/app_vhost.epp', {
+            site  => $site,
+            
+            server_name => $server_name,
+            alt_names => $alt_names,
+            redirect_alt_names => $redirect_alt_names,
+            bind => $bind,
+            plain_ports => $plain_ports,
+            tls_ports => $tls_ports,
+            redirect_plain => $redirect_plain,
+            proxy_protocol => $is_backend,
+            trusted_proxy => $trusted_proxy,
+            
+            certs => $certs,
+            apps => $apps,
+        }),
+        notify => Service[$cfweb::nginx::service_name]
     }
 }
