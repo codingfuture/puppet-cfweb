@@ -1,18 +1,18 @@
 
 class cfweb::nginx (
-    $memory_weight = 100,
-    $memory_max = undef,
-    $cpu_weight = 100,
-    $io_weight = 100,
-    $settings_tune = {},
-    $trusted_proxy = [],
-    $default_certs = {},
-    $backlog = 4096,
-    $limits,
-    $bleeding_edge_security = false,
+    Integer $memory_weight = 100,
+    Optional[Integer] $memory_max = undef,
+    Integer $cpu_weight = 100,
+    Integer $io_weight = 100,
+    Hash $settings_tune = {},
+    Array[String] $trusted_proxy = [],
+    Hash $default_certs = {},
+    Integer $backlog = 4096,
+    Hash $limits,
+    Boolean $bleeding_edge_security = false,
     
-    $repo = 'http://nginx.org/packages/',
-    $mainline = false,
+    String $repo = 'http://nginx.org/packages/',
+    Boolean $mainline = false,
 ) {
     include stdlib
     include cfnetwork
@@ -89,11 +89,18 @@ class cfweb::nginx (
         ensure  => directory,
         mode    => '0750',
     } ->
-    file { [$web_dir, $empty_root, $errors_root, $persistent_dir]:
+    file { [$web_dir, $errors_root, $persistent_dir]:
         ensure => directory,
         owner => root,
         group => $user,
         mode  => '0751',
+    } ->
+    file { $empty_root:
+        ensure => directory,
+        mode  => '0751',
+        owner => root,
+        group => $user,
+        purge => true,
     } ->
     cfweb_nginx { $service_name:
         ensure => present,

@@ -1,12 +1,16 @@
 
 class cfweb (
-    $cluster,
-    $is_secondary = false,
-    $standalone = [],
-    $backends = [],
-    $frontends = [],
-    $web_service = 'cfnginx',
+    String $cluster,
+    Boolean $is_secondary = false,
+    Array[String] $standalone = [],
+    Array[String] $backends = [],
+    Array[String] $frontends = [],
+    String $web_service = 'cfnginx',
 ) inherits cfweb::global {
+    
+    validate_re($cluster, '^[a-z][a-z0-9_]*$')
+    validate_re($web_service, '^[a-z][a-z0-9_]*$')
+    
     cfsystem_info { 'cfweb':
         ensure => present,
         info => {

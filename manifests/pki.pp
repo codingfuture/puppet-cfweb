@@ -1,31 +1,32 @@
 
 class cfweb::pki(
-    $dhparam_bits = 2048,
+    Integer $dhparam_bits = 2048,
     
-    $key_name = 'multi',
-    $key_type = 'rsa',
-    $key_bits = 2048,
-    $key_curve = 'prime256v1',
+    String $key_name = 'multi',
+    Enum['rsa', 'ecdsa'] $key_type = 'rsa',
+    Integer $key_bits = 2048,
+    String $key_curve = 'prime256v1',
     
-    $ssh_user = 'cfwebpki',
-    $ssh_key_type = 'ed25519',
-    $ssh_key_bits = 2048, # for rsa
+    String $ssh_user = 'cfwebpki',
+    Enum['rsa', 'ed25519'] $ssh_key_type = 'ed25519',
+    Integer $ssh_key_bits = 2048, # for rsa
     
-    $tls_ticket_key_count = 3,
-    $tls_ticket_key_age = 1440,
-    $tls_ticket_cron = {
+    Integer $tls_ticket_key_count = 3,
+    Integer $tls_ticket_key_age = 1440,
+    Hash $tls_ticket_cron = {
         hour   => '*/3',
         minute => 1
     },
     
-    $cert_source = undef,
-    $x509_C = 'US',
-    $x509_ST = 'Denial',
-    $x509_L = 'Springfield',
-    $x509_O = 'SomeOrg',
+    Optional[Variant[String, Enum['letsencrypt', 'wosign']]]
+        $cert_source = undef,
+    String $x509_C = 'US',
+    String $x509_ST = 'Denial',
+    String $x509_L = 'Springfield',
+    String $x509_O = 'SomeOrg',
     
-    $keys = [],
-    $certs = [],
+    Array[String] $keys = [],
+    Array[String] $certs = [],
 ) {
     include stdlib
 

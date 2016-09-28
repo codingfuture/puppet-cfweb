@@ -1,7 +1,7 @@
 
 class cfweb::global (
-    $sites = {},
-    $keys = {},
-    $certs = {},
+    Hash $sites = {},
+    Hash $keys = {},
+    Hash $certs = {},
 ) {
 }

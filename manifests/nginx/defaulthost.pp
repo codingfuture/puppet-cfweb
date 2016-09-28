@@ -29,7 +29,7 @@ define cfweb::nginx::defaulthost (
     
     $listen = $iface ? {
         'any' => '*',
-        default => regsubst(getparam(Cfnetwork::Iface[$iface], 'address'), '/[0-9]+', ''),
+        default => split(getparam(Cfnetwork::Iface[$iface], 'address'), '/')[0],
     }
     
     if !$listen {

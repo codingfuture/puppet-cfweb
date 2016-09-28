@@ -1,25 +1,25 @@
 
 define cfweb::site (
-    $server_name,
-    $alt_names = [],
-    $redirect_alt_names = true,
+    String $server_name,
+    Array[String] $alt_names = [],
+    Boolean $redirect_alt_names = true,
     
-    $ifaces = ['main'],
-    $plain_ports = [80],
-    $tls_ports = [443],
-    $redirect_plain = true,
+    Array[String] $ifaces = ['main'],
+    Array[Integer] $plain_ports = [80],
+    Array[Integer] $tls_ports = [443],
+    Boolean $redirect_plain = true,
     
-    $is_backend = false,
+    Boolean $is_backend = false,
     
-    $auto_cert = {},
-    $shared_certs = [],
-    $dbaccess = {},
-    $apps = {},
+    Hash $auto_cert = {},
+    Array[String] $shared_certs = [],
+    Hash $dbaccess = {},
+    Hash $apps = {},
     
-    $memory_weight = 100,
-    $memory_max = undef,
-    $cpu_weight = 100,
-    $io_weight = 100,
+    Integer $memory_weight = 100,
+    Optional[Integer] $memory_max = undef,
+    Integer $cpu_weight = 100,
+    Integer $io_weight = 100,
 ) {
     include cfweb::nginx
     
@@ -103,7 +103,13 @@ define cfweb::site (
         group   => $user,
         require => User[$user],
     }
-        
+
+    file { $document_root:
+        ensure  => link,
+        replace => false,
+        target  => $cfweb::nginx::empty_root,
+    }
+
     
     # DB access
     #---
@@ -145,7 +151,7 @@ define cfweb::site (
     $bind = $ifaces.map |$iface| {
         $iface ? {
             'any' => '*',
-            default => regsubst(getparam(Cfnetwork::Iface[$iface], 'address'), '/[0-9]+', ''),
+            default => split(getparam(Cfnetwork::Iface[$iface], 'address'), '/')[0],
         }
     }
     
