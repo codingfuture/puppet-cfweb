@@ -11,15 +11,28 @@ define cfweb::site (
     
     Boolean $is_backend = false,
     
-    Hash $auto_cert = {},
+    Hash[String,Hash] $auto_cert = {},
     Array[String] $shared_certs = [],
-    Hash $dbaccess = {},
-    Hash $apps = {},
+    Hash[String,Hash] $dbaccess = {},
+    Hash[String,Hash,1] $apps = { 'static' => {} },
+    Optional[String] $custom_conf = undef,
     
-    Integer $memory_weight = 100,
-    Optional[Integer] $memory_max = undef,
-    Integer $cpu_weight = 100,
-    Integer $io_weight = 100,
+    Hash[String, Struct[{
+        type       => Enum['conn', 'req'],
+        var        => String[1],
+        count      => Optional[Integer[1]],
+        entry_size => Optional[Integer[1]],
+        rate       => Optional[String],
+        burst      => Optional[Integer[0]],
+        nodelay    => Optional[Boolean],
+        newname    => String,
+    }]] $limits = {},
+    
+    Integer[1,100] $memory_weight = 100,
+    Optional[Integer[1]] $memory_max = undef,
+    Integer[1,100] $cpu_weight = 100,
+    Integer[1,100] $io_weight = 100,
+    
 ) {
     include cfweb::nginx
     
@@ -81,6 +94,7 @@ define cfweb::site (
     $site_dir = "${cfweb::nginx::web_dir}/${site}"
     $bin_dir = "${site_dir}/bin"
     $persistent_dir = "${cfweb::nginx::persistent_dir}/${site}"
+    $conf_prefix = "${cfweb::nginx::sites_dir}/${site}"
     # This must be created by deploy script
     $document_root = "${site_dir}/current"
     
@@ -128,12 +142,36 @@ define cfweb::site (
 
     # Define apps
     #---
+    $cfg_notify = [
+        Service[$cfweb::nginx::service_name],
+    ]
+    
     if $is_dynamic {
-        cfsystem_memory_weight { $site:
+        cfsystem_memory_weight { $user:
             ensure => present,
             weight => $memory_weight,
             max_mb => $memory_max,
         }
+    }
+        
+    $apps.each |$app, $app_info| {
+        $app_type = size(split($app, ':')) ? {
+            1       => "cfweb::app::${app}",
+            default => $app,
+        }
+        create_resources(
+            $app_type,
+            {
+                $title => {
+                    site        => $title,
+                    user        => $user,
+                    site_dir    => $site_dir,
+                    conf_prefix => $conf_prefix,
+                    notify      => $cfg_notify,
+                },
+            },
+            $app_info
+        )
     }
     
     # Create vhost file
@@ -160,10 +198,11 @@ define cfweb::site (
         default => undef
     }
 
-    file { "${cfweb::nginx::sites_dir}/${site}.conf":
+    file { "${conf_prefix}.conf":
         mode    => '0640',
         content => epp('cfweb/app_vhost.epp', {
-            site  => $site,
+            site  => $title,
+            conf_prefix => $conf_prefix,
             
             server_name => $server_name,
             alt_names => $alt_names,
@@ -176,8 +215,10 @@ define cfweb::site (
             trusted_proxy => $trusted_proxy,
             
             certs => $certs,
-            apps => $apps,
+            apps => keys($apps),
+                       
+            custom_conf => pick_default($custom_conf, ''),
         }),
-        notify => Service[$cfweb::nginx::service_name]
+        notify => $cfg_notify,
     }
 }

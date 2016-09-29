@@ -1,14 +1,22 @@
 
 class cfweb::nginx (
-    Integer $memory_weight = 100,
-    Optional[Integer] $memory_max = undef,
-    Integer $cpu_weight = 100,
-    Integer $io_weight = 100,
+    Integer[1,100] $memory_weight = 100,
+    Optional[Integer[1]] $memory_max = undef,
+    Integer[1,100] $cpu_weight = 100,
+    Integer[1,100] $io_weight = 100,
     Hash $settings_tune = {},
     Array[String] $trusted_proxy = [],
     Hash $default_certs = {},
-    Integer $backlog = 4096,
-    Hash $limits,
+    Integer[1] $backlog = 4096,
+    Hash[String, Struct[{
+        type       => Enum['conn', 'req'],
+        var        => String[1],
+        count      => Optional[Integer[1]],
+        entry_size => Optional[Integer[1]],
+        rate       => Optional[String],
+        burst      => Optional[Integer[0]],
+        nodelay    => Optional[Boolean],
+    }]] $limits,
     Boolean $bleeding_edge_security = false,
     
     String $repo = 'http://nginx.org/packages/',

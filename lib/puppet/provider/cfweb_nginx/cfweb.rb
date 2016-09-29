@@ -104,20 +104,20 @@ Puppet::Type.type(:cfweb_nginx).provide(
         #---
         
         one_mb = 1024**2
-        # one entry = 64 bytes @ 64-bit
-        limit_conn_size = ((64 * max_conn + one_mb) / one_mb).to_i
-        # one entry = 128 bytes @ 64-bit
-        limit_req_size = ((128 * max_conn + one_mb) / one_mb).to_i
         
         http_conf["# global limits"] = ''
         limits.each do |zone, info|
             fail("Missing var option for limit #{zone}") unless info.has_key? 'var'
             
             if info['type'] == 'conn'
+                entry_size = info.fetch('entry_size', 64)
+                limit_conn_size = ((entry_size * max_conn + one_mb) / one_mb).to_i
                 limit = "limit_conn_zone #{info['var']} zone=#{zone}:#{limit_conn_size}m"
             elsif info['type'] == 'req'
                 fail("Missing rate option for limit #{zone}") unless info.has_key? 'rate'
-                limit = "limit_req_zone #{info['var']} zone=#{zone}:#{limit_conn_size}m rate=#{info['rate']}"
+                entry_size = info.fetch('entry_size', 128)
+                limit_req_size = ((entry_size * max_conn + one_mb) / one_mb).to_i
+                limit = "limit_req_zone #{info['var']} zone=#{zone}:#{limit_req_size}m rate=#{info['rate']}"
             else
                 fail("Invalid zone limit defintion #{zone}")
             end

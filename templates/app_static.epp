@@ -1,0 +1,135 @@
+<% |
+    String $site,
+    String $document_root,
+    Boolean $serve_root,
+    Variant[Boolean, String] $images,
+    Variant[Boolean, String] $assets,
+    Boolean $asset_gz,
+    Boolean $asset_static_gz,
+    Boolean $forbid_dotpath,
+    Optional[String] $default_app,
+    Boolean $autoindex,
+|
+
+$binary_assets = [
+    'jpg',
+    'jpeg',
+    'gif',
+    'png',
+    'webp',
+    'woff',
+    'ttf',
+    'eot',
+    'ico',
+    'pdf',
+    'flv',
+    'swf',
+    'svgz',
+    'jp2',
+    'jpx',
+    'tiff',
+    'tif',
+    'bmp',
+    'xbm',
+]
+
+$text_assets = [
+    'html',
+    'htm',
+    'txt',
+    'css',
+    'js',
+    'svg',
+]
+-%>
+
+    # Global catch all limit with the highest number.
+    # All other limits should have lower boundary.
+    <%= cf_nginx_limit_req($site, 'static') %>
+
+<% if $forbid_dotpath { -%>
+    # Forbid dotfiles access (e.g. VCS metadata, .ht*)
+    location ~ /\. {
+        deny all;
+        log_not_found off;
+        limit_req unlikely nodelay;
+    }
+<% } -%>
+
+    # Default root
+    #----
+<% if $autoindex { -%>
+    autoindex on;
+<% } -%>
+
+    location / {
+<% if $serve_root { -%>
+        root <%= $document_root %>;
+<% } -%>
+<% if $default_app { -%>
+        try_files $uri @<%= $default_app %>;
+<% } else { %>
+        index index.html index.htm;
+<% } -%>
+    }
+    
+<% if $default_app { -%>
+    location = / {
+        try_files @<%= $default_app %>;
+    }
+<% } -%>
+    #---
+    
+    # Handle common favicon issue
+    #---
+    location = /favicon.ico {
+        try_files $uri @empty_gif;
+    }
+    
+    location @empty_gif {
+        expires 1h;
+        empty_gif;
+    }
+    #---
+    
+<% if $images { -%>
+    # Handle binary media
+    #---
+<%  if $images == true { -%>
+    location ~* \.(<%= $binary_assets.join('|') %>)$ {
+<%  } else { -%>
+    location <%= $images %> {
+<%  } -%>
+        root <%= $document_root %>;
+        expires max;
+    }
+    
+    #---
+<% } -%>
+
+<% if $assets { -%>
+    # Handle textual assets
+    #---
+<%  if $assets == true { -%>    
+    location ~* \.(<%= $text_assets.join('|') %>)$ {
+<%  } else { -%>
+    location <%= $assets %> {
+<%  } -%>
+        root <%= $document_root %>;
+        expires max;
+<%    if $asset_gz { -%>
+        gzip on;
+        gzip_types *;
+<%    } -%>
+<%    if $asset_static_gz { -%>
+        gzip_static on;
+<%    } -%>
+
+    }
+    
+    #---
+<% } -%>
+
+
+    
+

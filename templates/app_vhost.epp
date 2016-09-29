@@ -1,5 +1,6 @@
 <% |
     String $site,
+    String $conf_prefix,
             
     String $server_name,
     Array[String] $alt_names,
@@ -12,7 +13,10 @@
     Optional[Array[String]] $trusted_proxy,
             
     Array[Hash] $certs,
-    Hash $apps,
+    Array[String] $apps,
+    String $custom_conf,
+
+    Optional[String] $acme_well_known_dir = undef,
 |
 
 $redirect_plain_act = $redirect_plain and size($plain_ports) and size($tls_ports)
@@ -78,6 +82,11 @@ $tls_snippet = inline_epp('
 
 -%>
 
+<% $apps.each |$a| { -%>
+include <%= "${conf_prefix}.global.${a}" %>;
+<% } -%>
+
+
 server {
     server_name <%= $cond_server_names %>;
     
@@ -91,6 +100,20 @@ server {
 <%= $tls_snippet -%>
 <%= $trust_proxy_snippet -%>
 
+    <%= cf_nginx_limit_conn($site, 'peraddrpersrv') %>
+
+<%  if $acme_well_known_dir { -%>
+    location ^~ /.well-known/ {
+        root $acme_well_known_dir;
+        limit_req unlikely nodelay;
+    }
+<%  } -%>
+
+<% $apps.each |$a| { -%>
+    include <%= "${conf_prefix}.server.${a}" %>;
+<% } -%>
+
+<%= $custom_conf -%>
 }
 
 

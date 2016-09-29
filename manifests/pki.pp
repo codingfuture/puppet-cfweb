@@ -4,15 +4,15 @@ class cfweb::pki(
     
     String $key_name = 'multi',
     Enum['rsa', 'ecdsa'] $key_type = 'rsa',
-    Integer $key_bits = 2048,
+    Integer[1024] $key_bits = 2048,
     String $key_curve = 'prime256v1',
     
     String $ssh_user = 'cfwebpki',
     Enum['rsa', 'ed25519'] $ssh_key_type = 'ed25519',
-    Integer $ssh_key_bits = 2048, # for rsa
+    Integer[1024] $ssh_key_bits = 2048, # for rsa
     
-    Integer $tls_ticket_key_count = 3,
-    Integer $tls_ticket_key_age = 1440,
+    Integer[2] $tls_ticket_key_count = 3,
+    Integer[60, 1440] $tls_ticket_key_age = 1440,
     Hash $tls_ticket_cron = {
         hour   => '*/3',
         minute => 1
