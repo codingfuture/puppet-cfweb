@@ -22,10 +22,10 @@ define cfweb::site (
         var        => String[1],
         count      => Optional[Integer[1]],
         entry_size => Optional[Integer[1]],
-        rate       => Optional[String],
+        rate       => Optional[String[1]],
         burst      => Optional[Integer[0]],
         nodelay    => Optional[Boolean],
-        newname    => String,
+        newname    => Optional[String[1]],
     }]] $limits = {},
     
     Integer[1,100] $memory_weight = 100,
@@ -33,6 +33,7 @@ define cfweb::site (
     Integer[1,100] $cpu_weight = 100,
     Integer[1,100] $io_weight = 100,
     
+    Optional[Hash[String, Hash]] $deploy = undef,
 ) {
     include cfweb::nginx
     
@@ -220,5 +221,22 @@ define cfweb::site (
             custom_conf => pick_default($custom_conf, ''),
         }),
         notify => $cfg_notify,
+    }
+    
+    # Deploy procedure
+    #---
+    if $deploy {
+        create_resources(
+            'cfweb::deploy',
+            {
+                site     => $title,
+                user     => $user,
+                site_dir => $site_dir,
+                apps     => keys($apps),
+                # Note: it must run AFTER the rest is configured
+                require  => $cfg_notify,
+            },
+            $deploy
+        )
     }
 }
