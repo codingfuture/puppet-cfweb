@@ -1,0 +1,69 @@
+
+class cfweb::appcommon::php(
+    $popular_packages = true,
+) {
+    if ($::facts['operatingsystem'] == 'Debian' and
+        versioncmp($::facts['operatingsystemrelease'], '9') >= 0) or
+       ($::facts['operatingsystem'] == 'Ubuntu' and
+        versioncmp($::facts['operatingsystemrelease'], '16.04') >= 0)
+    {
+        $php_ver = '7.0' # TODO: fact
+        $pkgprefix = "php${php_ver}"
+        $php_etc_root = "/etc/php/${php_ver}"
+        $fpm_service = "php${php_ver}-fpm"
+        
+        $extra_pkgs = [
+            "${pkgprefix}-bcmath",        
+            "${pkgprefix}-bz2",
+            "${pkgprefix}-opcache",
+            "${pkgprefix}-soap",
+            "${pkgprefix}-xml",
+        ]
+    } else {
+        $pkgprefix = 'php5'
+        $php_etc_root = '/etc/php5'
+        $fpm_service = "${pkgprefix}-fpm"
+        $extra_pkgs = []
+    }
+    
+    $fpm_package = "${pkgprefix}-fpm"
+
+    # Bare minimal
+    #---
+    ensure_packages([
+        "${pkgprefix}-cli",
+        $fpm_package
+    ])
+    
+    service { $fpm_service:
+        ensure  => stopped,
+        enable => false,
+        require => Package[$fpm_package],
+    }
+    
+    #---
+    if $popular_packages {
+        ensure_packages([
+            'geoip-database-contrib',
+            "${pkgprefix}-apcu",
+            "${pkgprefix}-curl",
+            "${pkgprefix}-gd",
+            "${pkgprefix}-geoip",
+            "${pkgprefix}-gmp",
+            "${pkgprefix}-imagick",
+            "${pkgprefix}-imap",
+            "${pkgprefix}-intl",
+            "${pkgprefix}-json",
+            "${pkgprefix}-ldap",
+            "${pkgprefix}-mbstring",
+            "${pkgprefix}-mcrypt",
+            "${pkgprefix}-msgpack",
+            "${pkgprefix}-ssh2",
+            "${pkgprefix}-xmlrpc",
+            "${pkgprefix}-zip",
+        ] + $extra_pkgs, {
+            'install_options' => ['--force-yes'],
+        })
+    }
+
+}

@@ -16,6 +16,10 @@ define cfweb::site (
     Hash[String,Hash] $dbaccess = {},
     Hash[String,Hash,1] $apps = { 'static' => {} },
     Optional[String] $custom_conf = undef,
+    String $web_root = '/',
+    
+    Integer[1,25600] $cpu_weight = 100,
+    Integer[1,200] $io_weight = 100,    
     
     Hash[String, Struct[{
         type       => Enum['conn', 'req'],
@@ -27,11 +31,6 @@ define cfweb::site (
         nodelay    => Optional[Boolean],
         newname    => Optional[String[1]],
     }]] $limits = {},
-    
-    Integer[1,100] $memory_weight = 100,
-    Optional[Integer[1]] $memory_max = undef,
-    Integer[1,100] $cpu_weight = 100,
-    Integer[1,100] $io_weight = 100,
     
     Optional[Hash[String, Hash]] $deploy = undef,
 ) {
@@ -148,10 +147,17 @@ define cfweb::site (
     ]
     
     if $is_dynamic {
-        cfsystem_memory_weight { $user:
-            ensure => present,
-            weight => $memory_weight,
-            max_mb => $memory_max,
+        # Define global app slice
+        cfweb_app { $user:
+            type          => 'global',
+            site          => $site,
+            user          => $user,
+            site_dir      => $site_dir,
+            
+            cpu_weight    => $cpu_weight,
+            io_weight     => $io_weight,
+            
+            misc          => {},
         }
     }
         

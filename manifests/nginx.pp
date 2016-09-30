@@ -1,9 +1,9 @@
 
 class cfweb::nginx (
-    Integer[1,100] $memory_weight = 100,
+    Integer[1] $memory_weight = 100,
     Optional[Integer[1]] $memory_max = undef,
-    Integer[1,100] $cpu_weight = 100,
-    Integer[1,100] $io_weight = 100,
+    Integer[1,25600] $cpu_weight = 100,
+    Integer[1,200] $io_weight = 100,    
     Hash $settings_tune = {},
     Array[String] $trusted_proxy = [],
     Hash $default_certs = {},

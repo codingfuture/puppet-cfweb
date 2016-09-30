@@ -9,7 +9,8 @@ end
 
 module PuppetX::CfWeb
     CFWEB_TYPES = [
-        #'php',
+        'global',
+        'php',
         #'nodejs',
         #'ruby',
         #'jvm',
@@ -21,8 +22,7 @@ module PuppetX::CfWeb
     require "#{BASE_DIR}/cf_web/provider_base"
     
     CFWEB_TYPES.each do |t|
-        t = t.downcase()
         require "#{BASE_DIR}/cf_web/#{t}"
-        require "#{BASE_DIR}/cf_web/#{t}/backend"
+        require "#{BASE_DIR}/cf_web/#{t}/app"
     end
 end

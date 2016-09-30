@@ -12,7 +12,7 @@ module Puppet::Parser::Functions
             ''
         else
             newname = info.fetch('newname', name)
-            res = "limit_req #{newname}"
+            res = "limit_req zone=#{newname}"
         
             burst = info['burst']
             res += " burst=#{burst}" if burst

@@ -6,7 +6,6 @@ define cfweb::app::static (
     String $conf_prefix,
     String $template = 'cfweb/app_static',
     
-    String $web_root = '/',
     Boolean $serve_root = true,
     
     Variant[Boolean, String] $images = true,
@@ -18,6 +17,10 @@ define cfweb::app::static (
     
     Optional[String] $default_app = undef,
     Boolean $autoindex = false,
+    Variant[String, Array[String]] $index = [
+        'index.html',
+        'index.htm',
+    ],
 ) {
     if $default_app {
         $default_app_act = $default_app
@@ -30,6 +33,8 @@ define cfweb::app::static (
         
         $default_app_act = $other_apps[0]
     }
+    
+    $web_root = getparam(Cfweb::Site[$site], 'web_root')
     
     file { "${conf_prefix}.global.static":
         mode    => '0640',
@@ -48,6 +53,7 @@ define cfweb::app::static (
             forbid_dotpath  => $forbid_dotpath,
             default_app     => $default_app_act,
             autoindex       => $autoindex,
+            index           => any2array($index),
         }),
     }
     

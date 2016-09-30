@@ -9,6 +9,7 @@
     Boolean $forbid_dotpath,
     Optional[String] $default_app,
     Boolean $autoindex,
+    Array[String] $index,
 |
 
 $binary_assets = [
@@ -67,17 +68,16 @@ $text_assets = [
         root <%= $document_root %>;
 <% } -%>
 <% if $default_app { -%>
-        try_files $uri @<%= $default_app %>;
+        try_files
+            $uri
+<%        $index.each |$i| { -%>
+            $uri/<%= $i %>
+<%        } -%>
+            @<%= $default_app %>;
 <% } else { %>
-        index index.html index.htm;
+        index <%= $index.join(' ') %>;
 <% } -%>
     }
-    
-<% if $default_app { -%>
-    location = / {
-        try_files @<%= $default_app %>;
-    }
-<% } -%>
     #---
     
     # Handle common favicon issue

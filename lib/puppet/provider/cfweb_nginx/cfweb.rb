@@ -11,7 +11,7 @@ Puppet::Type.type(:cfweb_nginx).provide(
     NGINX = '/usr/sbin/nginx' unless defined? NGINX
     
     def self.get_config_index
-        'cf30web4_nginx'
+        'cf30web1_nginx'
     end
 
     def self.get_generator_version

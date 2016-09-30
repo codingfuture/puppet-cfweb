@@ -6,8 +6,8 @@ module PuppetX::CfWeb
             @version_files << "#{BASE_DIR}/../puppet/provider/cfweb_#{prov_type}/cfweb.rb"
             
             CFWEB_TYPES.each do |t|
-                self.extend(PuppetX::CfDb.const_get(t).const_get(prov_type.capitalize))
-                @version_files << "#{BASE_DIR}/cf_web/#{t.downcase}/#{prov_type.downcase}.rb"
+                self.extend(PuppetX::CfWeb.const_get(t.capitalize).const_get(prov_type.capitalize))
+                @version_files << "#{BASE_DIR}/cf_web/#{t}/#{prov_type.downcase}.rb"
             end
         end
         
