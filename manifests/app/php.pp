@@ -57,6 +57,7 @@ define cfweb::app::php (
         mode   => '0500',
     } ->
     cfweb_app { "${user}:php":
+        ensure        => present,
         type          => 'php',
         site          => $site,
         user          => $user,

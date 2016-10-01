@@ -53,7 +53,7 @@ $text_assets = [
     location ~ /\. {
         deny all;
         log_not_found off;
-        limit_req unlikely nodelay;
+        limit_req zone=unlikely nodelay;
     }
 <% } -%>
 

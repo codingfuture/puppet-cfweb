@@ -149,6 +149,7 @@ define cfweb::site (
     if $is_dynamic {
         # Define global app slice
         cfweb_app { $user:
+            ensure        => present,
             type          => 'global',
             site          => $site,
             user          => $user,

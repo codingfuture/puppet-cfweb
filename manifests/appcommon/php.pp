@@ -15,9 +15,11 @@ class cfweb::appcommon::php(
         $extra_pkgs = [
             "${pkgprefix}-bcmath",        
             "${pkgprefix}-bz2",
+            "${pkgprefix}-mbstring",
             "${pkgprefix}-opcache",
             "${pkgprefix}-soap",
             "${pkgprefix}-xml",
+            "${pkgprefix}-zip",
         ]
     } else {
         $pkgprefix = 'php5'
@@ -55,12 +57,10 @@ class cfweb::appcommon::php(
             "${pkgprefix}-intl",
             "${pkgprefix}-json",
             "${pkgprefix}-ldap",
-            "${pkgprefix}-mbstring",
             "${pkgprefix}-mcrypt",
             "${pkgprefix}-msgpack",
             "${pkgprefix}-ssh2",
             "${pkgprefix}-xmlrpc",
-            "${pkgprefix}-zip",
         ] + $extra_pkgs, {
             'install_options' => ['--force-yes'],
         })

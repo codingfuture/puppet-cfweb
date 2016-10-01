@@ -52,7 +52,7 @@ server {
 
         
     limit_conn peraddr 2;
-    limit_req unlikely nodelay;
+    limit_req zone=unlikely nodelay;
     
     location / {
         deny all;

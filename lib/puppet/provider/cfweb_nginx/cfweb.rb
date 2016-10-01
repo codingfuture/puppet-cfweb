@@ -9,6 +9,7 @@ Puppet::Type.type(:cfweb_nginx).provide(
     
     commands :systemctl => '/bin/systemctl'
     NGINX = '/usr/sbin/nginx' unless defined? NGINX
+    commands :nginx => NGINX
     
     def self.get_config_index
         'cf30web1_nginx'
@@ -16,6 +17,21 @@ Puppet::Type.type(:cfweb_nginx).provide(
 
     def self.get_generator_version
         cf_system().makeVersion(__FILE__)
+    end
+    
+    def self.check_exists(params)
+        debug('check_exists')
+        begin
+            conf_dir = '/etc/nginx'
+            conf_file = "#{conf_dir}/nginx.conf"
+
+            systemctl(['status', "#{params[:service_name]}.service"]) and
+                nginx(['-c', conf_file, '-p', conf_dir, '-t'])
+        rescue => e
+            warning(e)
+            #warning(e.backtrace)
+            false
+        end
     end
 
     def self.on_config_change(newconf)
@@ -63,7 +79,7 @@ Puppet::Type.type(:cfweb_nginx).provide(
         
         max_conn = global_conf['worker_processes'].to_i *
                    events_conf['worker_connections'].to_i
-        ssl_sess_cache = (max_conn * ssl_sess_factor / ssl_sess_per_mb).to_i
+        ssl_sess_cache = (max_conn * ssl_sess_factor / ssl_sess_per_mb + 1).to_i
         
         http_conf = {
             'default_type' => 'application/octet-stream',

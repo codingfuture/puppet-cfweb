@@ -36,6 +36,6 @@ if find $ticket_dir/ticket1.key -type f -mmin +<%= $old_age %> | read; then
 fi
 
 if test "$do_sync" = y; then
-    /bin/systemctl reload <%= $web_service %>.service
+    /bin/systemctl try-reload <%= $web_service %>.service
     $cfweb_sync_pki reload
 fi

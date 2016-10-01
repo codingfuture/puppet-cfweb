@@ -135,7 +135,7 @@ server {
 }
 <% } -%>
 
-<% if $redirect_alt_names and size($alt_names) { -%>
+<% if $redirect_alt_names and size($alt_names) > 0 { -%>
 # standalone host should be faster
 # redirect ALT names -> main name
 #---------------------------------

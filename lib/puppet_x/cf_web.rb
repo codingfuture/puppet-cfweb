@@ -11,6 +11,7 @@ module PuppetX::CfWeb
     CFWEB_TYPES = [
         'global',
         'php',
+        # 'go',
         #'nodejs',
         #'ruby',
         #'jvm',

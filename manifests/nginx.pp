@@ -96,6 +96,7 @@ class cfweb::nginx (
     file { $sites_dir:
         ensure  => directory,
         mode    => '0750',
+        purge   => true,
     } ->
     file { [$web_dir, $errors_root, $persistent_dir]:
         ensure => directory,

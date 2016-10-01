@@ -18,7 +18,7 @@ Puppet::Type.type(:cfweb_app).provide(
     def self.check_exists(params)
         debug('check_exists')
         begin
-            self.send("check_#{params['type']}", params)
+            self.send("check_#{params[:type]}", params)
         rescue => e
             warning(e)
             #warning(e.backtrace)
@@ -31,7 +31,7 @@ Puppet::Type.type(:cfweb_app).provide(
         
         newconf.each do |k, conf|
             begin
-                self.send("create_#{params['type']}", params)
+                self.send("create_#{conf[:type]}", conf)
             rescue => e
                 warning(e)
                 #warning(e.backtrace)
