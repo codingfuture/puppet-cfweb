@@ -24,6 +24,12 @@ class cfweb (
     # NOTE: they still can work in HA cluster
     #---
     $standalone.each |$site_name| {
+        $site = $cfweb::global::sites[$site_name]
+        
+        if !($site =~ Hash) {
+            fail("Site '${site_name}' is missing from cfweb::global::sites: ${site}")
+        }
+
         create_resources(
                 'cfweb::site',
                 {
@@ -31,7 +37,7 @@ class cfweb (
                         is_backend => false,
                     }
                 },
-                $cfweb::global::sites[$site_name]
+                $site
         )
     }
 
@@ -40,6 +46,12 @@ class cfweb (
     # NOTE: must face only load balancer
     #---
     $backends.each |$site_name| {
+        $site = $cfweb::global::sites[$site_name]
+        
+        if !($site =~ Hash) {
+            fail("Site '${site_name}' is missing from cfweb::global::sites: ${site}")
+        }
+        
         create_resources(
                 'cfweb::site',
                 {
@@ -47,7 +59,7 @@ class cfweb (
                         is_backend => false,
                     }
                 },
-                $cfweb::global::sites[$site_name]
+                $site
         )
     }
     
