@@ -4,6 +4,7 @@ define cfweb::app::ruby (
     String $user,
     String $site_dir,
     String $conf_prefix,
+    Array[String] $dbaccess,
     String $template = 'cfweb/app_ruby',
     
     Integer[1] $memory_weight = 100,

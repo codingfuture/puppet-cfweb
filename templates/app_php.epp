@@ -1,0 +1,37 @@
+<% |
+    String $site,
+    String $upstream,
+    String $document_root,
+| -%>
+
+    # Based on default official example from nginx
+    location ~ [^/]\.php(/|$) {
+        root <%= $document_root %>;
+        
+        <%= cf_nginx_limit_req($site, 'api') %>
+        
+        fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+        
+        if (!-f $document_root$fastcgi_script_name) {
+            return 404;
+        }
+
+        include /etc/nginx/cf_fastcgi_params;
+        fastcgi_param HTTP_PROXY "";
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+
+        fastcgi_index index.php;
+        fastcgi_pass <%= $upstream %>;
+        
+        # misc.
+        fastcgi_ignore_client_abort on;
+        fastcgi_intercept_errors on;
+        fastcgi_max_temp_file_size 128k;
+        fastcgi_read_timeout 600s;
+    }
+    
+    location @php {
+        root <%= $document_root %>;
+        
+        try_files $uri/index.php =404;
+    }

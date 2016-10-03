@@ -1,0 +1,8 @@
+<% |
+    String $upstream,
+    String $fpm_sock,
+| -%>
+
+upstream <%= $upstream %> {
+    server unix://<%= $fpm_sock %>;
+}

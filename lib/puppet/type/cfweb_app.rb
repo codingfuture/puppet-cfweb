@@ -42,6 +42,12 @@ Puppet::Type.newtype(:cfweb_app) do
         end
     end
     
+    newproperty(:service_name) do
+        validate do |value|
+            value.is_a? String
+        end
+    end
+    
     newproperty(:site_dir) do
         isrequired
         validate do |value|

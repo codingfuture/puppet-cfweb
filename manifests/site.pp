@@ -33,6 +33,7 @@ define cfweb::site (
     }]] $limits = {},
     
     Optional[Hash[String, Hash]] $deploy = undef,
+    Optional[String[1]] $force_user = undef,
 ) {
     include cfweb::nginx
     
@@ -86,13 +87,17 @@ define cfweb::site (
     #---
     $site = "app_${title}"
     $is_dynamic = (size(keys($apps) - ['static']) > 0)
-    $user = $is_dynamic ? {
-        true => $site,
-        default => $cfweb::nginx::user
+    $user = $force_user ? {
+        undef => $is_dynamic ? {
+            true => $site,
+            default => $cfweb::nginx::user
+        },
+        default => $force_user,
     }
     
     $site_dir = "${cfweb::nginx::web_dir}/${site}"
     $bin_dir = "${site_dir}/bin"
+    $tmp_dir = "${site_dir}/tmp"
     $persistent_dir = "${cfweb::nginx::persistent_dir}/${site}"
     $conf_prefix = "${cfweb::nginx::sites_dir}/${site}"
     # This must be created by deploy script
@@ -110,7 +115,7 @@ define cfweb::site (
         }
     }
     
-    file { [$site_dir, $bin_dir, $persistent_dir]:
+    file { [$site_dir, $bin_dir]:
         ensure  => directory,
         mode    => '0750',
         owner   => $user,
@@ -131,13 +136,20 @@ define cfweb::site (
     # should be avoided in general due to manual
     # $max_connections configuration
     if $is_dynamic and $dbaccess {
-        $dbaccess.each |$da| {
+        $dbaccess_deps = $dbaccess.map |$k, $da| {
+            $name = "${title}:${k}"
             create_resources(
                 'cfdb::access',
-                { local_user => $user },
+                { $name => {
+                    local_user    => $user,
+                    custom_config => 'cfweb::appcommon::dbaccess',
+                } },
                 $da
             )
+            $name
         }
+    } else {
+        $dbaccess_deps = []
     }
 
     # Define apps
@@ -147,6 +159,14 @@ define cfweb::site (
     ]
     
     if $is_dynamic {
+        file { [$persistent_dir, $tmp_dir]:
+            ensure  => directory,
+            mode    => '0750',
+            owner   => $user,
+            group   => $user,
+            require => User[$user],
+        }
+    
         # Define global app slice
         cfweb_app { $user:
             ensure        => present,
@@ -175,6 +195,10 @@ define cfweb::site (
                     user        => $user,
                     site_dir    => $site_dir,
                     conf_prefix => $conf_prefix,
+                    dbaccess    => $dbaccess_deps,
+                    require     => $dbaccess_deps.map |$v| {
+                        Cfweb::Appcommon::Dbaccess[$v]
+                    },
                     notify      => $cfg_notify,
                 },
             },

@@ -4,6 +4,7 @@ define cfweb::app::php (
     String $user,
     String $site_dir,
     String $conf_prefix,
+    Array[String] $dbaccess,
     String $template_global = 'cfweb/upstream_php',
     String $template = 'cfweb/app_php',
 
@@ -19,10 +20,21 @@ define cfweb::app::php (
     ] $fpm_tune = {},
     
     Boolean $is_debug = false,
+    Array[String] $extension = [],
+    Array[String] $default_extension = [
+        'apcu',
+        'curl',
+        'json',
+        'opcache',
+        'pdo',
+        'xmlrpc',        
+    ],
 ) {
     require cfweb::appcommon::php
     
-    cfsystem_memory_weight { "${user}:php":
+    $service_name = "app-${site}-php"
+    
+    cfsystem_memory_weight { $service_name:
         ensure => present,
         weight => $memory_weight,
         min_mb => 32,
@@ -30,23 +42,55 @@ define cfweb::app::php (
     }    
     
     $web_root = getparam(Cfweb::Site[$site], 'web_root')
-    $fpm_sock = "/run/${user}/fpm.sock"
+    $fpm_sock = "/run/${service_name}/fpm.sock"
+    $upstream = "php_${site}"
     
     file { "${conf_prefix}.global.php":
         mode    => '0640',
         content => epp($template_global, {
-            user     => $user,
+            upstream => $upstream,
             fpm_sock => $fpm_sock,
         }),
     }
     file { "${conf_prefix}.server.php":
         mode    => '0640',
         content => epp($template, {
-            fpm_sock        => $fpm_sock,
-            document_root   => "${site_dir}/${web_root}",
+            site          => $site,
+            upstream      => $upstream,
+            document_root => "${site_dir}/${web_root}",
         }),
     }
     
+    #---
+    $db_extension = $dbaccess.map |$name| {
+        $cfg = getparam(Cfweb::Appcommon::Dbaccess[$name], 'cfg_all')
+        case $cfg['type'] {
+            'mysql': {
+                if $cfweb::appcommon::php::is_v7 {
+                    $pkg = 'mysql'
+                } else {
+                    $pkg = 'mysqlnd'
+                }
+                
+                ensure_packages(["${cfweb::appcommon::php::pkgprefix}-${pkg}"])
+                $ext = 'mysql'
+            }
+            'postgresql': {
+                ensure_packages(["${cfweb::appcommon::php::pkgprefix}-pgsql"])
+                $ext = 'pgsql'
+            }
+            'redis': {
+                ensure_packages(["${cfweb::appcommon::php::pkgprefix}-redis"])
+                $ext = 'redis'
+            }
+            default: {
+                $ext = ''
+            }
+        }
+        $ext
+    }
+    
+    #---
     $conf_dir = "${site_dir}/.php"
     $bin_dir = "${site_dir}/bin"
     
@@ -56,20 +100,27 @@ define cfweb::app::php (
         group  => $user,
         mode   => '0500',
     } ->
-    cfweb_app { "${user}:php":
+    cfweb_app { $service_name:
         ensure        => present,
         type          => 'php',
         site          => $site,
         user          => $user,
+        service_name  => $service_name,
         site_dir      => $site_dir,
         
         cpu_weight    => $cpu_weight,
         io_weight     => $io_weight,
         
-        misc           => {
-            php_ini  => $php_ini,
-            fpm_tune => $fpm_tune,
-            is_debug => $is_debug,
+        misc          => {
+            php_ini   => $php_ini,
+            fpm_tune  => $fpm_tune,
+            is_debug  => $is_debug,
+            fpm_bin   => $cfweb::appcommon::php::fpm_service,
+            extension => unique(
+                $extension +
+                $default_extension +
+                $db_extension
+            ),
         },
     }
     

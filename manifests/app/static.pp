@@ -4,6 +4,7 @@ define cfweb::app::static (
     String $user,
     String $site_dir,
     String $conf_prefix,
+    Array[String] $dbaccess,
     String $template = 'cfweb/app_static',
     
     Boolean $serve_root = true,

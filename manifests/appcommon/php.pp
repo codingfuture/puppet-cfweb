@@ -1,12 +1,14 @@
 
 class cfweb::appcommon::php(
-    $popular_packages = true,
+    Boolean $popular_packages = true,
+    Array[String] $extension = [],
 ) {
     if ($::facts['operatingsystem'] == 'Debian' and
         versioncmp($::facts['operatingsystemrelease'], '9') >= 0) or
        ($::facts['operatingsystem'] == 'Ubuntu' and
         versioncmp($::facts['operatingsystemrelease'], '16.04') >= 0)
     {
+        $is_v7 = true
         $php_ver = '7.0' # TODO: fact
         $pkgprefix = "php${php_ver}"
         $php_etc_root = "/etc/php/${php_ver}"
@@ -22,6 +24,7 @@ class cfweb::appcommon::php(
             "${pkgprefix}-zip",
         ]
     } else {
+        $is_v7 = false
         $pkgprefix = 'php5'
         $php_etc_root = '/etc/php5'
         $fpm_service = "${pkgprefix}-fpm"
@@ -66,4 +69,11 @@ class cfweb::appcommon::php(
         })
     }
 
+    #---
+    if size($extension) > 0 {
+        ensure_packages(
+            $extension.map |$v| { "${pkgprefix}-${v}" },
+            { 'install_options' => ['--force-yes'] }
+        )
+    }
 }
