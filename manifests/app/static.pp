@@ -45,7 +45,7 @@ define cfweb::app::static (
         mode    => '0640',
         content => epp($template, {
             site            => $site,
-            document_root   => "${site_dir}/${web_root}",
+            document_root   => "${site_dir}/current${web_root}",
             serve_root      => $serve_root,
             images          => $images,
             assets          => $assets,

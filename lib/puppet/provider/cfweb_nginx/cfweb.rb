@@ -201,9 +201,8 @@ Puppet::Type.type(:cfweb_nginx).provide(
             :mem_lock => true,
         })
         
-        cf_system.maskService("nginx")
-        
         if service_changed
+            cf_system.maskService("nginx")
             systemctl('start', "#{service_name}.service")
         end
         

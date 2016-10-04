@@ -42,7 +42,7 @@ define cfweb::app::php (
     }    
     
     $web_root = getparam(Cfweb::Site[$site], 'web_root')
-    $fpm_sock = "/run/${service_name}/fpm.sock"
+    $fpm_sock = "/run/${service_name}/php-fpm.sock"
     $upstream = "php_${site}"
     
     file { "${conf_prefix}.global.php":
@@ -57,7 +57,7 @@ define cfweb::app::php (
         content => epp($template, {
             site          => $site,
             upstream      => $upstream,
-            document_root => "${site_dir}/${web_root}",
+            document_root => "${site_dir}/current${web_root}",
         }),
     }
     
@@ -91,6 +91,11 @@ define cfweb::app::php (
     }
     
     #---
+    if $is_debug {
+        ensure_packages(["${cfweb::appcommon::php::pkgprefix}-xdebug"])
+    }
+    
+    #---
     $conf_dir = "${site_dir}/.php"
     $bin_dir = "${site_dir}/bin"
     
@@ -119,7 +124,11 @@ define cfweb::app::php (
             extension => unique(
                 $extension +
                 $default_extension +
-                $db_extension
+                $db_extension +
+                ($is_debug ? {
+                    true => ['xdebug'],
+                    default => [],
+                })
             ),
         },
     }

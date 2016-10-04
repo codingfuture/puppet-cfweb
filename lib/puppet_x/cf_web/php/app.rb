@@ -22,8 +22,8 @@ module PuppetX::CfWeb::Php::App
         service_name = conf[:service_name]
 
         run_dir = "/run/#{service_name}"
-        pid_file = "#{run_dir}/#{service_name}.pid"
-        sock_file = "#{run_dir}/#{service_name}.sock"
+        pid_file = "#{run_dir}/php-fpm.pid"
+        sock_file = "#{run_dir}/php-fpm.sock"
         
         misc = conf[:misc]
         fpm_tune = misc['fpm_tune']

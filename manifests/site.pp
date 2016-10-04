@@ -112,6 +112,11 @@ define cfweb::site (
             gid => $user,
             home => $site_dir,
             require => Group[$user],
+        } ->
+        exec { "add_nginx_to_${user}":
+            command => "/usr/sbin/adduser ${cfweb::nginx::user} ${user} && \
+            /usr/sbin/service ${cfweb::nginx::service_name} reload",
+            unless => "/usr/bin/id -Gn ${cfweb::nginx::user} | /bin/grep -q ${user}",
         }
     }
     
