@@ -1,15 +1,23 @@
 
 class cfweb (
-    String $cluster,
+    String[1] $cluster,
     Boolean $is_secondary = false,
     Array[String] $standalone = [],
     Array[String] $backends = [],
     Array[String] $frontends = [],
-    String $web_service = 'cfnginx',
+    String[1] $web_service = 'cfnginx',
+    String[1] $internal_face = 'main',
 ) inherits cfweb::global {
+    include cfnetwork
     
     validate_re($cluster, '^[a-z][a-z0-9_]*$')
     validate_re($web_service, '^[a-z][a-z0-9_]*$')
+    
+    $internal_addr = split(getparam(Cfnetwork::Iface[$internal_face], 'address'), '/')[0]
+    
+    if !$internal_addr {
+        fail('$cfweb::internal_face must be set to interface with valid address')
+    }
     
     cfsystem_info { 'cfweb':
         ensure => present,

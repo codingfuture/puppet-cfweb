@@ -29,6 +29,8 @@ define cfweb::app::php (
         'pdo',
         'xmlrpc',        
     ],
+    
+    Variant[Boolean,Integer] $memcache_sessions = true,
 ) {
     require cfweb::appcommon::php
     
@@ -95,6 +97,82 @@ define cfweb::app::php (
         ensure_packages(["${cfweb::appcommon::php::pkgprefix}-xdebug"])
     }
     
+    if $memcache_sessions {
+        require cfweb::appcommon::memcached
+        ensure_packages(["${cfweb::appcommon::php::pkgprefix}-memcache"])
+        
+        $memcache_servers = cf_query_resources(
+            "Class['cfweb']{ cluster = '${cfweb::cluster}'} and Cfweb_app['${service_name}']",
+            "Cfweb_app['${service_name}']",
+            false
+        ).reduce([]) |$memo, $v| {
+            $params = $v['parameters']
+            $memc = $params['misc']['memcache']
+            $certname = $v['certname']
+
+            if $memc and $certname != $::trusted['certname'] {
+                $memo + [{
+                    host => $memc['host'],
+                    port => $memc['port'],
+                }]
+            } else {
+                $memo
+            }
+        }
+        
+        $memcache_port = cf_genport("cfweb/${site}-phpsess")
+        $memcache = {
+            sessions => $memcache_sessions,
+            servers  => cf_stable_sort($memcache_servers),
+            host     => $cfweb::internal_addr,
+            port     => $memcache_port,
+        }
+        
+        $memcache_servers.each |$v| {
+            $host = $v['host']
+            $port = $v['port']
+            $fwservice = "cfweb_memcache_${port}"
+            ensure_resource(
+                'cfnetwork::describe_service',
+                $fwservice,
+                {
+                    server => "tcp/${port}"
+                }
+            )
+            cfnetwork::client_port { "${cfweb::internal_face}:${fwservice}:${host}":
+                dst  => $host,
+                user => $user,
+            }
+        }
+        
+        with($memcache) |$v| {
+            $host = $v['host']
+            $port = $v['port']
+            $fwservice = "cfweb_memcache_${port}"
+            ensure_resource(
+                'cfnetwork::describe_service',
+                $fwservice,
+                {
+                    server => "tcp/${port}"
+                }
+            )
+            cfnetwork::client_port { "local:${fwservice}":
+                dst  => $host,
+                user => $user,
+            }
+            
+            cfnetwork::service_port { "local:${fwservice}": }
+            
+            if size($memcache_servers) {
+                cfnetwork::service_port { "${cfweb::internal_face}:${fwservice}":
+                    src  => $memcache_servers.map |$v| { $v['host'] },
+                }
+            }
+        }
+    } else {
+        $memcache = undef
+    }
+    
     #---
     $conf_dir = "${site_dir}/.php"
     $bin_dir = "${site_dir}/bin"
@@ -121,12 +199,17 @@ define cfweb::app::php (
             fpm_tune  => $fpm_tune,
             is_debug  => $is_debug,
             fpm_bin   => $cfweb::appcommon::php::fpm_service,
+            memcache  => $memcache,
             extension => unique(
                 $extension +
                 $default_extension +
                 $db_extension +
                 ($is_debug ? {
                     true => ['xdebug'],
+                    default => [],
+                }) +
+                ($memcache_sessions ? {
+                    true => ['memcache'],
                     default => [],
                 })
             ),

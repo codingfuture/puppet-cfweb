@@ -28,6 +28,7 @@ module PuppetX::CfWeb::Php::App
         misc = conf[:misc]
         fpm_tune = misc['fpm_tune']
         is_debug = misc['is_debug']
+        memcache = misc['memcache']
         extension = misc['extension']
         
         conf_dir = "#{site_dir}/.php"
@@ -61,6 +62,18 @@ module PuppetX::CfWeb::Php::App
             'extension' => extension.map { |v| "#{v}.so" },
             'sys_temp_dir' => "#{site_dir}/tmp",
         })
+        
+        if memcache
+            memservers = [ "tcp://#{memcache['host']}:#{memcache['port']}"]
+            memservers += memcache['servers'].map { |v| "tcp://#{v['host']}:#{v['port']}" }
+            php_ini.merge!({
+                'session.save_handler' => 'memcache',
+                'session.save_path' => memservers.join(','),
+                'memcache.allow_failover' => 1,
+                'memcache.session_redundancy' => memcache['servers'].size + 2,
+            })
+        end
+        
         php_changed = cf_system.atomicWriteIni(
             php_ini_file,
             { 'global' => php_ini },
@@ -105,6 +118,19 @@ module PuppetX::CfWeb::Php::App
         # forced
         mem_limit = cf_system.getMemory(service_name)
         conn_mem = php_ini['memory_limit'].to_i
+        
+        if memcache
+            memcache_sessions = memcache['sessions']
+            
+            if memcache_sessions.is_a? Integer
+                mem_limit_memcache = memcache_sessions
+            else
+                mem_limit_memcache = (mem_limit * 0.1).to_i
+            end
+            
+            mem_limit -= mem_limit_memcache
+        end
+        
         max_conn = (mem_limit / conn_mem).to_i
         
         if max_conn < 1
@@ -131,6 +157,44 @@ module PuppetX::CfWeb::Php::App
                 { :user => user }
         )
         
+        # Memcached
+        #---
+        if memcache
+            # TODO: actual max conn per server should be used
+            memcache_maxconn = max_conn * (memcache['servers'].size+1) * 10
+            port = cf_system.genPort("cfweb/#{site}-phpsess", memcache['port'])
+            content_ini = {
+                'Unit' => {
+                    'Description' => "CFWEB PHPSESS #{site}",
+                },
+                'Service' => {
+                    'LimitNOFILE' => memcache_maxconn,
+                    'ExecStart' => [
+                            "/usr/bin/memcached",
+                            "-m #{mem_limit_memcache}",
+                            "-c #{memcache_maxconn}",
+                            "-t 1",
+                            "-l #{memcache['host']}:#{port}",
+                    ].join(' '),
+                    'WorkingDirectory' => site_dir,
+                    'Slice' => "#{user}.slice",
+                },
+            }
+            
+            memcache_service = "#{service_name}sess"
+            
+            memcache_changed = self.cf_system().createService({
+                :service_name => memcache_service,
+                :user => user,
+                :content_ini => content_ini,
+                :mem_limit => mem_limit_memcache,
+            })
+            
+            if memcache_changed
+                systemctl('restart', "#{memcache_service}.service")
+            end
+        end
+        
         # Service
         #---
         content_ini = {
@@ -148,6 +212,7 @@ module PuppetX::CfWeb::Php::App
                 ].join(' '),
                 'ExecReload' => '/bin/kill -s USR2 $MAINPID',
                 'WorkingDirectory' => site_dir,
+                'Slice' => "#{user}.slice",
             },
         }
         

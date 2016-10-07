@@ -145,9 +145,7 @@ define cfweb::site (
     
     # DB access
     #---
-    # global site DB access not tied to sub-app
-    # should be avoided in general due to manual
-    # $max_connections configuration
+    # TODO: $max_connections configuration from facts
     if $is_dynamic and $dbaccess {
         $dbaccess_deps = $dbaccess.map |$k, $da| {
             $name = "${title}:${k}"
