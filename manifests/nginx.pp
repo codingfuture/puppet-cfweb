@@ -46,23 +46,26 @@ class cfweb::nginx (
     
     $service_name = $cfweb::web_service
     $user = $service_name
+    $group = $user
     
     $conf_dir = '/etc/nginx'
     $sites_dir = "${conf_dir}/sites"
     
     $web_dir = '/www'
-    $persistent_dir = '/www/persistent'
+    $persistent_dir = "${web_dir}/persistent"
+    $bin_dir = "${web_dir}/bin"
+    $generic_control = "${bin_dir}/generic_control.sh"
     $empty_root = "${web_dir}/empty"
     $errors_root = "${web_dir}/error"
     
-    group { $user:
+    group { $group:
         ensure => present,
     } ->
     user { $user:
         ensure => present,
-        gid => $user,
+        gid => $group,
         home => $conf_dir,
-        require => Group[$user],
+        require => Group[$group],
     } ->
     package { $package: } ->
     cfsystem_memory_weight { $service_name:
@@ -100,19 +103,25 @@ class cfweb::nginx (
     } ->
     file { [$web_dir, $errors_root, $persistent_dir]:
         ensure => directory,
-        owner => root,
-        group => $user,
-        mode  => '0751',
+        owner  => root,
+        group  => $group,
+        mode   => '0751',
     } ->
-    file { $empty_root:
+    file { [$empty_root, $bin_dir]:
         ensure => directory,
-        mode  => '0751',
-        owner => root,
-        group => $user,
-        purge => true,
+        mode   => '0751',
+        owner  => root,
+        group  => $group,
+        purge  => true,
+    } ->
+    file { $generic_control:
+        content => file('cfweb/generic_control.sh'),
+        mode   => '0750',
+        owner  => root,
+        group  => $group,
     } ->
     cfweb_nginx { $service_name:
-        ensure => present,
+        ensure        => present,
         memory_weight => $memory_weight,
         cpu_weight    => $cpu_weight,
         io_weight     => $io_weight,
@@ -139,7 +148,7 @@ class cfweb::nginx (
     ['forbidden', 'notfound', 'oops'].each |$v| {
         file { "${errors_root}/${v}.html":
             owner   => $user,
-            group   => $user,
+            group   => $group,
             mode    => '0640',
             content => file("cfweb/${v}.html"),
         }

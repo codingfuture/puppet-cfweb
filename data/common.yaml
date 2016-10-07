@@ -8,6 +8,12 @@ lookup_options:
     merge: deep
   cfweb::nginx::limits:
     merge: deep
+  cfweb::backends:
+    merge: unique
+  cfweb::frontends:
+    merge: unique
+  cfweb::standalone:
+    merge: unique
 
 cfweb::nginx::limits:
     peraddr:

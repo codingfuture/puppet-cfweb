@@ -96,7 +96,6 @@ define cfweb::site (
     }
     
     $site_dir = "${cfweb::nginx::web_dir}/${site}"
-    $bin_dir = "${site_dir}/bin"
     $tmp_dir = "${site_dir}/tmp"
     $persistent_dir = "${cfweb::nginx::persistent_dir}/${site}"
     $conf_prefix = "${cfweb::nginx::sites_dir}/${site}"
@@ -117,10 +116,19 @@ define cfweb::site (
             command => "/usr/sbin/adduser ${cfweb::nginx::user} ${user} && \
             /usr/sbin/service ${cfweb::nginx::service_name} reload",
             unless => "/usr/bin/id -Gn ${cfweb::nginx::user} | /bin/grep -q ${user}",
+        } ->
+        file { [
+                "${cfweb::nginx::bin_dir}/start-${title}",
+                "${cfweb::nginx::bin_dir}/stop-${title}",
+                "${cfweb::nginx::bin_dir}/restart-${title}",
+                "${cfweb::nginx::bin_dir}/reload-${title}",
+            ]:
+            ensure => link,
+            target => "${cfweb::nginx::generic_control}"
         }
     }
     
-    file { [$site_dir, $bin_dir]:
+    file { $site_dir:
         ensure  => directory,
         mode    => '0750',
         owner   => $user,
@@ -176,7 +184,7 @@ define cfweb::site (
         cfweb_app { $user:
             ensure        => present,
             type          => 'global',
-            site          => $site,
+            site          => $title,
             user          => $user,
             site_dir      => $site_dir,
             

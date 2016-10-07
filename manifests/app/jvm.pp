@@ -1,11 +1,12 @@
 
 define cfweb::app::jvm (
-    String $site,
-    String $user,
-    String $site_dir,
-    String $conf_prefix,
-    Array[String] $dbaccess,
-    String $template = 'cfweb/app_jvm',
+    String[1] $site,
+    String[1] $user,
+    String[1] $site_dir,
+    String[1] $conf_prefix,
+    Array[String[1]] $dbaccess,
+    String[1] $template_global = 'cfweb/upstream_jvm',
+    String[1] $template = 'cfweb/app_jvm',
     
     Integer[1] $memory_weight = 100,
     Optional[Integer[1]] $memory_max = undef,

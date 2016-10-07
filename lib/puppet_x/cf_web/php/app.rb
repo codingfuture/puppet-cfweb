@@ -85,7 +85,7 @@ module PuppetX::CfWeb::Php::App
                 'log_level' => 'notice',
                 'emergency_restart_threshold' => 10,
                 'emergency_restart_interval' => 300,
-                'process_control_timeout' => 0,
+                'process_control_timeout' => '60s',
                 'rlimit_files' => 10240,
                 'rlimit_core' => 0,
             }.merge(fpm_tune.fetch('global', {})),

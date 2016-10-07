@@ -1,11 +1,11 @@
 
 define cfweb::app::static (
-    String $site,
-    String $user,
-    String $site_dir,
-    String $conf_prefix,
-    Array[String] $dbaccess,
-    String $template = 'cfweb/app_static',
+    String[1] $site,
+    String[1] $user,
+    String[1] $site_dir,
+    String[1] $conf_prefix,
+    Array[String[1]] $dbaccess,
+    String[1] $template = 'cfweb/app_static',
     
     Boolean $serve_root = true,
     

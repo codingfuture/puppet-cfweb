@@ -1,12 +1,12 @@
 
 define cfweb::app::php (
-    String $site,
-    String $user,
-    String $site_dir,
-    String $conf_prefix,
-    Array[String] $dbaccess,
-    String $template_global = 'cfweb/upstream_php',
-    String $template = 'cfweb/app_php',
+    String[1] $site,
+    String[1] $user,
+    String[1] $site_dir,
+    String[1] $conf_prefix,
+    Array[String[1]] $dbaccess,
+    String[1] $template_global = 'cfweb/upstream_php',
+    String[1] $template = 'cfweb/app_php',
 
     Integer[1] $memory_weight = 100,
     Optional[Integer[1]] $memory_max = undef,
@@ -131,6 +131,17 @@ define cfweb::app::php (
                 })
             ),
         },
+    }
+    
+    #---
+    file { [
+            "${cfweb::nginx::bin_dir}/start-${site}-php",
+            "${cfweb::nginx::bin_dir}/stop-${site}-php",
+            "${cfweb::nginx::bin_dir}/restart-${site}-php",
+            "${cfweb::nginx::bin_dir}/reload-${site}-php",
+        ]:
+        ensure => link,
+        target => "${cfweb::nginx::generic_control}"
     }
     
 }
