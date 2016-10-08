@@ -11,5 +11,11 @@ if test -z "$app"; then
         $f
     done
 else
-    /bin/systemctl "$action" "app-${site}-${app}.service"
+    if test "$action" = "reload"; then
+        action="reload-or-restart"
+    fi
+    
+    for f in /etc/systemd/system/app-${site}-${app}*; do
+        /bin/systemctl "$action" "$(basename $f)"
+    done
 fi

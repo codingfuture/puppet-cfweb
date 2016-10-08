@@ -4,8 +4,7 @@ module PuppetX::CfWeb::Php::App
     
     def check_php(conf)
         begin
-            site = conf[:site]
-            service_name = "app-#{site}-php"
+            service_name = conf[:service_name]
             systemctl(['status', "#{service_name}.service"])
         rescue => e
             warning(e)

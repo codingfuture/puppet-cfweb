@@ -33,7 +33,7 @@ define cfweb::app::php (
         'xmlrpc',        
     ],
     
-    Variant[Boolean,Integer] $memcache_sessions = true,
+    Variant[Boolean, Integer] $memcache_sessions = true,
 ) {
     require cfweb::appcommon::php
     
@@ -183,7 +183,6 @@ define cfweb::app::php (
     
     #---
     $conf_dir = "${site_dir}/.php"
-    $bin_dir = "${site_dir}/bin"
     
     file { $conf_dir:
         ensure => directory,
@@ -226,10 +225,10 @@ define cfweb::app::php (
     
     #---
     file { [
-            "${cfweb::nginx::bin_dir}/start-${site}-php",
-            "${cfweb::nginx::bin_dir}/stop-${site}-php",
-            "${cfweb::nginx::bin_dir}/restart-${site}-php",
-            "${cfweb::nginx::bin_dir}/reload-${site}-php",
+            "${cfweb::nginx::bin_dir}/start-${site}-${type}",
+            "${cfweb::nginx::bin_dir}/stop-${site}-${type}",
+            "${cfweb::nginx::bin_dir}/restart-${site}-${type}",
+            "${cfweb::nginx::bin_dir}/reload-${site}-${type}",
         ]:
         ensure => link,
         target => "${cfweb::nginx::generic_control}"

@@ -23,9 +23,8 @@ define cfweb::deploy(
     
     Boolean $is_tarball = true,
     
-    
-    String $site,
-    Array[String] $apps,
+    String[1] $site,
+    Array[String[1]] $apps,
 ) {
     fail('Not implemented yet')
 }
