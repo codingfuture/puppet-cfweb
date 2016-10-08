@@ -4,7 +4,8 @@ define cfweb::app::ruby (
     String[1] $user,
     String[1] $site_dir,
     String[1] $conf_prefix,
-    Array[String[1]] $dbaccess,
+    String[1] $type,
+    Array[String[1]] $dbaccess_names,
     String[1] $template_global = 'cfweb/upstream_ruby',
     String[1] $template = 'cfweb/app_ruby',
     

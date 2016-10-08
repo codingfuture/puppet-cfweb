@@ -17,6 +17,7 @@ module PuppetX::CfWeb::Php::App
     def create_php(conf)
         cf_system = cf_system()
         site = conf[:site]
+        type = conf[:type]
         user = conf[:user]
         site_dir = conf[:site_dir]
         service_name = conf[:service_name]
@@ -136,6 +137,8 @@ module PuppetX::CfWeb::Php::App
         if max_conn < 1
             fail("Not enough memory for #{site} PHP")
         end
+        
+        saveMaxConn(site, type, max_conn)
         
         fpm_conf['global'].merge!({
             'pid' => pid_file,

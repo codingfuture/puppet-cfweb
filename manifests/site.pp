@@ -35,6 +35,7 @@ define cfweb::site (
     Optional[Hash[String, Hash]] $deploy = undef,
     Optional[String[1]] $force_user = undef,
 ) {
+    include cfdb
     include cfweb::nginx
     
     validate_re($title, '^[a-z][a-z0-9_]*$')
@@ -145,9 +146,8 @@ define cfweb::site (
     
     # DB access
     #---
-    # TODO: $max_connections configuration from facts
     if $is_dynamic and $dbaccess {
-        $dbaccess_deps = $dbaccess.map |$k, $da| {
+        $dbaccess_deps = ($dbaccess.map |$k, $da| {
             $name = "${title}:${k}"
             create_resources(
                 'cfdb::access',
@@ -155,12 +155,47 @@ define cfweb::site (
                     local_user    => $user,
                     custom_config => 'cfweb::appcommon::dbaccess',
                 } },
-                $da
+                merge({
+                    max_connections => dig(
+                        $::facts,
+                        ['cfweb', 'sites', $site, 'maxconn'],
+                        $cfdb::max_connections_default
+                    )
+                }, $da)
             )
             $name
-        }
+        })
+        
+        
+        $dbaccess_app_deps = ($apps.reduce({}) |$memo, $v| {
+            $app = $v[0]
+            $app_info = $v[1]
+            $app_type = split($app, ':')[-1]
+                
+            $names = pick($app_info['dbaccess'], {}).map |$k, $da| {
+                    $name = "${title}-${app_type}:${k}"
+                    create_resources(
+                        'cfdb::access',
+                        { $name => {
+                            local_user    => $user,
+                            custom_config => 'cfweb::appcommon::dbaccess',
+                        } },
+                        merge({
+                            max_connections => dig(
+                                $::facts,
+                                ['cfweb', 'sites', $site, 'apps', $app_type, 'maxconn'],
+                                $cfdb::max_connections_default
+                            )
+                        }, $da)
+                    )
+                    $name
+                }
+                
+            merge($memo, { $app => $names })
+        })
     } else {
         $dbaccess_deps = []
+        $dbaccess_app_deps = {}
     }
 
     # Define apps
@@ -194,23 +229,27 @@ define cfweb::site (
     }
         
     $apps.each |$app, $app_info| {
-        $app_type = size(split($app, ':')) ? {
+        $puppet_type = size(split($app, ':')) ? {
             1       => "cfweb::app::${app}",
             default => $app,
         }
+        
+        $app_dbaccess_deps = $dbaccess_deps +
+                pick($dbaccess_app_deps[$app], [])
+        
         create_resources(
-            $app_type,
+            $puppet_type,
             {
                 $title => {
-                    site        => $title,
-                    user        => $user,
-                    site_dir    => $site_dir,
-                    conf_prefix => $conf_prefix,
-                    dbaccess    => $dbaccess_deps,
-                    require     => $dbaccess_deps.map |$v| {
-                        Cfweb::Appcommon::Dbaccess[$v]
-                    },
-                    notify      => $cfg_notify,
+                    site           => $title,
+                    user           => $user,
+                    site_dir       => $site_dir,
+                    conf_prefix    => $conf_prefix,
+                    type           => split($app, ':')[-1],
+                    dbaccess_names => $app_dbaccess_deps,
+                    require        =>
+                        Cfweb::Appcommon::Dbaccess[$app_dbaccess_deps],
+                    notify         => $cfg_notify,
                 },
             },
             $app_info

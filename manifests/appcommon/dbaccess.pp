@@ -1,7 +1,7 @@
 
 define cfweb::appcommon::dbaccess(
-    $cluster,
-    $role,
-    $local_user,
-    $cfg_all,
+    String[1] $cluster,
+    String[1] $role,
+    String[1] $local_user,
+    Hash[String[1], Any] $config_vars,
 ) {}

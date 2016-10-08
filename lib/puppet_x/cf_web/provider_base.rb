@@ -14,5 +14,11 @@ module PuppetX::CfWeb
         def self.get_generator_version
             cf_system().makeVersion(@version_files)
         end
+        
+        def self.saveMaxConn(site, app, count)
+            cfwebconn = cf_system.config.get_persistent('cfwebconn')
+            cfwebconn[site] ||= {}
+            cfwebconn[site][app] = count
+        end
     end
 end

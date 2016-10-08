@@ -14,10 +14,11 @@ Facter.add('cfweb') do
             json = File.read(cfsystem_json)
             json = JSON.parse(json)
             sections = json['sections']
+            persistent = json['persistent']
             
             # Generic
             #---
-            ret = sections['info']['cfweb']
+            ret = sections['info']['cfweb'].clone
             
             # PKI
             #---
@@ -45,7 +46,27 @@ Facter.add('cfweb') do
             
             # Vhosts
             #---
-            # TODO
+            sites = {}
+            cfwebconn = persistent.fetch('cfwebconn', {})
+            
+            sections.fetch('cf30web2_app', {}).each do |k, info|
+                site = info['site']
+                type = info['type']
+                maxconn = cfwebconn.fetch(site, {}).fetch(type, 0)
+                
+                sites[site] ||= {
+                    'apps' => {},
+                    'maxconn' => 0,
+                }
+                site_info = sites[site]
+                site_info['maxconn'] += maxconn
+                
+                site_info['apps'][type] = {
+                    maxconn => cfwebconn.fetch(site, {}).fetch(type, 0)
+                }
+            end
+            
+            ret['sites'] = sites
             
             #---
             ret

@@ -4,9 +4,12 @@ define cfweb::app::php (
     String[1] $user,
     String[1] $site_dir,
     String[1] $conf_prefix,
-    Array[String[1]] $dbaccess,
+    String[1] $type,
+    Array[String[1]] $dbaccess_names,
     String[1] $template_global = 'cfweb/upstream_php',
     String[1] $template = 'cfweb/app_php',
+    
+    Hash[String[1],Hash] $dbaccess = {},
 
     Integer[1] $memory_weight = 100,
     Optional[Integer[1]] $memory_max = undef,
@@ -34,7 +37,7 @@ define cfweb::app::php (
 ) {
     require cfweb::appcommon::php
     
-    $service_name = "app-${site}-php"
+    $service_name = "app-${site}-${type}"
     
     cfsystem_memory_weight { $service_name:
         ensure => present,
@@ -64,9 +67,14 @@ define cfweb::app::php (
     }
     
     #---
-    $db_extension = $dbaccess.map |$name| {
-        $cfg = getparam(Cfweb::Appcommon::Dbaccess[$name], 'cfg_all')
-        case $cfg['type'] {
+    $db_extension = unique($dbaccess_names.map |$name| {
+        $config_vars = getparam(Cfweb::Appcommon::Dbaccess[$name], 'config_vars')
+        
+        if !($config_vars =~ Hash[String[1], Any]) {
+            fail("By some reason Cfweb::Appcommon::Dbaccess[$name] is not defined prior")
+        }
+        
+        case $config_vars['type'] {
             'mysql': {
                 if $cfweb::appcommon::php::is_v7 {
                     $pkg = 'mysql'
@@ -86,11 +94,11 @@ define cfweb::app::php (
                 $ext = 'redis'
             }
             default: {
-                $ext = ''
+                $ext = undef
             }
         }
         $ext
-    }
+    })
     
     #---
     if $is_debug {
@@ -185,7 +193,7 @@ define cfweb::app::php (
     } ->
     cfweb_app { $service_name:
         ensure        => present,
-        type          => 'php',
+        type          => $type,
         site          => $site,
         user          => $user,
         service_name  => $service_name,
