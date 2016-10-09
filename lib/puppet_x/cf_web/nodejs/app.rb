@@ -42,11 +42,17 @@ module PuppetX::CfWeb::Nodejs::App
         mem_per_conn = tune.fetch('mem_per_conn', 32).to_i
         max_conn = (mem_limit * 1024 / mem_per_conn)
         
-        rlimit_files = max_conn + tune.fetch('rlimit_files', 10000).to_i
+        if max_conn < 1
+            fail("Not enough memory for #{site} #{type}")
+        end
+        
+        saveMaxConn(site, type, max_conn)
         
         new_mem_ratio = tune.fetch('new_mem_ratio', 0.25).to_f
         new_mem = (mem_limit * new_mem_ratio).to_i
         old_mem = mem_limit - new_mem
+        
+        node_env = tune.fetch('node_env', 'production')
         
         instances.times do |i|
             i += 1
@@ -58,8 +64,9 @@ module PuppetX::CfWeb::Nodejs::App
                     'Environment' => [
                         "HTTP_PORT=#{sock_base}.#{i}",
                         "NODE_VERSION=#{version}",
+                        "NODE_ENV=#{node_env}",
                     ],
-                    'LimitNOFILE' => rlimit_files,
+                    'LimitNOFILE' => 'infinity',
                     'ExecStart' => [
                             "#{nvm_dir}/nvm-exec",
                             '--nouse-idle-notification',

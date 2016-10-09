@@ -21,12 +21,14 @@ define cfweb::app::nodejs (
     String[1] $entry_point = 'app.js',
     Struct[{
         mem_per_conn => Optional[Integer[1]],
-        rlimit_files => Optional[Integer[1]],
         new_mem_ratio => Optional[Float[0.0, 1.0]],
+        node_env => Optional[String[1]],
     }] $tune = {},
+    Boolean $build_support = false,
 ) {
     require cfweb::appcommon::nvm
-    ensure_resource('cfweb::appcommon::nodejs', $version, {})
+    ensure_resource('cfweb::appcommon::nodejs', $version,
+                    { build_support => $build_support })
     
     $service_name = "app-${site}-nodejs"
     

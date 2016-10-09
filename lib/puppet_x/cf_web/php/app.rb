@@ -134,7 +134,7 @@ module PuppetX::CfWeb::Php::App
         max_conn = (mem_limit / conn_mem).to_i
         
         if max_conn < 1
-            fail("Not enough memory for #{site} PHP")
+            fail("Not enough memory for #{site} #{type}")
         end
         
         saveMaxConn(site, type, max_conn)

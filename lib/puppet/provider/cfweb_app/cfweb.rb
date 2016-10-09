@@ -38,5 +38,7 @@ Puppet::Type.type(:cfweb_app).provide(
                 err("Transition error in setup")
             end
         end
+        
+        warning('TODO: cleanup services')
     end
 end

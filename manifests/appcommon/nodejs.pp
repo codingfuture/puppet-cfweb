@@ -1,6 +1,7 @@
 
 define cfweb::appcommon::nodejs(
-    String[1] $version = $title
+    String[1] $version = $title,
+    Boolean $build_support = false,
 ) {
     require cfweb::appcommon::nvm
     
@@ -12,5 +13,9 @@ define cfweb::appcommon::nodejs(
         user        => $cfweb::appcommon::nvm::user,
         group       => $cfweb::appcommon::nvm::group,
         environment => $cfweb::appcommon::nvm::cmdenv,
+    }
+    
+    if $build_support {
+        ensure_packages(['build-essential', 'libssl-dev'])
     }
 }
