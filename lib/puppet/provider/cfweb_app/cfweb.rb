@@ -41,17 +41,12 @@ Puppet::Type.type(:cfweb_app).provide(
             end
         end
         
-        systemd_dir = '/etc/systemd/system'
-        old_services = Dir.glob("#{systemd_dir}/app-*.service").
-                            map { |v| File.basename(v, '.service') }
-        old_services -= new_services
-        old_services.each do |s|
-            warning("Removing old service: #{s}")
-            FileUtils.rm_f "#{systemd_dir}/#{s}.service"
-        end
-        
-        if old_services.size
-            systemctl(['daemon-reload'])
+        begin
+            cf_system.cleanupSystemD('app-', new_services)
+        rescue => e
+            warning(e)
+            warning(e.backtrace)
+            err("Transition error in setup")
         end
     end
 end
