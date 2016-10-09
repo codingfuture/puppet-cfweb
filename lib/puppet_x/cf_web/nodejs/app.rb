@@ -7,7 +7,7 @@ module PuppetX::CfWeb::Nodejs::App
             service_name = conf[:service_name]
             instances = conf[:misc]['instances']
             instances.times do |i|
-                service_name_i = "app-#{service_name}-#{i+1}"
+                service_name_i = "#{service_name}-#{i+1}"
                 systemctl(['status', "#{service_name_i}.service"])
             end
         rescue => e
@@ -53,9 +53,12 @@ module PuppetX::CfWeb::Nodejs::App
         old_mem = mem_limit - new_mem
         
         node_env = tune.fetch('node_env', 'production')
+        services = []
         
         instances.times do |i|
             i += 1
+            service_name_i = "#{service_name}-#{i+1}"
+            
             content_ini = {
                 'Unit' => {
                     'Description' => "CFWEB NodeJS #{site} ##{i}",
@@ -81,7 +84,7 @@ module PuppetX::CfWeb::Nodejs::App
             }
             
             service_changed = self.cf_system().createService({
-                :service_name => service_name,
+                :service_name => service_name_i,
                 :user => user,
                 :content_ini => content_ini,
                 :cpu_weight => conf[:cpu_weight],
@@ -90,8 +93,12 @@ module PuppetX::CfWeb::Nodejs::App
             })
             
             if service_changed
-                systemctl('restart', "#{service_name}.service")
+                systemctl('restart', "#{service_name_i}.service")
             end
+            
+            services << service_name_i
         end
+        
+        return services
     end
 end

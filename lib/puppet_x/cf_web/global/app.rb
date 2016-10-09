@@ -17,6 +17,6 @@ module PuppetX::CfWeb::Global::App
             :cpu_weight => conf[:cpu_weight],
             :io_weight => conf[:io_weight],
         })
-        true
+        return []
     end
 end

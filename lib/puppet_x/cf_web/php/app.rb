@@ -35,6 +35,8 @@ module PuppetX::CfWeb::Php::App
         php_ini_file = "#{conf_dir}/php.ini"
         fpm_conf_file = "#{conf_dir}/fpm.conf"
         
+        services = []
+        
         # PHP ini conf
         #---
         php_ini = {
@@ -195,6 +197,8 @@ module PuppetX::CfWeb::Php::App
             if memcache_changed
                 systemctl('restart', "#{memcache_service}.service")
             end
+            
+            services << memcache_service
         end
         
         # Service
@@ -235,5 +239,8 @@ module PuppetX::CfWeb::Php::App
         if php_changed or fpm_changes or service_changed
             systemctl(['reload', "#{service_name}.service"])
         end
+        
+        services << service_name
+        return services
     end
 end
