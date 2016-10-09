@@ -1,10 +1,12 @@
 <% |
     String $upstream,
     String $fpm_sock,
+    Integer[0] $max_conn,
 | -%>
 
 upstream <%= $upstream %> {
     server unix://<%= $fpm_sock %>;
     # just adds a little chance to have less 502 requests on reload
     server unix://<%= $fpm_sock %> backup;
+    keepalive <%= $max_conn %>;
 }

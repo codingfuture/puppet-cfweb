@@ -50,14 +50,19 @@ define cfweb::app::php (
     $fpm_sock = "/run/${service_name}/php-fpm.sock"
     $upstream = "php_${site}"
     
-    file { "${conf_prefix}.global.php":
+    file { "${conf_prefix}.global.${type}":
         mode    => '0640',
         content => epp($template_global, {
             upstream => $upstream,
             fpm_sock => $fpm_sock,
+            max_conn => try_get_value(
+                $::facts,
+                "cfweb/sites/${site}/apps/${type}/maxconn",
+                1
+            ),
         }),
     }
-    file { "${conf_prefix}.server.php":
+    file { "${conf_prefix}.server.${type}":
         mode    => '0640',
         content => epp($template, {
             site          => $site,

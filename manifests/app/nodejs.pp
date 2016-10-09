@@ -30,7 +30,7 @@ define cfweb::app::nodejs (
     ensure_resource('cfweb::appcommon::nodejs', $version,
                     { build_support => $build_support })
     
-    $service_name = "app-${site}-nodejs"
+    $service_name = "app-${site}-${type}"
     
     cfsystem_memory_weight { $service_name:
         ensure => present,
@@ -48,7 +48,7 @@ define cfweb::app::nodejs (
     $node_sock = "/run/${service_name}/node.sock"
     $upstream = "nodejs_${site}"
     
-    file { "${conf_prefix}.global.nodejs":
+    file { "${conf_prefix}.global.${type}":
         mode    => '0640',
         content => epp($template_global, {
             upstream   => $upstream,
@@ -56,7 +56,7 @@ define cfweb::app::nodejs (
             sock_count => $count_act,
         }),
     }
-    file { "${conf_prefix}.server.nodejs":
+    file { "${conf_prefix}.server.${type}":
         mode    => '0640',
         content => epp($template, {
             site      => $site,
@@ -95,5 +95,5 @@ define cfweb::app::nodejs (
         ]:
         ensure => link,
         target => "${cfweb::nginx::generic_control}"
-    }    
+    }
 }

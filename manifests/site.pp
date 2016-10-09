@@ -156,9 +156,9 @@ define cfweb::site (
                     custom_config => 'cfweb::appcommon::dbaccess',
                 } },
                 merge({
-                    max_connections => dig(
+                    max_connections => try_get_value(
                         $::facts,
-                        ['cfweb', 'sites', $site, 'maxconn'],
+                        "cfweb/sites/${site}/maxconn",
                         $cfdb::max_connections_default
                     )
                 }, $da)
@@ -181,9 +181,9 @@ define cfweb::site (
                             custom_config => 'cfweb::appcommon::dbaccess',
                         } },
                         merge({
-                            max_connections => dig(
+                            max_connections => try_get_value(
                                 $::facts,
-                                ['cfweb', 'sites', $site, 'apps', $app_type, 'maxconn'],
+                                "cfweb/sites/${site}/apps/${app_type}/maxconn",
                                 $cfdb::max_connections_default
                             )
                         }, $da)

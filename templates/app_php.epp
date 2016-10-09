@@ -25,6 +25,7 @@
         fastcgi_pass <%= $upstream %>;
         
         # misc.
+        fastcgi_keep_conn on;
         fastcgi_ignore_client_abort on;
         fastcgi_intercept_errors on;
         fastcgi_max_temp_file_size 128k;
