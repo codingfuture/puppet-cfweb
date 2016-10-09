@@ -62,7 +62,7 @@ Facter.add('cfweb') do
                 site_info['maxconn'] += maxconn
                 
                 site_info['apps'][type] = {
-                    maxconn => cfwebconn.fetch(site, {}).fetch(type, 0)
+                    'maxconn' => cfwebconn.fetch(site, {}).fetch(type, 0)
                 }
             end
             
