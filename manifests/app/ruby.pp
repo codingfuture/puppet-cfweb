@@ -10,7 +10,7 @@ define cfweb::app::ruby (
     String[1] $template = 'cfweb/app_ruby',
     
     String[1] $version = 'ruby-2.2',
-    Optional[Integer[1]] $count = undef,
+    Optional[Integer[1]] $workers = undef,
     Array[String[1]] $locations = [],
     
     Integer[1] $memory_weight = 100,
@@ -18,6 +18,8 @@ define cfweb::app::ruby (
     Integer[1,25600] $cpu_weight = 100,
     Integer[1,200] $io_weight = 100,    
     Struct[{
+        mem_per_conn_kb => Optional[Integer[1]],
+        ruby_env => Optional[String[1]],
     }] $tune = {},
     Boolean $build_support = false,
 ) {
@@ -34,13 +36,13 @@ define cfweb::app::ruby (
         max_mb => $memory_max,
     }
     
-    $count_act = $count ? {
+    $count_act = $workers ? {
         undef   => $::facts['processorcount'],
-        default => $count,
+        default => $workers,
     }
     
     #---
-    $sock = "/run/${service_name}/${type}"
+    $sock = "/run/${service_name}/puma.sock"
     $upstream = "${type}_${site}"
     
     file { "${conf_prefix}.global.${type}":
@@ -48,7 +50,11 @@ define cfweb::app::ruby (
         content => epp($template_global, {
             upstream   => $upstream,
             sock       => $sock,
-            sock_count => $count_act,
+            max_conn   => try_get_value(
+                $::facts,
+                "cfweb/sites/${site}/apps/${type}/maxconn",
+                1
+            ),
         }),
     }
     file { "${conf_prefix}.server.${type}":
@@ -60,7 +66,7 @@ define cfweb::app::ruby (
         }),
     }
 
-    /*cfweb_app { $service_name:
+    cfweb_app { $service_name:
         ensure        => present,
         type          => $type,
         site          => $site,
@@ -78,7 +84,7 @@ define cfweb::app::ruby (
             sock_base   => $sock,
             tune        => $tune,
         },
-    }*/
+    }
     
     #---
     file { [

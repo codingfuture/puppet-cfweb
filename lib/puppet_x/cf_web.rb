@@ -12,8 +12,8 @@ module PuppetX::CfWeb
         'global',
         'nodejs',
         'php',
+        'ruby',
         # 'go',
-        #'ruby',
         #'jvm',
     ]
 

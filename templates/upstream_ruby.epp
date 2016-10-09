@@ -1,15 +1,10 @@
 <% |
     String $upstream,
     String $sock,
-    Integer $sock_count,
+    Integer[0] $max_conn,
 | -%>
 
 upstream <%= $upstream %> {
-    least_conn;
-<%= inline_template("
-<% ${sock_count}.times do |i| -%>
-    server unix://${sock}.<%= i+1 %>.sock;
-<% end -%>
-")
--%>    
+    server unix://<%= $sock %>;
+    keepalive <%= $max_conn %>;
 }

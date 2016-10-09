@@ -39,14 +39,15 @@ module PuppetX::CfWeb::Nodejs::App
         #---
         mem_limit_global = cf_system.getMemory(service_name)
         mem_limit = (mem_limit_global / instances).to_i
-        mem_per_conn = tune.fetch('mem_per_conn', 32).to_i
-        max_conn = (mem_limit * 1024 / mem_per_conn)
+        mem_fixed = tune.fetch('mem_fixed', 32).to_i
+        mem_per_conn_kb = tune.fetch('mem_per_conn_kb', 1024).to_i
+        max_conn = (mem_limit - mem_fixed) * 1024 / mem_per_conn_kb
         
         if max_conn < 1
             fail("Not enough memory for #{site} #{type}")
         end
         
-        saveMaxConn(site, type, max_conn)
+        saveMaxConn(site, type, max_conn * instances)
         
         new_mem_ratio = tune.fetch('new_mem_ratio', 0.25).to_f
         new_mem = (mem_limit * new_mem_ratio).to_i

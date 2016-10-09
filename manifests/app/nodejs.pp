@@ -20,7 +20,7 @@ define cfweb::app::nodejs (
     
     String[1] $entry_point = 'app.js',
     Struct[{
-        mem_per_conn => Optional[Integer[1]],
+        mem_per_conn_kb => Optional[Integer[1]],
         new_mem_ratio => Optional[Float[0.0, 1.0]],
         node_env => Optional[String[1]],
     }] $tune = {},
