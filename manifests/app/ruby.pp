@@ -9,7 +9,7 @@ define cfweb::app::ruby (
     String[1] $template_global = 'cfweb/upstream_ruby',
     String[1] $template = 'cfweb/app_ruby',
     
-    String[1] $version = 'lts/*',
+    String[1] $version = 'ruby-2.2',
     Optional[Integer[1]] $count = undef,
     Array[String[1]] $locations = [],
     
@@ -17,11 +17,13 @@ define cfweb::app::ruby (
     Optional[Integer[1]] $memory_max = undef,
     Integer[1,25600] $cpu_weight = 100,
     Integer[1,200] $io_weight = 100,    
-    
+    Struct[{
+    }] $tune = {},
+    Boolean $build_support = false,
 ) {
-    cfweb::appcommon::ruby { $site:
-        user => $user,
-    }
+    require cfweb::appcommon::rvm
+    ensure_resource('cfweb::appcommon::ruby', $version,
+                    { build_support => $build_support })
     
     $service_name = "app-${site}-${type}"
     
@@ -38,14 +40,14 @@ define cfweb::app::ruby (
     }
     
     #---
-    $node_sock = "/run/${service_name}/node.sock"
-    $upstream = "nodejs_${site}"
+    $sock = "/run/${service_name}/${type}"
+    $upstream = "${type}_${site}"
     
     file { "${conf_prefix}.global.${type}":
         mode    => '0640',
         content => epp($template_global, {
             upstream   => $upstream,
-            node_sock  => $node_sock,
+            sock       => $sock,
             sock_count => $count_act,
         }),
     }
@@ -58,7 +60,7 @@ define cfweb::app::ruby (
         }),
     }
 
-    cfweb_app { $service_name:
+    /*cfweb_app { $service_name:
         ensure        => present,
         type          => $type,
         site          => $site,
@@ -70,14 +72,13 @@ define cfweb::app::ruby (
         io_weight     => $io_weight,
         
         misc          => {
-            nvm_dir     => $cfweb::appcommon::nvm::dir,
+            rvm_dir     => $cfweb::appcommon::rvm::dir,
             version     => $version,
             instances   => $count_act,
-            entry_point => $entry_point,
-            sock_base   => $node_sock,
+            sock_base   => $sock,
             tune        => $tune,
         },
-    }
+    }*/
     
     #---
     file { [

@@ -1,0 +1,15 @@
+<% |
+    String $upstream,
+    String $sock,
+    Integer $sock_count,
+| -%>
+
+upstream <%= $upstream %> {
+    least_conn;
+<%= inline_template("
+<% ${sock_count}.times do |i| -%>
+    server unix://${sock}.<%= i+1 %>.sock;
+<% end -%>
+")
+-%>    
+}

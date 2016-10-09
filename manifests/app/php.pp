@@ -48,7 +48,7 @@ define cfweb::app::php (
     
     $web_root = getparam(Cfweb::Site[$site], 'web_root')
     $fpm_sock = "/run/${service_name}/php-fpm.sock"
-    $upstream = "php_${site}"
+    $upstream = "${type}_${site}"
     
     file { "${conf_prefix}.global.${type}":
         mode    => '0640',

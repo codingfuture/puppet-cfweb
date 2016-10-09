@@ -16,6 +16,7 @@ define cfweb::appcommon::nodejs(
     }
     
     if $build_support {
-        ensure_packages(['build-essential', 'libssl-dev'])
+        ensure_packages(['build-essential', 'libssl-dev'],
+                        { 'install_options' => ['--force-yes'] })
     }
 }

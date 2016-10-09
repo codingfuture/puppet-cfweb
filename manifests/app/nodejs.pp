@@ -46,7 +46,7 @@ define cfweb::app::nodejs (
     
     #---
     $node_sock = "/run/${service_name}/node.sock"
-    $upstream = "nodejs_${site}"
+    $upstream = "${type}_${site}"
     
     file { "${conf_prefix}.global.${type}":
         mode    => '0640',
