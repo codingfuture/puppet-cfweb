@@ -1,15 +1,15 @@
 
 class cfweb::pki::dir {
     assert_private()
-    
+
     include cfsystem::custombin
     include cfweb::pki::user
-    
+
     $root_dir = $cfweb::pki::root_dir
     $ssh_user = $cfweb::pki::ssh_user
     $cfweb_sync_pki = "${cfsystem::custombin::bin_dir}/cfweb_sync_pki"
     $cfweb_update_tls_ticket = "${cfsystem::custombin::bin_dir}/cfweb_update_tls_ticket"
-    
+
     #---
     if $cfweb::is_secondary {
         exec { 'cfweb_sync_pki_init':
@@ -22,22 +22,22 @@ class cfweb::pki::dir {
             creates => $root_dir,
             require => User[$ssh_user],
         }
-        
+
         exec { 'cfweb_sync_pki':
-            user    => $ssh_user,
-            command => [
+            user        => $ssh_user,
+            command     => [
                 '/usr/bin/ssh',
                 "${ssh_user}@${cfweb::pki::primary_host}",
                 $cfweb_sync_pki,
             ].join(' '),
             refreshonly => true,
-            require => User[$ssh_user],
+            require     => User[$ssh_user],
         }
-        
+
         file { $cfweb_sync_pki:
             ensure => absent,
         }
-        
+
         file { $cfweb_update_tls_ticket:
             ensure => absent,
         }
@@ -45,35 +45,35 @@ class cfweb::pki::dir {
         $ticket_dir = $cfweb::pki::ticket_dir
         $key_dir = $cfweb::pki::key_dir
         $cert_dir = $cfweb::pki::cert_dir
-        
+
         file { $root_dir:
             ensure => directory,
-            owner => $ssh_user,
-            group => $ssh_user,
-            mode => '0700',
+            owner  => $ssh_user,
+            group  => $ssh_user,
+            mode   => '0700',
         } ->
         file { $ticket_dir:
             ensure => directory,
-            owner => $ssh_user,
-            group => $ssh_user,
-            mode => '0700',
+            owner  => $ssh_user,
+            group  => $ssh_user,
+            mode   => '0700',
         } ->
         file { $key_dir:
             ensure => directory,
-            owner => $ssh_user,
-            group => $ssh_user,
-            mode => '0700',
+            owner  => $ssh_user,
+            group  => $ssh_user,
+            mode   => '0700',
         } ->
         file { $cert_dir:
             ensure => directory,
-            owner => $ssh_user,
-            group => $ssh_user,
-            mode => '0700',
+            owner  => $ssh_user,
+            group  => $ssh_user,
+            mode   => '0700',
         }
-        
+
         #---
         $dhparam = $cfweb::pki::dhparam
-        
+
         exec { 'cfweb DH params':
             command => [
                 "${cfweb::pki::openssl} dhparam -rand /dev/urandom",
@@ -83,7 +83,7 @@ class cfweb::pki::dir {
             creates => $dhparam,
             require => File[$root_dir],
         }
-        
+
         #---
         file { $cfweb_sync_pki:
             owner   => root,
@@ -94,7 +94,7 @@ class cfweb::pki::dir {
                 ssh_user    => $ssh_user,
                 hosts       => $cfweb::pki::cluster_hosts.reduce([]) |$memo, $v| {
                     $host = $v[0]
-                    
+
                     if $host != $::trusted['certname'] {
                         $memo + $host
                     } else {
@@ -104,12 +104,12 @@ class cfweb::pki::dir {
                 web_service => $cfweb::web_service,
             }),
         }
-        
+
         #---
         if $cfweb::pki::tls_ticket_key_count < 2 {
             fail('$cfweb::pki::tls_ticket_key_count must be at least 2')
         }
-        
+
         file { $cfweb_update_tls_ticket:
             owner   => root,
             group   => root,
@@ -124,13 +124,13 @@ class cfweb::pki::dir {
                 openssl        => $cfweb::pki::openssl,
             }),
         }
-        
+
         create_resources( 'cron', {
             cfweb_update_tls_ticket => merge( $cfweb::pki::tls_ticket_cron, {
                 command => $cfweb_update_tls_ticket,
             })
         })
-        
+
         exec { 'cfweb_update_tls_ticket':
             command => $cfweb_update_tls_ticket,
             creates => [
@@ -142,13 +142,13 @@ class cfweb::pki::dir {
                 File[$cfweb_update_tls_ticket],
             ],
         }
-        
+
         #---
         exec { 'cfweb_sync_pki':
-            user    => $ssh_user,
-            command => $cfweb_sync_pki,
+            user        => $ssh_user,
+            command     => $cfweb_sync_pki,
             refreshonly => true,
-            require => User[$ssh_user],
+            require     => User[$ssh_user],
         }
     }
 }

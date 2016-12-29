@@ -1,16 +1,16 @@
 
 class cfweb::nginx::ubuntu {
     include cfsystem
-    
+
     case $::cfsystem::ubuntu::release {
-        'xenial': { $release = 'wily' }
+        'xenial', 'yakkety': { $release = 'wily' }
         default: { $release = $::cfsystem::ubuntu::release }
     }
 
     # Nginx official
     #---
     apt::key { 'nginx_signing':
-        key => '573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62',
+        key     => '573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62',
         content => file('cfweb/nginx_signing.key'),
     }
 
@@ -19,7 +19,7 @@ class cfweb::nginx::ubuntu {
         release  => $release,
         repos    => 'nginx',
         pin      => $cfsystem::apt_pin + 1,
-        require => Apt::Key['nginx_signing'],
+        require  => Apt::Key['nginx_signing'],
     }
 
 }

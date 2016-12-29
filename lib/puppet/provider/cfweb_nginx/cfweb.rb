@@ -67,7 +67,7 @@ Puppet::Type.type(:cfweb_nginx).provide(
             'worker_processes' => worker_processes,
             'worker_cpu_affinity' => 'auto',
             'pcre_jit' => 'on',
-            'error_log' => '/var/log/nginx/error.log warn',
+            'error_log' => '/var/log/nginx/error.log error',
         }.merge(settings_tune.fetch('global', {}))
         worker_processes = global_conf['worker_processes'].to_i
         

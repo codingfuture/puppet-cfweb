@@ -8,20 +8,20 @@ define cfweb::app::php (
     Array[String[1]] $dbaccess_names,
     String[1] $template_global = 'cfweb/upstream_php',
     String[1] $template = 'cfweb/app_php',
-    
+
     Hash[String[1],Hash] $dbaccess = {},
 
     Integer[1] $memory_weight = 100,
     Optional[Integer[1]] $memory_max = undef,
     Integer[1,25600] $cpu_weight = 100,
-    Integer[1,200] $io_weight = 100,    
-    
+    Integer[1,200] $io_weight = 100,
+
     Hash[String[1], Any] $php_ini = {},
     Hash[
         Enum['global', 'pool'],
         Hash[String[1], Any]
     ] $fpm_tune = {},
-    
+
     Boolean $is_debug = false,
     Array[String] $extension = [],
     Array[String] $default_extension = [
@@ -30,26 +30,26 @@ define cfweb::app::php (
         'json',
         'opcache',
         'pdo',
-        'xmlrpc',        
+        'xmlrpc',
     ],
-    
+
     Variant[Boolean, Integer] $memcache_sessions = true,
 ) {
     require cfweb::appcommon::php
-    
+
     $service_name = "app-${site}-${type}"
-    
+
     cfsystem_memory_weight { $service_name:
         ensure => present,
         weight => $memory_weight,
         min_mb => 32,
         max_mb => $memory_max,
-    }    
-    
+    }
+
     $web_root = getparam(Cfweb::Site[$site], 'web_root')
     $fpm_sock = "/run/${service_name}/php-fpm.sock"
     $upstream = "${type}_${site}"
-    
+
     file { "${conf_prefix}.global.${type}":
         mode    => '0640',
         content => epp($template_global, {
@@ -70,15 +70,15 @@ define cfweb::app::php (
             document_root => "${site_dir}/current${web_root}",
         }),
     }
-    
+
     #---
     $db_extension = unique($dbaccess_names.map |$name| {
         $config_vars = getparam(Cfweb::Appcommon::Dbaccess[$name], 'config_vars')
-        
+
         if !($config_vars =~ Hash[String[1], Any]) {
-            fail("By some reason Cfweb::Appcommon::Dbaccess[$name] is not defined prior")
+            fail("By some reason Cfweb::Appcommon::Dbaccess[${name}] is not defined prior")
         }
-        
+
         case $config_vars['type'] {
             'mysql': {
                 if $cfweb::appcommon::php::is_v7 {
@@ -86,7 +86,7 @@ define cfweb::app::php (
                 } else {
                     $pkg = 'mysqlnd'
                 }
-                
+
                 ensure_packages(["${cfweb::appcommon::php::pkgprefix}-${pkg}"])
                 $ext = 'mysql'
             }
@@ -104,16 +104,16 @@ define cfweb::app::php (
         }
         $ext
     })
-    
+
     #---
     if $is_debug {
         ensure_packages(["${cfweb::appcommon::php::pkgprefix}-xdebug"])
     }
-    
+
     if $memcache_sessions {
         require cfweb::appcommon::memcached
         ensure_packages(["${cfweb::appcommon::php::pkgprefix}-memcache"])
-        
+
         $memcache_servers = cf_query_resources(
             "Class['cfweb']{ cluster = '${cfweb::cluster}'} and Cfweb_app['${service_name}']",
             "Cfweb_app['${service_name}']",
@@ -132,7 +132,7 @@ define cfweb::app::php (
                 $memo
             }
         }
-        
+
         $memcache_port = cf_genport("cfweb/${site}-phpsess")
         $memcache = {
             sessions => $memcache_sessions,
@@ -140,7 +140,7 @@ define cfweb::app::php (
             host     => $cfweb::internal_addr,
             port     => $memcache_port,
         }
-        
+
         $memcache_servers.each |$v| {
             $host = $v['host']
             $port = $v['port']
@@ -157,7 +157,7 @@ define cfweb::app::php (
                 user => $user,
             }
         }
-        
+
         with($memcache) |$v| {
             $host = $v['host']
             $port = $v['port']
@@ -173,9 +173,9 @@ define cfweb::app::php (
                 dst  => $host,
                 user => $user,
             }
-            
+
             cfnetwork::service_port { "local:${fwservice}": }
-            
+
             if size($memcache_servers) {
                 cfnetwork::service_port { "${cfweb::internal_face}:${fwservice}":
                     src  => $memcache_servers.map |$v| { $v['host'] },
@@ -185,10 +185,10 @@ define cfweb::app::php (
     } else {
         $memcache = undef
     }
-    
+
     #---
     $conf_dir = "${site_dir}/.php"
-    
+
     file { $conf_dir:
         ensure => directory,
         owner  => $user,
@@ -196,17 +196,17 @@ define cfweb::app::php (
         mode   => '0500',
     } ->
     cfweb_app { $service_name:
-        ensure        => present,
-        type          => $type,
-        site          => $site,
-        user          => $user,
-        service_name  => $service_name,
-        site_dir      => $site_dir,
-        
-        cpu_weight    => $cpu_weight,
-        io_weight     => $io_weight,
-        
-        misc          => {
+        ensure       => present,
+        type         => $type,
+        site         => $site,
+        user         => $user,
+        service_name => $service_name,
+        site_dir     => $site_dir,
+
+        cpu_weight   => $cpu_weight,
+        io_weight    => $io_weight,
+
+        misc         => {
             php_ini   => $php_ini,
             fpm_tune  => $fpm_tune,
             is_debug  => $is_debug,
@@ -217,17 +217,17 @@ define cfweb::app::php (
                 $default_extension +
                 $db_extension +
                 ($is_debug ? {
-                    true => ['xdebug'],
+                    true    => ['xdebug'],
                     default => [],
                 }) +
                 ($memcache_sessions ? {
-                    true => ['memcache'],
+                    true    => ['memcache'],
                     default => [],
                 })
             ),
         },
     }
-    
+
     #---
     file { [
             "${cfweb::nginx::bin_dir}/start-${site}-${type}",
@@ -236,7 +236,7 @@ define cfweb::app::php (
             "${cfweb::nginx::bin_dir}/reload-${site}-${type}",
         ]:
         ensure => link,
-        target => "${cfweb::nginx::generic_control}"
+        target => $cfweb::nginx::generic_control
     }
-    
+
 }

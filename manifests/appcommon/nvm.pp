@@ -6,7 +6,7 @@ class cfweb::appcommon::nvm(
 ) {
     include cfsystem
     include cfweb::nginx
-    
+
     $home_dir = "${cfweb::nginx::web_dir}/nvm"
     $dir = "${home_dir}/nvm"
     $user = 'nvm'
@@ -20,7 +20,7 @@ class cfweb::appcommon::nvm(
         '' => '',
         default   => "-c 'http_proxy=${cfsystem::http_proxy}'"
     }
-    
+
     if $git_proxy != '' {
         cfnetwork::client_port{ "any:aptproxy:cfweb${user}":
             dst  => $::cfsystem::repo_proxy['host'],
@@ -29,8 +29,8 @@ class cfweb::appcommon::nvm(
     } else {
         cfnetwork::client_port{ 'any:http:cfsystem': user => $user }
         cfnetwork::client_port{ 'any:https:cfsystem': user => $user }
-    }    
-    
+    }
+
     $update_onlyif_main = "/usr/bin/find '${dir}/.git/FETCH_HEAD' -mmin '+${update_cache}' | /bin/egrep '.'"
     $update_onlyif = $version ? {
         undef   => $update_onlyif_main,
@@ -39,7 +39,7 @@ class cfweb::appcommon::nvm(
             $update_onlyif_main
         ].join(' && ')
     }
-    
+
     user { $user:
         ensure     => present,
         gid        => $group,
@@ -47,25 +47,25 @@ class cfweb::appcommon::nvm(
         managehome => true,
         require    => Group[$group],
     } ->
-    exec { "Setup NVM":
+    exec { 'Setup NVM':
         command     => "/usr/bin/git ${git_proxy} clone '${source}' '${dir}'",
         creates     => $dir,
         user        => $user,
         group       => $group,
         environment => $cmdenv,
-        notify      => Exec["Checkout NVM"],
+        notify      => Exec['Checkout NVM'],
     } ->
-    exec { "Update NVM":
+    exec { 'Update NVM':
         command     => "/usr/bin/git ${git_proxy} fetch origin",
         user        => $user,
         group       => $group,
         cwd         => $dir,
         environment => $cmdenv,
         onlyif      => $update_onlyif,
-        notify      => Exec["Checkout NVM"],
+        notify      => Exec['Checkout NVM'],
     }
-    
-    exec { "Checkout NVM":
+
+    exec { 'Checkout NVM':
         command     => $version ? {
             undef   => "/usr/bin/git checkout $(/usr/bin/git describe --abbrev=0 --tags --match 'v[0-9]*' origin)",
             default => "/usr/bin/git checkout ${version}",

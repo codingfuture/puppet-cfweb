@@ -20,9 +20,9 @@ define cfweb::deploy(
         'ctime',
         'mtime',
     ] $sort = 'natural',
-    
+
     Boolean $is_tarball = true,
-    
+
     String[1] $site,
     Array[String[1]] $apps,
 ) {

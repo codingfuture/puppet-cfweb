@@ -4,10 +4,10 @@ define cfweb::appcommon::ruby(
     Boolean $build_support = false,
 ) {
     require cfweb::appcommon::rvm
-    
+
     $rvm_dir = $cfweb::appcommon::rvm::dir
     $rvm_bin = $cfweb::appcommon::rvm::rvm_bin
-    
+
     if $build_support {
         ensure_packages($cfweb::appcommon::rvm::build_essentials,
                         { 'install_options' => ['--force-yes'] })
@@ -20,6 +20,7 @@ define cfweb::appcommon::ruby(
         group       => $cfweb::appcommon::rvm::group,
         environment => $cfweb::appcommon::rvm::cmdenv,
         cwd         => $cfweb::appcommon::rvm::home_dir,
+        require     => Exec['Setup RVM'],
     } ->
     cfweb::appcommon::rubygem{ "${title}:bundler":
         package => 'bundler',

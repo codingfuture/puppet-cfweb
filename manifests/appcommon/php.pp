@@ -13,9 +13,9 @@ class cfweb::appcommon::php(
         $pkgprefix = "php${php_ver}"
         $php_etc_root = "/etc/php/${php_ver}"
         $fpm_service = "php${php_ver}-fpm"
-        
+
         $extra_pkgs = [
-            "${pkgprefix}-bcmath",        
+            "${pkgprefix}-bcmath",
             "${pkgprefix}-bz2",
             "${pkgprefix}-mbstring",
             "${pkgprefix}-opcache",
@@ -30,7 +30,7 @@ class cfweb::appcommon::php(
         $fpm_service = "${pkgprefix}-fpm"
         $extra_pkgs = []
     }
-    
+
     $fpm_package = "${pkgprefix}-fpm"
 
     # Bare minimal
@@ -39,13 +39,13 @@ class cfweb::appcommon::php(
         "${pkgprefix}-cli",
         $fpm_package
     ])
-    
+
     service { $fpm_service:
         ensure  => stopped,
-        enable => false,
+        enable  => false,
         require => Package[$fpm_package],
     }
-    
+
     #---
     if $popular_packages {
         ensure_packages([
