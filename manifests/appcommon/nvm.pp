@@ -1,3 +1,7 @@
+#
+# Copyright 2016-2017 (c) Andrey Galkin
+#
+
 
 class cfweb::appcommon::nvm(
     String[1] $source = 'https://github.com/creationix/nvm.git',

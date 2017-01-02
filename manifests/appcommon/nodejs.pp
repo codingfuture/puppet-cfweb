@@ -1,3 +1,7 @@
+#
+# Copyright 2016-2017 (c) Andrey Galkin
+#
+
 
 define cfweb::appcommon::nodejs(
     String[1] $version = $title,

@@ -1,3 +1,7 @@
+#
+# Copyright 2016-2017 (c) Andrey Galkin
+#
+
 
 define cfweb::app::static (
     String[1] $site,

@@ -1,3 +1,7 @@
+#
+# Copyright 2016-2017 (c) Andrey Galkin
+#
+
 
 class cfweb::nginx (
     Integer[1] $memory_weight = 100,

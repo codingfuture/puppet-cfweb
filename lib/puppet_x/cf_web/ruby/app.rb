@@ -1,3 +1,7 @@
+#
+# Copyright 2016-2017 (c) Andrey Galkin
+#
+
 
 module PuppetX::CfWeb::Ruby::App
     include PuppetX::CfWeb::Ruby

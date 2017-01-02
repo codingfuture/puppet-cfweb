@@ -1,3 +1,7 @@
+#
+# Copyright 2016-2017 (c) Andrey Galkin
+#
+
 
 define cfweb::appcommon::dbaccess(
     String[1] $cluster,

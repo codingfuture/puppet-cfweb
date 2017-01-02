@@ -1,3 +1,7 @@
+#
+# Copyright 2016-2017 (c) Andrey Galkin
+#
+
 module Puppet::Parser::Functions
     newfunction(:cf_nginx_limit_req,  :type => :rvalue, :arity => 2) do |args|
         site = args[0]

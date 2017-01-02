@@ -1,3 +1,7 @@
+#
+# Copyright 2016-2017 (c) Andrey Galkin
+#
+
 Puppet::Type.newtype(:cfweb_nginx) do
     desc "DO NOT USE DIRECTLY."
     
