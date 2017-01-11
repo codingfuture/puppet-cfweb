@@ -129,7 +129,11 @@ class cfweb::nginx (
         service_name  => $service_name,
         limits        => $limits,
     } ->
-    service { $service_name: }
+    service { $service_name:
+        ensure   => running,
+        enable   => true,
+        provider => 'systemd',
+    }
 
     [
         'cf_mime.types',

@@ -45,9 +45,10 @@ class cfweb::appcommon::php(
     ])
 
     service { $fpm_service:
-        ensure  => stopped,
-        enable  => false,
-        require => Package[$fpm_package],
+        ensure   => stopped,
+        enable   => false,
+        provider => 'systemd',
+        require  => Package[$fpm_package],
     }
 
     #---
