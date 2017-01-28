@@ -24,10 +24,10 @@ class cfweb::pki(
 
     Optional[Variant[String, Enum['letsencrypt', 'wosign']]]
         $cert_source = undef,
-    String $x509_C = 'US',
-    String $x509_ST = 'Denial',
-    String $x509_L = 'Springfield',
-    String $x509_O = 'SomeOrg',
+    String $x509_c = 'US',
+    String $x509_st = 'Denial',
+    String $x509_l = 'Springfield',
+    String $x509_o = 'SomeOrg',
 
     Array[String] $keys = [],
     Array[String] $certs = [],
@@ -54,11 +54,13 @@ class cfweb::pki(
     }
 
     if $primary_host != '' and
-       $primary_host != $::trusted['certname'] and
-       $cfweb::is_secondary != true
+        $primary_host != $::trusted['certname'] and
+        $cfweb::is_secondary != true
     {
-        fail([ "Primary cfweb host for ${cluster} is already known: ${primary_host}.",
-               'Please consider setting cfweb::is_secondary'].join("\n"))
+        fail([
+            "Primary cfweb host for ${cluster} is already known: ${primary_host}.",
+            'Please consider setting cfweb::is_secondary'
+        ].join("\n"))
     }
 
     #---
@@ -92,7 +94,7 @@ class cfweb::pki(
     })
     ensure_resource('cfweb::pki::cert', 'default', {
         key_name => $key_name,
-        x509_CN => 'www.example.com',
+        x509_cN => 'www.example.com',
     })
 
     #---

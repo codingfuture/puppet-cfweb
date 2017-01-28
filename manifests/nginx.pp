@@ -20,7 +20,7 @@ class cfweb::nginx (
         rate       => Optional[String],
         burst      => Optional[Integer[0]],
         nodelay    => Optional[Boolean],
-    }]] $limits,
+    }]] $limits = {},
     Boolean $bleeding_edge_security = false,
 
     String $repo = 'http://nginx.org/packages/',

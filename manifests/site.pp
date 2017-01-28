@@ -68,6 +68,7 @@ define cfweb::site (
 
     # Default hosts configure listen socket
     #---
+    $iface = undef # make buggy puppet-lint happy
     $ifaces.each |$iface| {
         $plain = $plain_ports.each |$port| {
             ensure_resource('cfweb::nginx::defaulthost', "${iface}:${port}", {
@@ -318,6 +319,7 @@ define cfweb::site (
                 user     => $user,
                 site_dir => $site_dir,
                 apps     => keys($apps),
+                persistent_dir => $persistent_dir,
                 # Note: it must run AFTER the rest is configured
                 require  => $cfg_notify,
             },

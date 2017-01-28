@@ -69,11 +69,13 @@ class cfweb::appcommon::nvm(
         notify      => Exec['Checkout NVM'],
     }
 
+    $nvm_checkout = $version ? {
+        undef   => "/usr/bin/git checkout $(/usr/bin/git describe --abbrev=0 --tags --match 'v[0-9]*' origin)",
+        default => "/usr/bin/git checkout ${version}",
+    }
+
     exec { 'Checkout NVM':
-        command     => $version ? {
-            undef   => "/usr/bin/git checkout $(/usr/bin/git describe --abbrev=0 --tags --match 'v[0-9]*' origin)",
-            default => "/usr/bin/git checkout ${version}",
-        },
+        command     => $nvm_checkout,
         user        => $user,
         group       => $group,
         cwd         => $dir,

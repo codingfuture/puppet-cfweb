@@ -7,11 +7,11 @@ define cfweb::pki::cert(
     $cert_name = $title,
     $key_name = undef,
     $cert_source = undef,
-    $x509_C = undef,
-    $x509_ST = undef,
-    $x509_L = undef,
-    $x509_O = undef,
-    $x509_CN = undef,
+    $x509_c = undef,
+    $x509_st = undef,
+    $x509_l = undef,
+    $x509_o = undef,
+    $x509_cn = undef,
 ){
     include cfweb::pki
 
@@ -30,11 +30,11 @@ define cfweb::pki::cert(
             notify  => Exec['cfweb_sync_pki']
         }
     } else {
-        $x_C = pick($x509_C, $cfweb::pki::x509_C)
-        $x_ST = pick($x509_ST, $cfweb::pki::x509_ST)
-        $x_L = pick($x509_L, $cfweb::pki::x509_L)
-        $x_O = pick($x509_O, $cfweb::pki::x509_O)
-        $x_CN = pick($x509_CN, $cert_name)
+        $x_c = pick($x509_c, $cfweb::pki::x509_c)
+        $x_st = pick($x509_st, $cfweb::pki::x509_st)
+        $x_l = pick($x509_l, $cfweb::pki::x509_l)
+        $x_o = pick($x509_o, $cfweb::pki::x509_o)
+        $x_cn = pick($x509_cn, $cert_name)
 
         # CSR must always be available
         $csr_exec = "${exec_name}::csr"
@@ -44,7 +44,7 @@ define cfweb::pki::cert(
                 "-out ${csr_file}",
                 "-key ${key_file}",
                 '-new -sha256',
-                "-subj '/C=${x_C}/ST=${x_ST}/L=${x_L}/O=${x_O}/CN=${x_CN}'",
+                "-subj '/C=${x_c}/ST=${x_st}/L=${x_l}/O=${x_o}/CN=${x_cn}'",
             ].join(' '),
             creates => $csr_file,
             require => Exec["cfweb::pki::key::${key_name_act}"],
@@ -63,7 +63,7 @@ define cfweb::pki::cert(
 
         #---
         if $cert_source and !$dyn_cert {
-            $certs = cf_nginx_cert(file($cert_source), $x_CN)
+            $certs = cf_nginx_cert(file($cert_source), $x_cn)
 
             file { $crt_file:
                 content => $certs['chained'],
@@ -107,16 +107,18 @@ define cfweb::pki::cert(
         }
     }
 
+    $trusted_file = $cert_source ? {
+        undef   => undef,
+        ''      => undef,
+        default => $trusted_file,
+    }
+
     cfweb::pki::certinfo { $title:
         info => {
             cert_name    => $cert_name,
             key_file     => $key_file,
             crt_file     => $crt_file,
-            trusted_file => $cert_source ? {
-                undef   => undef,
-                ''      => undef,
-                default => $trusted_file,
-            }
+            trusted_file => $trusted_file,
         }
     }
 }

@@ -59,20 +59,22 @@ ${user}   ALL=(ALL:ALL) NOPASSWD: /bin/systemctl reload ${cfweb::web_service}.se
 
     # Accepted keys
     #---
-    $cfweb::pki::cluster_hosts.each() |$host, $info| {
-        if $host != $::trusted['certname'] {
-            $host_under = regsubst($host, '\.', '_', 'G')
+    $ihost = undef # make buggy puppet-lint happy
+    $info = undef
+    $cfweb::pki::cluster_hosts.each() |$ihost, $info| {
+        if $ihost != $::trusted['certname'] {
+            $host_under = regsubst($ihost, '\.', '_', 'G')
 
             cfnetwork::client_port { "any:cfssh:cfweb_${host_under}":
-                dst  => $host,
+                dst  => $ihost,
                 user => $user,
             }
             cfnetwork::service_port { "any:cfssh:cfweb_${host_under}":
-                src => $host,
+                src => $ihost,
             }
 
             pick($info['ssh_keys'], {}).each |$kn, $kv| {
-                ssh_authorized_key { "${user}:${kn}@${host}":
+                ssh_authorized_key { "${user}:${kn}@${ihost}":
                     user    => $user,
                     type    => $kv['type'],
                     key     => $kv['key'],

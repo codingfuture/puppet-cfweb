@@ -11,7 +11,7 @@ define cfweb::deploy(
         'archiva',
         'artifactory',
         'nexus',
-        'sftp',
+        'sftp'
     ] $type,
     String[1] $url,
 
@@ -22,13 +22,18 @@ define cfweb::deploy(
         'symcode',
         'natural',
         'ctime',
-        'mtime',
+        'mtime'
     ] $sort = 'natural',
 
     Boolean $is_tarball = true,
 
-    String[1] $site,
-    Array[String[1]] $apps,
+    # internal options
+    String[1] $site = undef,
+    String[1] $user = undef,
+    String[1] $site_dir = undef,
+    String[1] $persistent_dir = undef,
+    Array[String[1]] $apps = undef,
 ) {
+    assert_private()
     fail('Not implemented yet')
 }

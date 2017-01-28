@@ -3,7 +3,7 @@
 #
 
 
-define cfweb::app::go (
+define cfweb::app::docker (
     String[1] $site,
     String[1] $user,
     String[1] $site_dir,
