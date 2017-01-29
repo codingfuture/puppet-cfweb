@@ -20,7 +20,7 @@ class cfweb::pki::dir {
             user    => $ssh_user,
             command => [
                 '/usr/bin/ssh',
-                "${ssh_user}@${cfweb::pki::primary_host}",
+                "${ssh_user}@${cfweb::primary_host}",
                 $cfweb_sync_pki,
             ].join(' '),
             creates => $root_dir,
@@ -31,7 +31,7 @@ class cfweb::pki::dir {
             user        => $ssh_user,
             command     => [
                 '/usr/bin/ssh',
-                "${ssh_user}@${cfweb::pki::primary_host}",
+                "${ssh_user}@${cfweb::primary_host}",
                 $cfweb_sync_pki,
             ].join(' '),
             refreshonly => true,

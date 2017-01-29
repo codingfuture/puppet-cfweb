@@ -61,7 +61,7 @@ ${user}   ALL=(ALL:ALL) NOPASSWD: /bin/systemctl reload ${cfweb::web_service}.se
     #---
     $ihost = undef # make buggy puppet-lint happy
     $info = undef
-    $cfweb::pki::cluster_hosts.each() |$ihost, $info| {
+    $cfweb::cluster_hosts.each() |$ihost, $info| {
         if $ihost != $::trusted['certname'] {
             $host_under = regsubst($ihost, '\.', '_', 'G')
 

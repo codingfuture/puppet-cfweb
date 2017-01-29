@@ -33,37 +33,6 @@ class cfweb::pki(
     Array[String] $certs = [],
 ) {
     include stdlib
-
-    $cluster = $cfweb::cluster
-
-    $host_facts = cf_query_facts("cfweb.cluster=\"${cluster}\"", ['cfweb'])
-    $cluster_hosts = $host_facts.reduce({}) |$memo, $val| {
-        $host = $val[0]
-        $cluster_info = $val[1]['cfweb']
-        merge($memo, {
-            $host => $cluster_info
-        })
-    }
-
-    $primary_host = $cluster_hosts.reduce('') |$memo, $val| {
-        if $val[1]['is_secondary'] {
-            $memo
-        } else {
-            $val[0]
-        }
-    }
-
-    if $primary_host != '' and
-        $primary_host != $::trusted['certname'] and
-        $cfweb::is_secondary != true
-    {
-        fail([
-            "Primary cfweb host for ${cluster} is already known: ${primary_host}.",
-            'Please consider setting cfweb::is_secondary'
-        ].join("\n"))
-    }
-
-    #---
     include cfweb
     include cfweb::pki::user
 
