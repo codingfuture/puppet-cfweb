@@ -63,7 +63,7 @@ class cfweb::pki(
     })
     ensure_resource('cfweb::pki::cert', 'default', {
         key_name => $key_name,
-        x509_cN => 'www.example.com',
+        x509_cn => 'www.example.com',
     })
 
     #---

@@ -69,7 +69,7 @@ module PuppetX::CfWeb::Ruby::App
                 ].join(' '),
                 'ExecReload' => '/bin/kill -s USR2 $MAINPID',
                 'WorkingDirectory' => "#{site_dir}/current",
-                'Slice' => "#{user}.slice",
+                'Slice' => "#{PuppetX::CfWeb::SLICE_PREFIX}#{user}.slice",
             },
         }
         

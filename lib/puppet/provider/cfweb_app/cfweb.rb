@@ -47,6 +47,7 @@ Puppet::Type.type(:cfweb_app).provide(
         
         begin
             cf_system.cleanupSystemD('app-', new_services)
+            cf_system.cleanupSystemD("#{PuppetX::CfWeb::SLICE_PREFIX}app_", new_services, 'slice')
         rescue => e
             warning(e)
             warning(e.backtrace)

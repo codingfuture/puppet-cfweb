@@ -28,11 +28,13 @@ class cfweb::nginx::aptrepo {
     }
 
     apt::source { 'nginx':
-        location => "${cfweb::nginx::nginx_repo}/${subdir}/",
-        release  => $release,
-        repos    => 'nginx',
-        pin      => $cfsystem::apt_pin + 1,
-        require  => Apt::Key['nginx_signing'],
+        location      => "${cfweb::nginx::nginx_repo}/${subdir}/",
+        release       => $release,
+        repos         => 'nginx',
+        pin           => $cfsystem::apt_pin + 1,
+        notify_update => false,
+        notify        => Exec['cf-apt-update'],
+        require       => Apt::Key['nginx_signing'],
     }
 
 }

@@ -9,11 +9,11 @@ define cfweb::appcommon::nodejs(
 ) {
     require cfweb::appcommon::nvm
 
-    $nvm_dir = $cfweb::appcommon::nvm::dir
+    $nvm_env_sh = $cfweb::appcommon::nvm::env_sh
 
     exec { "Install nodejs: ${title}":
-        command     => "/bin/bash -c '. ${nvm_dir}/nvm.sh; nvm install ${version}'",
-        unless      => "/bin/bash -c '. ${nvm_dir}/nvm.sh; nvm ls ${version}'",
+        command     => "/bin/bash -c '. ${nvm_env_sh}; nvm install ${version}'",
+        unless      => "/bin/bash -c '. ${nvm_env_sh}; nvm ls ${version}'",
         user        => $cfweb::appcommon::nvm::user,
         group       => $cfweb::appcommon::nvm::group,
         environment => $cfweb::appcommon::nvm::cmdenv,

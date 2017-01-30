@@ -107,7 +107,7 @@ define cfweb::pki::cert(
         }
     }
 
-    $trusted_file = $cert_source ? {
+    $trusted_file_param = $cert_source ? {
         undef   => undef,
         ''      => undef,
         default => $trusted_file,
@@ -118,7 +118,7 @@ define cfweb::pki::cert(
             cert_name    => $cert_name,
             key_file     => $key_file,
             crt_file     => $crt_file,
-            trusted_file => $trusted_file,
+            trusted_file => $trusted_file_param,
         }
     }
 }

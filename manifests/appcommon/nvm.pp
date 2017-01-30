@@ -13,6 +13,7 @@ class cfweb::appcommon::nvm(
 
     $home_dir = "${cfweb::nginx::web_dir}/nvm"
     $dir = "${home_dir}/nvm"
+    $env_sh = "${dir}/nvm.sh"
     $user = 'nvm'
     $group = $cfweb::nginx::group
     $cmdenv = [
@@ -53,9 +54,10 @@ class cfweb::appcommon::nvm(
     } ->
     exec { 'Setup NVM':
         command     => "/usr/bin/git ${git_proxy} clone '${source}' '${dir}'",
-        creates     => $dir,
+        creates     => $env_sh,
         user        => $user,
         group       => $group,
+        cwd         => $home_dir,
         environment => $cmdenv,
         notify      => Exec['Checkout NVM'],
     } ->

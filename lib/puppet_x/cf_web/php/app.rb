@@ -185,7 +185,7 @@ module PuppetX::CfWeb::Php::App
                             "-l #{memcache['host']}:#{port}",
                     ].join(' '),
                     'WorkingDirectory' => site_dir,
-                    'Slice' => "#{user}.slice",
+                    'Slice' => "#{PuppetX::CfWeb::SLICE_PREFIX}#{user}.slice",
                 },
             }
             
@@ -222,7 +222,7 @@ module PuppetX::CfWeb::Php::App
                 ].join(' '),
                 'ExecReload' => '/bin/kill -s USR2 $MAINPID',
                 'WorkingDirectory' => site_dir,
-                'Slice' => "#{user}.slice",
+                'Slice' => "#{PuppetX::CfWeb::SLICE_PREFIX}#{user}.slice",
             },
         }
         

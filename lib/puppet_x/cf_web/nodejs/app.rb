@@ -61,7 +61,6 @@ module PuppetX::CfWeb::Nodejs::App
         services = []
         
         instances.times do |i|
-            i += 1
             service_name_i = "#{service_name}-#{i+1}"
             
             content_ini = {
@@ -84,7 +83,7 @@ module PuppetX::CfWeb::Nodejs::App
                             "./#{entry_point}",
                     ].join(' '),
                     'WorkingDirectory' => "#{site_dir}/current",
-                    'Slice' => "#{user}.slice",
+                    'Slice' => "#{PuppetX::CfWeb::SLICE_PREFIX}#{user}.slice",
                 },
             }
             

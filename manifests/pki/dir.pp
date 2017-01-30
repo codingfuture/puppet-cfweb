@@ -96,7 +96,7 @@ class cfweb::pki::dir {
             content => epp('cfweb/cfweb_sync_pki.sh.epp', {
                 pki_dir     => $root_dir,
                 ssh_user    => $ssh_user,
-                hosts       => $cfweb::pki::cluster_hosts.reduce([]) |$memo, $v| {
+                hosts       => $cfweb::cluster_hosts.reduce([]) |$memo, $v| {
                     $host = $v[0]
 
                     if $host != $::trusted['certname'] {

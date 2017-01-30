@@ -21,6 +21,7 @@ module PuppetX::CfWeb
         #'jvm',
     ]
 
+    SLICE_PREFIX = 'system-'
     BASE_DIR = File.expand_path('../', __FILE__)
 
     #---
