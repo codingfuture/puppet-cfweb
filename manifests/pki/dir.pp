@@ -16,6 +16,10 @@ class cfweb::pki::dir {
 
     #---
     if $cfweb::is_secondary {
+        if !($cfweb::primary_host =~ String[1]) {
+            fail('Primary host is not known')
+        }
+
         exec { 'cfweb_sync_pki_init':
             user    => $ssh_user,
             command => [
@@ -24,7 +28,10 @@ class cfweb::pki::dir {
                 $cfweb_sync_pki,
             ].join(' '),
             creates => $root_dir,
-            require => User[$ssh_user],
+            require => [
+                User[$ssh_user],
+                Anchor['cfnetwork:firewall'],
+            ]
         }
 
         exec { 'cfweb_sync_pki':
@@ -35,7 +42,10 @@ class cfweb::pki::dir {
                 $cfweb_sync_pki,
             ].join(' '),
             refreshonly => true,
-            require     => User[$ssh_user],
+            require     => [
+                User[$ssh_user],
+                Anchor['cfnetwork:firewall'],
+            ]
         }
 
         file { $cfweb_sync_pki:
@@ -76,6 +86,7 @@ class cfweb::pki::dir {
         }
 
         #---
+        require cfsystem::randomfeed
         $dhparam = $cfweb::pki::dhparam
 
         exec { 'cfweb DH params':
@@ -144,6 +155,7 @@ class cfweb::pki::dir {
             require => [
                 File[$ticket_dir],
                 File[$cfweb_update_tls_ticket],
+                Anchor['cfnetwork:firewall'],
             ],
         }
 
@@ -152,7 +164,10 @@ class cfweb::pki::dir {
             user        => $ssh_user,
             command     => $cfweb_sync_pki,
             refreshonly => true,
-            require     => User[$ssh_user],
+            require     => [
+                User[$ssh_user],
+                Anchor['cfnetwork:firewall'],
+            ]
         }
     }
 }
