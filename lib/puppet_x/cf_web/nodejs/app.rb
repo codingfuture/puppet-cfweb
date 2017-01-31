@@ -70,6 +70,7 @@ module PuppetX::CfWeb::Nodejs::App
                 'Service' => {
                     'Environment' => [
                         "HTTP_PORT=#{sock_base}.#{i}",
+                        "PORT=#{sock_base}.#{i}",
                         "NODE_VERSION=#{version}",
                         "NODE_ENV=#{node_env}",
                     ],

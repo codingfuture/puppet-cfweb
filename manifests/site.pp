@@ -36,7 +36,7 @@ define cfweb::site (
         newname    => Optional[String[1]],
     }]] $limits = {},
 
-    Optional[Hash[String, Hash]] $deploy = undef,
+    Optional[Hash[String, Any]] $deploy = undef,
     Optional[String[1]] $force_user = undef,
 ) {
     include cfdb
@@ -100,6 +100,8 @@ define cfweb::site (
         },
         default => $force_user,
     }
+    $group = $user
+    $deploy_user = "deploy_${title}"
 
     $site_dir = "${cfweb::nginx::web_dir}/${site}"
     $tmp_dir = "${site_dir}/tmp"
@@ -108,20 +110,14 @@ define cfweb::site (
     # This must be created by deploy script
     $document_root = "${site_dir}/current"
 
-    if $is_dynamic {
-        group { $user:
+    if $is_dynamic or $deploy {
+        group { $group:
             ensure => present,
         } ->
-        user { $user:
-            ensure  => present,
-            gid     => $user,
-            home    => $site_dir,
-            require => Group[$user],
-        } ->
         exec { "add_nginx_to_${user}":
-            command => "/usr/sbin/adduser ${cfweb::nginx::user} ${user} && \
-            /usr/sbin/service ${cfweb::nginx::service_name} reload",
-            unless  => "/usr/bin/id -Gn ${cfweb::nginx::user} | /bin/grep -q ${user}",
+            command => "/usr/sbin/adduser ${cfweb::nginx::user} ${group} && \
+            /usr/sbin/systemctl reload ${cfweb::nginx::service_name}",
+            unless  => "/usr/bin/id -Gn ${cfweb::nginx::user} | /bin/grep -q ${group}",
         } ->
         file { [
                 "${cfweb::nginx::bin_dir}/start-${title}",
@@ -134,11 +130,29 @@ define cfweb::site (
         }
     }
 
+    if $is_dynamic {
+        user { $user:
+            ensure  => present,
+            gid     => $group,
+            home    => $site_dir,
+            require => Group[$group],
+        }
+    }
+
+    if $deploy {
+        user { $deploy_user:
+            ensure  => present,
+            gid     => $group,
+            home    => $site_dir,
+            require => Group[$group],
+        }
+    }
+
     file { $site_dir:
         ensure  => directory,
         mode    => '0750',
         owner   => $user,
-        group   => $user,
+        group   => $group,
         require => User[$user],
     }
 
@@ -146,6 +160,16 @@ define cfweb::site (
         ensure  => link,
         replace => false,
         target  => $cfweb::nginx::empty_root,
+    }
+
+    if $is_dynamic or $deploy {
+        file { [$persistent_dir, $tmp_dir]:
+            ensure  => directory,
+            mode    => '0750',
+            owner   => $user,
+            group   => $group,
+            require => User[$user],
+        }
     }
 
 
@@ -210,14 +234,6 @@ define cfweb::site (
     ]
 
     if $is_dynamic {
-        file { [$persistent_dir, $tmp_dir]:
-            ensure  => directory,
-            mode    => '0750',
-            owner   => $user,
-            group   => $user,
-            require => User[$user],
-        }
-
         # Define global app slice
         cfweb_app { $user:
             ensure     => present,
@@ -315,13 +331,15 @@ define cfweb::site (
         create_resources(
             'cfweb::deploy',
             {
-                site     => $title,
-                user     => $user,
-                site_dir => $site_dir,
-                apps     => keys($apps),
-                persistent_dir => $persistent_dir,
-                # Note: it must run AFTER the rest is configured
-                require  => $cfg_notify,
+                $title => {
+                    site     => $title,
+                    user     => $deploy_user,
+                    site_dir => $site_dir,
+                    apps     => keys($apps),
+                    persistent_dir => $persistent_dir,
+                    # Note: it must run AFTER the rest is configured
+                    require  => $cfg_notify,
+                },
             },
             $deploy
         )

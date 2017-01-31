@@ -35,5 +35,6 @@ define cfweb::deploy(
     Array[String[1]] $apps = undef,
 ) {
     assert_private()
-    fail('Not implemented yet')
+    require cfweb::appcommon::citool
+    #fail('Not implemented yet')
 }

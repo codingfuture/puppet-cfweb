@@ -47,6 +47,7 @@ class cfweb::appcommon::rvm(
         cwd         => $home_dir,
         environment => $cmdenv,
         unless      => '/usr/bin/gpg2 --list-keys 409B6B1796C275462A1703113804BB82D39DC0E3',
+        require     => Anchor['cfnetwork:firewall'],
     } ->
     exec { 'Setup RVM':
         command     => "/usr/bin/curl -sSL '${source}' | bash -s ${version}",
