@@ -116,7 +116,7 @@ define cfweb::site (
         } ->
         exec { "add_nginx_to_${user}":
             command => "/usr/sbin/adduser ${cfweb::nginx::user} ${group} && \
-            /usr/sbin/systemctl reload ${cfweb::nginx::service_name}",
+            /bin/systemctl reload ${cfweb::nginx::service_name}",
             unless  => "/usr/bin/id -Gn ${cfweb::nginx::user} | /bin/grep -q ${group}",
         } ->
         file { [
@@ -292,7 +292,7 @@ define cfweb::site (
     $bind = $ifaces.map |$iface| {
         $iface ? {
             'any' => '*',
-            default => cf_get_iface_address(Cfnetwork::Iface[$iface])[0],
+            default => cf_get_bind_address($iface),
         }
     }
 

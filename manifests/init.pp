@@ -17,7 +17,7 @@ class cfweb (
     validate_re($cluster, '^[a-z][a-z0-9_]*$')
     validate_re($web_service, '^[a-z][a-z0-9_]*$')
 
-    $internal_addr = cf_get_iface_address(Cfnetwork::Iface[$internal_face])[0]
+    $internal_addr = cf_get_bind_address($internal_face)
 
     if !$internal_addr {
         fail('$cfweb::internal_face must be set to interface with valid address')

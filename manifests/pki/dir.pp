@@ -15,6 +15,8 @@ class cfweb::pki::dir {
     $cfweb_update_tls_ticket = "${cfsystem::custombin::bin_dir}/cfweb_update_tls_ticket"
 
     #---
+    ensure_packages(['rsync'])
+
     if $cfweb::is_secondary {
         if !($cfweb::primary_host =~ String[1]) {
             fail('Primary host is not known')
@@ -31,6 +33,7 @@ class cfweb::pki::dir {
             require => [
                 User[$ssh_user],
                 Anchor['cfnetwork:firewall'],
+                Package['rsync'],
             ]
         }
 
@@ -45,6 +48,7 @@ class cfweb::pki::dir {
             require     => [
                 User[$ssh_user],
                 Anchor['cfnetwork:firewall'],
+                Package['rsync'],
             ]
         }
 
@@ -156,6 +160,7 @@ class cfweb::pki::dir {
                 File[$ticket_dir],
                 File[$cfweb_update_tls_ticket],
                 Anchor['cfnetwork:firewall'],
+                Package['rsync'],
             ],
         }
 
