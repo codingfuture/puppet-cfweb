@@ -22,15 +22,8 @@ class cfweb::pki::user {
         purge_ssh_keys => true,
     }
 
-    file {"/etc/sudoers.d/${user}":
-        group   => root,
-        owner   => root,
-        mode    => '0400',
-        replace => true,
-        content => "
-${user}   ALL=(ALL:ALL) NOPASSWD: /bin/systemctl reload ${cfweb::web_service}.service
-",
-        require => Package['sudo'],
+    cfauth::sudoentry { $user:
+        command => "/bin/systemctl reload ${cfweb::web_service}.service",
     }
 
     # Own key

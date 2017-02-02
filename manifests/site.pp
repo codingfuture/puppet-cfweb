@@ -328,20 +328,17 @@ define cfweb::site (
     # Deploy procedure
     #---
     if $deploy {
-        create_resources(
-            'cfweb::deploy',
-            {
-                $title => {
-                    site     => $title,
-                    user     => $deploy_user,
-                    site_dir => $site_dir,
-                    apps     => keys($apps),
-                    persistent_dir => $persistent_dir,
-                    # Note: it must run AFTER the rest is configured
-                    require  => $cfg_notify,
-                },
-            },
-            $deploy
-        )
+        cfweb::deploy { $title:
+            strategy       => pick($deploy['strategy'], 'citool'),
+            params         => $deploy - strategy,
+            site           => $title,
+            run_user       => $user,
+            deploy_user    => $deploy_user,
+            site_dir       => $site_dir,
+            apps           => keys($apps),
+            persistent_dir => $persistent_dir,
+            # Note: it must run AFTER the rest is configured
+            require        => $cfg_notify,
+        }
     }
 }

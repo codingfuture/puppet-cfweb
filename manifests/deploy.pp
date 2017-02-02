@@ -4,37 +4,38 @@
 
 
 define cfweb::deploy(
-    Enum[
-        'svn',
-        'git',
-        'hg',
-        'archiva',
-        'artifactory',
-        'nexus',
-        'sftp'
-    ] $type,
-    String[1] $url,
-
-    Boolean $find_latest = true,
-    Integer[0] $depth = 0,
-    Optional[String[1]] $match = undef,
-    Enum[
-        'symcode',
-        'natural',
-        'ctime',
-        'mtime'
-    ] $sort = 'natural',
-
-    Boolean $is_tarball = true,
-
-    # internal options
-    String[1] $site = undef,
-    String[1] $user = undef,
-    String[1] $site_dir = undef,
-    String[1] $persistent_dir = undef,
-    Array[String[1]] $apps = undef,
+    String[1] $strategy,
+    Hash[String[1], Any] $params,
+    String[1] $site,
+    String[1] $run_user,
+    String[1] $deploy_user,
+    String[1] $site_dir,
+    String[1] $persistent_dir,
+    Array[String[1]] $apps,
 ) {
     assert_private()
-    require cfweb::appcommon::citool
-    #fail('Not implemented yet')
+
+    case $strategy {
+        'citool' : {
+            $impl = "cfweb::deploy::${strategy}"
+        }
+        default : {
+            $impl = $strategy
+        }
+    }
+
+    create_resources(
+        $impl,
+        {
+            $title => {
+                site => $site,
+                run_user => $run_user,
+                deploy_user => $deploy_user,
+                site_dir => $site_dir,
+                persistent_dir => $persistent_dir,
+                apps => $apps,
+            }
+        },
+        $params
+    )
 }
