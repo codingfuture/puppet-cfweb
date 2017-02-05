@@ -13,6 +13,7 @@ class cfweb (
     String[1] $internal_face = 'main',
 ) inherits cfweb::global {
     include cfnetwork
+    include cfsystem
 
     validate_re($cluster, '^[a-z][a-z0-9_]*$')
     validate_re($web_service, '^[a-z][a-z0-9_]*$')
@@ -33,15 +34,21 @@ class cfweb (
     }
 
     #---
-    $host_facts = cf_query_facts("cfweb.cluster=\"${cluster}\"", ['cfweb'])
-    $cluster_hosts = $host_facts.reduce({}) |$memo, $val| {
-        $host = $val[0]
-        $cluster_info = $val[1]['cfweb']
+    $cluster_instances = cf_query_resources(false, "Class[cfweb]{ cluster = ${cluster} }", false)
+    $cluster_hosts = $cluster_instances.reduce({}) |$memo, $val| {
+        $host = $val['certname']
         merge($memo, {
-            $host => $cluster_info
+            $host => $val['parameters']
         })
     }
 
+    $cluster_ipset = "cfweb_${cluster}"
+    cfnetwork::ipset { $cluster_ipset:
+        type => 'ip',
+        addr => cf_stable_sort(keys($cluster_hosts)),
+    }
+
+    #---
     $primary_host = $cluster_hosts.reduce('') |$memo, $val| {
         if $val[1]['is_secondary'] {
             $memo
