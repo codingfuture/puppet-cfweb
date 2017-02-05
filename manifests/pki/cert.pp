@@ -66,13 +66,15 @@ define cfweb::pki::cert(
             $certs = cf_nginx_cert(file($cert_source), $x_cn)
 
             file { $crt_file:
-                content => $certs['chained'],
-                notify  => Exec['cfweb_sync_pki'],
+                content   => $certs['chained'],
+                show_diff => false,
+                notify    => Exec['cfweb_sync_pki'],
             }
 
             file { $trusted_file:
-                content => $certs['trusted'],
-                notify  => Exec['cfweb_sync_pki'],
+                content   => $certs['trusted'],
+                show_diff => false,
+                notify    => Exec['cfweb_sync_pki'],
             }
         } else {
             exec { $exec_name:
