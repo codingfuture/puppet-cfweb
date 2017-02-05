@@ -137,7 +137,14 @@ define cfweb::app::php (
             }
         }
 
-        $memcache_port = cf_genport("cfweb/${site}-phpsess")
+        $port_title = "cfweb/${site}-phpsess"
+        $memcache_port = cf_genport($port_title)
+        cfsystem_persist { "ports:${port_title}":
+            section => 'ports',
+            key     => $port_title,
+            value   => $memcache_port,
+        }
+
         $memcache = {
             sessions => $memcache_sessions,
             servers  => cf_stable_sort($memcache_servers),
