@@ -13,7 +13,8 @@ Puppet::Type.type(:cfweb_app).provide(
     
     mixin_dbtypes('app')
     
-    commands :systemctl => '/bin/systemctl'
+    commands :systemctl => PuppetX::CfSystem::SYSTEMD_CTL
+
     
     def self.get_config_index
         'cf30web2_app'

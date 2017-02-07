@@ -11,7 +11,8 @@ Puppet::Type.type(:cfweb_nginx).provide(
 ) do
     desc "Provider for cfweb_nginx"
     
-    commands :systemctl => '/bin/systemctl'
+    commands :systemctl => PuppetX::CfSystem::SYSTEMD_CTL
+
     NGINX = '/usr/sbin/nginx' unless defined? NGINX
     commands :nginx => NGINX
     
