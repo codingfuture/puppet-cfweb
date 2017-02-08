@@ -170,7 +170,7 @@ module PuppetX::CfWeb::Php::App
         if memcache
             # TODO: actual max conn per server should be used
             memcache_maxconn = max_conn * (memcache['servers'].size+1) * 10
-            port = cf_system.genPort("cfweb/#{site}-phpsess", memcache['port'])
+            port = memcache['port']
             content_ini = {
                 'Unit' => {
                     'Description' => "CFWEB PHPSESS #{site}",
