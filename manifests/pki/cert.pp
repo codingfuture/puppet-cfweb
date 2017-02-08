@@ -7,11 +7,18 @@ define cfweb::pki::cert(
     $cert_name = $title,
     $key_name = undef,
     $cert_source = undef,
-    $x509_c = undef,
-    $x509_st = undef,
-    $x509_l = undef,
-    $x509_o = undef,
-    $x509_cn = undef,
+    Optional[String[2,2]]
+        $x509_c = undef,
+    Optional[String[1]]
+        $x509_st = undef,
+    Optional[String[1]]
+        $x509_l = undef,
+    Optional[String[1]]
+        $x509_o = undef,
+    Optional[String[1]]
+        $x509_ou = undef,
+    Optional[String[1]]
+        $x509_cn = undef,
 ){
     include cfweb::pki
 
@@ -34,6 +41,7 @@ define cfweb::pki::cert(
         $x_st = pick($x509_st, $cfweb::pki::x509_st)
         $x_l = pick($x509_l, $cfweb::pki::x509_l)
         $x_o = pick($x509_o, $cfweb::pki::x509_o)
+        $x_ou = pick($x509_ou, $cfweb::pki::x509_ou)
         $x_cn = pick($x509_cn, $cert_name)
 
         # CSR must always be available
@@ -44,7 +52,7 @@ define cfweb::pki::cert(
                 "-out ${csr_file}",
                 "-key ${key_file}",
                 '-new -sha256',
-                "-subj '/C=${x_c}/ST=${x_st}/L=${x_l}/O=${x_o}/CN=${x_cn}'",
+                "-subj '/C=${x_c}/ST=${x_st}/L=${x_l}/O=${x_o}/OU=${x_ou}/CN=${x_cn}'",
             ].join(' '),
             creates => $csr_file,
             require => Exec["cfweb::pki::key::${key_name_act}"],

@@ -24,10 +24,11 @@ class cfweb::pki(
 
     Optional[Variant[String, Enum['letsencrypt', 'wosign']]]
         $cert_source = undef,
-    String $x509_c = 'US',
-    String $x509_st = 'Denial',
-    String $x509_l = 'Springfield',
-    String $x509_o = 'SomeOrg',
+    String[2, 2] $x509_c = 'US',
+    String[1] $x509_st = 'Denial',
+    String[1] $x509_l = 'Springfield',
+    String[1] $x509_o = 'SomeOrg',
+    String[1] $x509_ou = 'SomeUnit',
 
     Array[String] $keys = [],
     Array[String] $certs = [],
