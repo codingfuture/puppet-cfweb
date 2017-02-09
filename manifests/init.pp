@@ -74,18 +74,21 @@ class cfweb (
         $site = $cfweb::global::sites[$site_name]
 
         if !($site =~ Hash) {
-            fail("Site '${site_name}' is missing from cfweb::global::sites: ${site}")
+            notify { "cfweb:standlone:${site_name}":
+                message  =>"Site '${site_name}' is missing from cfweb::global::sites: ${site}",
+                loglevel => 'err',
+            }
+        } else {
+            create_resources(
+                    'cfweb::site',
+                    {
+                        $site_name => {
+                            is_backend => false,
+                        }
+                    },
+                    $site
+            )
         }
-
-        create_resources(
-                'cfweb::site',
-                {
-                    $site_name => {
-                        is_backend => false,
-                    }
-                },
-                $site
-        )
     }
 
 
@@ -96,18 +99,21 @@ class cfweb (
         $site = $cfweb::global::sites[$site_name]
 
         if !($site =~ Hash) {
-            fail("Site '${site_name}' is missing from cfweb::global::sites: ${site}")
+            notify { "cfweb:backends:${site_name}":
+                message  =>"Site '${site_name}' is missing from cfweb::global::sites: ${site}",
+                loglevel => 'err',
+            }
+        } else {
+            create_resources(
+                    'cfweb::site',
+                    {
+                        $site_name => {
+                            is_backend => true,
+                        }
+                    },
+                    $site
+            )
         }
-
-        create_resources(
-                'cfweb::site',
-                {
-                    $site_name => {
-                        is_backend => true,
-                    }
-                },
-                $site
-        )
     }
 
 
