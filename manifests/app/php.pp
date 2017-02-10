@@ -118,11 +118,22 @@ define cfweb::app::php (
         require cfweb::appcommon::memcached
         ensure_packages(["${cfweb::appcommon::php::pkgprefix}-memcache"])
 
-        $memcache_servers = cf_query_resources(
-            "Class['cfweb']{ cluster = '${cfweb::cluster}'} and Cfweb_app['${service_name}']",
-            "Cfweb_app['${service_name}']",
-            false
-        ).reduce([]) |$memo, $v| {
+        $memcache_servers = cfsystem::query([
+            'from', 'resources', ['extract', [ 'certname', 'parameters' ],
+                ['and',
+                    ['in', 'certname', ['from', 'resources',
+                        ['extract', 'certname', [
+                            ['and', [
+                                ['=', 'type', 'Class'],
+                                ['=', 'title', 'cfweb'],
+                                ['=', ['parameter', 'cluster'], $cfweb::cluster],
+                            ]]
+                        ]]
+                    ]],
+                    ['=', 'type', 'Cfweb_app'],
+                    ['=', 'title', $service_name],
+                ],
+        ]]).reduce([]) |$memo, $v| {
             $params = $v['parameters']
             $memc = $params['misc']['memcache']
             $certname = $v['certname']

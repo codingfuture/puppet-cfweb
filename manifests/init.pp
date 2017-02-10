@@ -34,7 +34,15 @@ class cfweb (
     }
 
     #---
-    $cluster_instances = cf_query_resources(false, "Class[cfweb]{ cluster = ${cluster} }", false)
+    $cluster_instances = cfsystem::query([
+        'from', 'resources', ['extract', [ 'certname', 'parameters' ],
+            ['and',
+                ['=', 'type', 'Class'],
+                ['=', 'title', 'cfweb'],
+                ['=', ['parameter', 'cluster'], $cluster],
+            ],
+    ]])
+
     $cluster_hosts = $cluster_instances.reduce({}) |$memo, $val| {
         $host = $val['certname']
         merge($memo, {
