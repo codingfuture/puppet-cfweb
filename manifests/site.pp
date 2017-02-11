@@ -188,11 +188,11 @@ define cfweb::site (
                     custom_config => 'cfweb::appcommon::dbaccess',
                 } },
                 merge({
-                    max_connections => try_get_value(
-                        $::facts,
-                        "cfweb/sites/${site}/maxconn",
+                    # TODO: get rid of facts
+                    max_connections => pick_default(
+                        $::facts.dig('cfweb', 'sites', $site, 'maxconn'),
                         $cfdb::max_connections_default
-                    )
+                    ),
                 }, $da)
             )
             $name
@@ -213,11 +213,14 @@ define cfweb::site (
                             custom_config => 'cfweb::appcommon::dbaccess',
                         } },
                         merge({
-                            max_connections => try_get_value(
-                                $::facts,
-                                "cfweb/sites/${site}/apps/${app_type}/maxconn",
+                            # TODO: get rid of facts
+                            max_connections => pick_default(
+                                $::facts.dig(
+                                    'cfweb', 'sites', $site,
+                                    'apps', $app_type, 'maxconn'
+                                ),
                                 $cfdb::max_connections_default
-                            )
+                            ),
                         }, $da)
                     )
                     $name

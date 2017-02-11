@@ -54,9 +54,15 @@ define cfweb::app::ruby (
         content => epp($template_global, {
             upstream => $upstream,
             sock     => $sock,
-            max_conn => try_get_value(
-                $::facts,
-                "cfweb/sites/${site}/apps/${type}/maxconn",
+            # TODO: get rid of facts
+            max_conn => pick_default($::facts.dig(
+                    'cfweb',
+                    'sites',
+                    $site,
+                    'apps',
+                    $type,
+                    'maxconn'
+                ),
                 1
             ),
         }),

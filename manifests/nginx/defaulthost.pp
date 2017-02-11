@@ -19,10 +19,10 @@ define cfweb::nginx::defaulthost (
         include cfweb::pki
 
         $certs = any2array(pick(
-            try_get_value($default_certs, "${iface}/${port}"),
-            try_get_value($default_certs, $iface),
-            try_get_value($default_certs, "any/${port}"),
-            try_get_value($default_certs, 'any'),
+            $default_certs.dig($iface, $port),
+            $default_certs.dig($iface),
+            $default_certs.dig('any', $port),
+            $default_certs.dig('any'),
             'default'
         )).map |$cert_name| {
             getparam(Cfweb::Pki::Certinfo[$cert_name], 'info')
