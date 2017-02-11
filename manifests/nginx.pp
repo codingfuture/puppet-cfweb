@@ -129,6 +129,7 @@ class cfweb::nginx (
         service_name  => $service_name,
         limits        => $limits,
     } ->
+    Cfsystem_flush_config['commit'] ->
     service { $service_name:
         ensure   => running,
         enable   => true,

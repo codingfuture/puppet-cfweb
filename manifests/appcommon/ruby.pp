@@ -17,14 +17,25 @@ define cfweb::appcommon::ruby(
                         { 'install_options' => ['--force-yes'] })
     }
 
-    exec { "Install ruby: ${title}":
-        command     => "${rvm_bin} autolibs disable; ${rvm_bin} install ${version}",
+    exec { "Installing ruby ${title}":
+        command     => '/bin/true',
         unless      => "${rvm_bin} ${version} do ruby -v",
         user        => $cfweb::appcommon::rvm::user,
         group       => $cfweb::appcommon::rvm::group,
         environment => $cfweb::appcommon::rvm::cmdenv,
         cwd         => $cfweb::appcommon::rvm::home_dir,
         require     => Exec['Setup RVM'],
+        loglevel    => 'warning',
+    } ~>
+    exec { "Installed ruby: ${title}":
+        command     => "${rvm_bin} autolibs disable; ${rvm_bin} install ${version}",
+        refreshonly => true,
+        user        => $cfweb::appcommon::rvm::user,
+        group       => $cfweb::appcommon::rvm::group,
+        environment => $cfweb::appcommon::rvm::cmdenv,
+        cwd         => $cfweb::appcommon::rvm::home_dir,
+        require     => Exec['Setup RVM'],
+        loglevel    => 'warning',
     } ->
     cfweb::appcommon::rubygem{ "${title}:bundler":
         package => 'bundler',

@@ -124,9 +124,8 @@ define cfweb::app::php (
                     ['in', 'certname', ['from', 'resources',
                         ['extract', 'certname', [
                             ['and', [
-                                ['=', 'type', 'Class'],
-                                ['=', 'title', 'cfweb'],
-                                ['=', ['parameter', 'cluster'], $cfweb::cluster],
+                                ['=', 'type', 'Cfweb::Internal::Clusterhost'],
+                                ['=', 'title', $cfweb::cluster],
                             ]]
                         ]]
                     ]],

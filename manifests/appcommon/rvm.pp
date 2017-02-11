@@ -48,6 +48,7 @@ class cfweb::appcommon::rvm(
         environment => $cmdenv,
         unless      => '/usr/bin/gpg2 --list-keys 409B6B1796C275462A1703113804BB82D39DC0E3',
         require     => Anchor['cfnetwork:firewall'],
+        loglevel    => 'warning',
     } ->
     exec { 'Setup RVM':
         command     => "/usr/bin/curl -sSL '${source}' | bash -s ${version}",
@@ -56,6 +57,7 @@ class cfweb::appcommon::rvm(
         cwd         => $home_dir,
         environment => $cmdenv,
         unless      => "/usr/bin/test -e ${rvm_bin}",
+        loglevel    => 'warning',
     } ->
     exec { 'Update RVM':
         command     => "${rvm_bin} get ${version} --auto",
@@ -64,6 +66,7 @@ class cfweb::appcommon::rvm(
         cwd         => $home_dir,
         environment => $cmdenv,
         onlyif      => "/usr/bin/find '${dir}/installed.at' -mmin '+${update_cache}' | /bin/egrep '.'",
+        loglevel    => 'warning',
     }
 
     $build_essentials = [

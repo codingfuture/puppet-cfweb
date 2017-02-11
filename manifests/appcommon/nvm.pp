@@ -61,6 +61,7 @@ class cfweb::appcommon::nvm(
         environment => $cmdenv,
         notify      => Exec['Checkout NVM'],
         require     => Anchor['cfnetwork:firewall'],
+        loglevel    => 'warning',
     } ->
     exec { 'Update NVM':
         command     => "/usr/bin/git ${git_proxy} fetch origin",
@@ -71,6 +72,7 @@ class cfweb::appcommon::nvm(
         onlyif      => $update_onlyif,
         notify      => Exec['Checkout NVM'],
         require     => Anchor['cfnetwork:firewall'],
+        loglevel    => 'warning',
     }
 
     $nvm_checkout = $version ? {
@@ -84,5 +86,6 @@ class cfweb::appcommon::nvm(
         group       => $group,
         cwd         => $dir,
         refreshonly => true,
+        loglevel    => 'warning',
     }
 }

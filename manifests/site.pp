@@ -4,28 +4,28 @@
 
 
 define cfweb::site (
-    String $server_name,
-    Array[String] $alt_names = [],
+    String[1] $server_name = $title,
+    Array[String[1]] $alt_names = [],
     Boolean $redirect_alt_names = true,
 
-    Array[String] $ifaces = ['main'],
-    Array[Integer] $plain_ports = [80],
-    Array[Integer] $tls_ports = [443],
+    Array[String[1]] $ifaces = ['main'],
+    Array[Integer[1,65535]] $plain_ports = [80],
+    Array[Integer[1,65535]] $tls_ports = [443],
     Boolean $redirect_plain = true,
 
     Boolean $is_backend = false,
 
-    Hash[String,Hash] $auto_cert = {},
-    Array[String] $shared_certs = [],
-    Hash[String,Hash] $dbaccess = {},
-    Hash[String,Hash,1] $apps = { 'static' => {} },
-    Optional[String] $custom_conf = undef,
-    String $web_root = '/',
+    Hash[String[1],Hash] $auto_cert = {},
+    Array[String[1]] $shared_certs = [],
+    Hash[String[1],Hash] $dbaccess = {},
+    Hash[String[1],Hash,1] $apps = { 'static' => {} },
+    Optional[String[1]] $custom_conf = undef,
+    String[1] $web_root = '/',
 
     Integer[1,25600] $cpu_weight = 100,
     Integer[1,200] $io_weight = 100,
 
-    Hash[String, Struct[{
+    Hash[String[1], Struct[{
         type       => Enum['conn', 'req'],
         var        => String[1],
         count      => Optional[Integer[1]],
@@ -36,7 +36,7 @@ define cfweb::site (
         newname    => Optional[String[1]],
     }]] $limits = {},
 
-    Optional[Hash[String, Any]] $deploy = undef,
+    Optional[Hash[String[1], Any]] $deploy = undef,
     Optional[String[1]] $force_user = undef,
 ) {
     include cfdb
@@ -111,14 +111,25 @@ define cfweb::site (
     $document_root = "${site_dir}/current"
 
     if $is_dynamic or $deploy {
-        group { $group:
-            ensure => present,
-        } ->
-        exec { "add_nginx_to_${user}":
-            command => "/usr/sbin/adduser ${cfweb::nginx::user} ${group} && \
-            /bin/systemctl reload ${cfweb::nginx::service_name}",
-            unless  => "/usr/bin/id -Gn ${cfweb::nginx::user} | /bin/grep -q ${group}",
-        } ->
+        ensure_resource('exec', "add_nginx_to_${group}", {
+            command  => [
+                "/usr/sbin/adduser ${cfweb::nginx::user} ${group}",
+                "/bin/systemctl reload ${cfweb::nginx::service_name}"
+            ].join(' && '),
+            'unless' => "/usr/bin/id -Gn ${cfweb::nginx::user} | /bin/grep -q ${group}",
+            require  => Group[$group],
+        })
+    }
+
+    if $is_dynamic {
+        ensure_resource('group', $group, { ensure => present })
+        ensure_resource( 'user', $user, {
+            ensure  => present,
+            gid     => $group,
+            home    => $site_dir,
+            require => Group[$group],
+        })
+
         file { [
                 "${cfweb::nginx::bin_dir}/start-${title}",
                 "${cfweb::nginx::bin_dir}/stop-${title}",
@@ -130,22 +141,14 @@ define cfweb::site (
         }
     }
 
-    if $is_dynamic {
-        user { $user:
-            ensure  => present,
-            gid     => $group,
-            home    => $site_dir,
-            require => Group[$group],
-        }
-    }
-
     if $deploy {
-        user { $deploy_user:
+        ensure_resource('group', $group, { ensure => present })
+        ensure_resource( 'user', $deploy_user, {
             ensure  => present,
             gid     => $group,
             home    => $site_dir,
             require => Group[$group],
-        }
+        })
     }
 
     file { $site_dir:

@@ -60,6 +60,7 @@ class cfweb::appcommon::citool(
         environment => $cmdenv,
         notify      => Exec['Checkout CITool'],
         require     => Anchor['cfnetwork:firewall'],
+        loglevel    => 'warning',
     } ->
     exec { 'Update CITool':
         command     => "/usr/bin/git ${git_proxy} fetch origin",
@@ -70,6 +71,7 @@ class cfweb::appcommon::citool(
         onlyif      => $update_onlyif,
         notify      => Exec['Checkout CITool'],
         require     => Anchor['cfnetwork:firewall'],
+        loglevel    => 'warning',
     }
 
     $citool_checkout = $version ? {
@@ -83,5 +85,6 @@ class cfweb::appcommon::citool(
         group       => $group,
         cwd         => $dir,
         refreshonly => true,
+        loglevel    => 'warning',
     }
 }

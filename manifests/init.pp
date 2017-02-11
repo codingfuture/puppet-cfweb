@@ -6,11 +6,12 @@
 class cfweb (
     String[1] $cluster,
     Boolean $is_secondary = false,
-    Array[String] $standalone = [],
-    Array[String] $backends = [],
-    Array[String] $frontends = [],
+    Array[String[1]] $standalone = [],
+    Array[String[1]] $backends = [],
+    Array[String[1]] $frontends = [],
     String[1] $web_service = 'cfnginx',
     String[1] $internal_face = 'main',
+    Array[String[1]] $cluster_hint = [],
 ) inherits cfweb::global {
     include cfnetwork
     include cfsystem
@@ -33,31 +34,34 @@ class cfweb (
         }
     }
 
+    cfweb::internal::clusterhost { $cluster:
+        is_secondary => $is_secondary,
+    }
+
     #---
     $cluster_instances = cfsystem::query([
         'from', 'resources', ['extract', [ 'certname', 'parameters' ],
             ['and',
-                ['=', 'type', 'Class'],
-                ['=', 'title', 'cfweb'],
-                ['=', ['parameter', 'cluster'], $cluster],
+                ['=', 'type', 'Cfweb::Internal::Clusterhost'],
+                ['=', 'title', $cluster],
             ],
-    ]])
-
-    $cluster_hosts = $cluster_instances.reduce({}) |$memo, $val| {
+    ]]).reduce({}) |$memo, $val| {
         $host = $val['certname']
         merge($memo, {
             $host => $val['parameters']
         })
     }
 
+    $cluster_hosts = cf_stable_sort($cluster_instances.keys())
+
     $cluster_ipset = "cfweb_${cluster}"
     cfnetwork::ipset { $cluster_ipset:
         type => 'ip',
-        addr => cf_stable_sort(keys($cluster_hosts)),
+        addr => cf_stable_sort(unique($cluster_hosts + $cluster_hint)),
     }
 
     #---
-    $primary_host = $cluster_hosts.reduce('') |$memo, $val| {
+    $primary_host = $cluster_instances.reduce('') |$memo, $val| {
         if $val[1]['is_secondary'] {
             $memo
         } else {
