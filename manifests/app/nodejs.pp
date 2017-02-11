@@ -19,8 +19,8 @@ define cfweb::app::nodejs (
 
     Integer[1] $memory_weight = 100,
     Optional[Integer[1]] $memory_max = undef,
-    Integer[1,25600] $cpu_weight = 100,
-    Integer[1,200] $io_weight = 100,
+    Cfsystem::CpuWeight $cpu_weight = 100,
+    Cfsystem::IoWeight $io_weight = 100,
 
     String[1] $entry_point = 'app.js',
     Struct[{

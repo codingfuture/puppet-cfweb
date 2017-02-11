@@ -33,7 +33,7 @@ define cfweb::nginx::defaulthost (
 
     $listen = $iface ? {
         'any' => '*',
-        default => cf_get_bind_address($iface),
+        default => cfnetwork::bind_address($iface),
     }
 
     if !$listen {

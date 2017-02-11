@@ -9,8 +9,8 @@ define cfweb::site (
     Boolean $redirect_alt_names = true,
 
     Array[String[1]] $ifaces = ['main'],
-    Array[Integer[1,65535]] $plain_ports = [80],
-    Array[Integer[1,65535]] $tls_ports = [443],
+    Array[Cfnetwork::Port] $plain_ports = [80],
+    Array[Cfnetwork::Port] $tls_ports = [443],
     Boolean $redirect_plain = true,
 
     Boolean $is_backend = false,
@@ -22,8 +22,8 @@ define cfweb::site (
     Optional[String[1]] $custom_conf = undef,
     String[1] $web_root = '/',
 
-    Integer[1,25600] $cpu_weight = 100,
-    Integer[1,200] $io_weight = 100,
+    Cfsystem::CpuWeight $cpu_weight = 100,
+    Cfsystem::IoWeight $io_weight = 100,
 
     Hash[String[1], Struct[{
         type       => Enum['conn', 'req'],
@@ -298,7 +298,7 @@ define cfweb::site (
     $bind = $ifaces.map |$iface| {
         $iface ? {
             'any' => '*',
-            default => cf_get_bind_address($iface),
+            default => cfnetwork::bind_address($iface),
         }
     }
 

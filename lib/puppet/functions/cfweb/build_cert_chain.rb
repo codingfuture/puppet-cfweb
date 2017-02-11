@@ -2,14 +2,15 @@
 # Copyright 2016-2017 (c) Andrey Galkin
 #
 
+require 'openssl'
 
-module Puppet::Parser::Functions
-    newfunction(:cf_nginx_cert,  :type => :rvalue, :arity => 2) do |args|
-        require 'openssl'
-        
-        raw_certs = args[0]
-        common_name = args[1]
-        
+Puppet::Functions.create_function(:'cfweb::build_cert_chain') do
+    dispatch :build_chain do
+        param 'String[1]', :raw_certs
+        param 'String[1]', :common_name
+    end
+    
+    def build_chain(raw_certs, common_name)
         begin_cert = '-----BEGIN CERTIFICATE-----'
         end_cert = '-----END CERTIFICATE-----'
         certs = []
@@ -65,7 +66,7 @@ module Puppet::Parser::Functions
         # Based on docs:
         # chained: cert -> Intermediate CA
         # trusted: RootCA -> Intermediate CA
-        {
+        return {
             'chained' => chain.reverse[0, chain.size()-1], 
             'trusted' => chain[0, chain.size()-1], 
         }

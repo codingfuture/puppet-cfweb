@@ -71,7 +71,7 @@ define cfweb::pki::cert(
 
         #---
         if $cert_source and !$dyn_cert {
-            $certs = cf_nginx_cert(file($cert_source), $x_cn)
+            $certs = cfweb::build_cert_chain(file($cert_source), $x_cn)
 
             file { $crt_file:
                 content   => $certs['chained'],

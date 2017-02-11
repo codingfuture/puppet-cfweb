@@ -9,7 +9,7 @@
     location <%= $l %> {
         root <%= $document_root %>;
         
-        <%= cf_nginx_limit_req($site, 'api') %>
+        <%= cfweb::limit_req($site, 'api') %>
         
         fastcgi_index index.php;
         fastcgi_split_path_info ^(.+?\.php)(/.*)$;

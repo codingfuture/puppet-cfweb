@@ -19,7 +19,7 @@ class cfweb (
     validate_re($cluster, '^[a-z][a-z0-9_]*$')
     validate_re($web_service, '^[a-z][a-z0-9_]*$')
 
-    $internal_addr = cf_get_bind_address($internal_face)
+    $internal_addr = cfnetwork::bind_address($internal_face)
 
     if !$internal_addr {
         fail('$cfweb::internal_face must be set to interface with valid address')
@@ -52,12 +52,12 @@ class cfweb (
         })
     }
 
-    $cluster_hosts = cf_stable_sort($cluster_instances.keys())
+    $cluster_hosts = cfsystem::stable_sort($cluster_instances.keys())
 
     $cluster_ipset = "cfweb_${cluster}"
     cfnetwork::ipset { $cluster_ipset:
         type => 'ip',
-        addr => cf_stable_sort(unique($cluster_hosts + $cluster_hint)),
+        addr => cfsystem::stable_sort(unique($cluster_hosts + $cluster_hint)),
     }
 
     #---

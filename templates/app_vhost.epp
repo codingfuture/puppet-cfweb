@@ -100,7 +100,7 @@ server {
 <%= $tls_snippet -%>
 <%= $trust_proxy_snippet -%>
 
-    <%= cf_nginx_limit_conn($site, 'peraddrpersrv') %>
+    <%= cfweb::limit_conn($site, 'peraddrpersrv') %>
 
 <%  if $acme_well_known_dir { -%>
     location ^~ /.well-known/ {

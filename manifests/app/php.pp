@@ -17,8 +17,8 @@ define cfweb::app::php (
 
     Integer[1] $memory_weight = 100,
     Optional[Integer[1]] $memory_max = undef,
-    Integer[1,25600] $cpu_weight = 100,
-    Integer[1,200] $io_weight = 100,
+    Cfsystem::CpuWeight $cpu_weight = 100,
+    Cfsystem::IoWeight $io_weight = 100,
 
     Hash[String[1], Any] $php_ini = {},
     Hash[
@@ -154,11 +154,11 @@ define cfweb::app::php (
         }
 
         $port_title = "cfweb/${site}-phpsess"
-        $memcache_port = cf_genport($port_title)
+        $memcache_port = cfsystem::gen_port($port_title)
 
         $memcache = {
             sessions => $memcache_sessions,
-            servers  => cf_stable_sort($memcache_servers),
+            servers  => cfsystem::stable_sort($memcache_servers),
             host     => $cfweb::internal_addr,
             port     => $memcache_port,
         }

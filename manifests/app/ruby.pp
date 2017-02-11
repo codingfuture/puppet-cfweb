@@ -19,8 +19,8 @@ define cfweb::app::ruby (
 
     Integer[1] $memory_weight = 100,
     Optional[Integer[1]] $memory_max = undef,
-    Integer[1,25600] $cpu_weight = 100,
-    Integer[1,200] $io_weight = 100,
+    Cfsystem::CpuWeight $cpu_weight = 100,
+    Cfsystem::IoWeight $io_weight = 100,
     Struct[{
         mem_per_conn_kb => Optional[Integer[1]],
         ruby_env => Optional[String[1]],
