@@ -35,6 +35,6 @@ class cfweb::pki::user {
         is_primary => !$cfweb::is_secondary,
         key_type   => $cfweb::pki::ssh_key_type,
         key_bits   => $cfweb::pki::ssh_key_bits,
-        peers      => ["ipset:${cfweb::cluster_ipset}"],
+        peer_ipset => $cfweb::cluster_ipset,
     }
 }
