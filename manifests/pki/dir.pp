@@ -93,14 +93,19 @@ class cfweb::pki::dir {
         require cfsystem::randomfeed
         $dhparam = $cfweb::pki::dhparam
 
-        exec { 'cfweb DH params':
-            command => [
+        exec {'Generating CF Web Diffie-Hellman params...':
+            command  => '/bin/true',
+            creates  => $dhparam,
+            loglevel => 'warning',
+        } ~>
+        exec {'cfweb_dhparam':
+            command     => [
                 "${cfweb::pki::openssl} dhparam -rand /dev/urandom",
                 '-out', $dhparam,
                 $cfweb::pki::dhparam_bits
             ].join(' '),
-            creates => $dhparam,
-            require => File[$root_dir],
+            refreshonly => true,
+            require     => File[$root_dir],
         }
 
         #---
