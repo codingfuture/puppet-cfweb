@@ -18,7 +18,6 @@
     {
       "operatingsystem": "Ubuntu",
       "operatingsystemrelease": [
-        "15.10",
         "16.04",
         "16.10"
       ]
@@ -33,15 +32,15 @@
   "dependencies": [
     {
       "name": "codingfuture-cfnetwork",
-      "version_requirement": ">= 0.10.1 <0.11.0"
+      "version_requirement": ">= 0.11.0 < 0.12.0"
     },
     {
       "name": "codingfuture-cfsystem",
-      "version_requirement": ">= 0.10.1 <0.11.0"
+      "version_requirement": ">= 0.11.0 < 0.12.0"
     },
     {
       "name": "codingfuture-cfdb",
-      "version_requirement": ">= 0.10.1 <0.11.0"
+      "version_requirement": ">= 0.11.0 < 0.12.0"
     }
   ],
   "data_provider": "hiera"
