@@ -11,7 +11,7 @@ class cfweb::appcommon::nvm(
     include cfsystem
     include cfweb::nginx
 
-    $home_dir = "${cfweb::nginx::web_dir}/nvm"
+    $home_dir = "${cfweb::web_dir}/nvm"
     $dir = "${home_dir}/nvm"
     $env_sh = "${dir}/nvm.sh"
     $user = 'nvm'
@@ -51,8 +51,8 @@ class cfweb::appcommon::nvm(
         home       => $home_dir,
         managehome => true,
         require    => Group[$group],
-    } ->
-    exec { 'Setup NVM':
+    }
+    -> exec { 'Setup NVM':
         command     => "/usr/bin/git ${git_proxy} clone '${source}' '${dir}'",
         creates     => $env_sh,
         user        => $user,
@@ -62,8 +62,8 @@ class cfweb::appcommon::nvm(
         notify      => Exec['Checkout NVM'],
         require     => Anchor['cfnetwork:firewall'],
         loglevel    => 'warning',
-    } ->
-    exec { 'Update NVM':
+    }
+    -> exec { 'Update NVM':
         command     => "/usr/bin/git ${git_proxy} fetch origin",
         user        => $user,
         group       => $group,

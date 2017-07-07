@@ -19,8 +19,8 @@ define cfweb::appcommon::nodejs(
         environment => $cfweb::appcommon::nvm::cmdenv,
         require     => Exec['Setup NVM'],
         loglevel    => 'warning',
-    } ~>
-    exec { "Installed nodejs: ${title}":
+    }
+    ~> exec { "Installed nodejs: ${title}":
         command     => "/bin/bash -c '. ${nvm_env_sh}; nvm install ${version}'",
         refreshonly => true,
         user        => $cfweb::appcommon::nvm::user,

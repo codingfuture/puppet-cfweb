@@ -11,8 +11,8 @@ class cfweb::pki::user {
 
     group { $user:
         ensure => present,
-    } ->
-    user { $user:
+    }
+    -> user { $user:
         ensure         => present,
         home           => $home_dir,
         gid            => $user,

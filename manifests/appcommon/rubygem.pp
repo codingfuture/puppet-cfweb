@@ -19,8 +19,8 @@ define cfweb::appcommon::rubygem(
         environment => $cfweb::appcommon::rvm::cmdenv,
         cwd         => $cfweb::appcommon::rvm::home_dir,
         loglevel    => 'warning',
-    } ~>
-    exec { "Installed ${title} gem ${package}":
+    }
+    ~> exec { "Installed ${title} gem ${package}":
         command     => "${rvm_bin} ${ruby} do gem install --no-ri --no-doc ${package}",
         refreshonly => true,
         user        => $cfweb::appcommon::rvm::user,

@@ -216,8 +216,8 @@ define cfweb::app::php (
         owner  => $user,
         group  => $user,
         mode   => '0500',
-    } ->
-    cfweb_app { $service_name:
+    }
+    -> cfweb_app { $service_name:
         ensure       => present,
         type         => $type,
         site         => $site,

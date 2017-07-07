@@ -12,7 +12,7 @@ class cfweb::appcommon::rvm(
     include cfsystem
     include cfweb::nginx
 
-    $home_dir = "${cfweb::nginx::web_dir}/rvm"
+    $home_dir = "${cfweb::web_dir}/rvm"
     $dir = "${home_dir}/.rvm"
     $rvm_bin = "${dir}/bin/rvm"
     $user = 'rvm'
@@ -33,24 +33,29 @@ class cfweb::appcommon::rvm(
         cfnetwork::client_port{ 'any:https:cfsystem': user => $user }
     }
 
+    ensure_packages(['gnupg2'])
+
     user { $user:
         ensure     => present,
         gid        => $group,
         home       => $home_dir,
         managehome => true,
         require    => Group[$group],
-    } ->
-    exec { 'Setup RVM GPG':
+    }
+    -> exec { 'Setup RVM GPG':
         command     => '/usr/bin/curl -sSL https://rvm.io/mpapis.asc | /usr/bin/gpg2 --import -',
         user        => $user,
         group       => $group,
         cwd         => $home_dir,
         environment => $cmdenv,
         unless      => '/usr/bin/gpg2 --list-keys 409B6B1796C275462A1703113804BB82D39DC0E3',
-        require     => Anchor['cfnetwork:firewall'],
+        require     => [
+            Anchor['cfnetwork:firewall'],
+            Package['gnupg2'],
+        ],
         loglevel    => 'warning',
-    } ->
-    exec { 'Setup RVM':
+    }
+    -> exec { 'Setup RVM':
         command     => "/usr/bin/curl -sSL '${source}' | bash -s ${version}",
         user        => $user,
         group       => $group,
@@ -58,8 +63,8 @@ class cfweb::appcommon::rvm(
         environment => $cmdenv,
         unless      => "/usr/bin/test -e ${rvm_bin}",
         loglevel    => 'warning',
-    } ->
-    exec { 'Update RVM':
+    }
+    -> exec { 'Update RVM':
         command     => "${rvm_bin} get ${version} --auto",
         user        => $user,
         group       => $group,

@@ -69,20 +69,20 @@ class cfweb::pki::dir {
             owner  => $ssh_user,
             group  => $ssh_user,
             mode   => '0700',
-        } ->
-        file { $ticket_dir:
+        }
+        -> file { $ticket_dir:
             ensure => directory,
             owner  => $ssh_user,
             group  => $ssh_user,
             mode   => '0700',
-        } ->
-        file { $key_dir:
+        }
+        -> file { $key_dir:
             ensure => directory,
             owner  => $ssh_user,
             group  => $ssh_user,
             mode   => '0700',
-        } ->
-        file { $cert_dir:
+        }
+        -> file { $cert_dir:
             ensure => directory,
             owner  => $ssh_user,
             group  => $ssh_user,
@@ -97,8 +97,8 @@ class cfweb::pki::dir {
             command  => '/bin/true',
             creates  => $dhparam,
             loglevel => 'warning',
-        } ~>
-        exec {'cfweb_dhparam':
+        }
+        ~> exec {'cfweb_dhparam':
             command     => [
                 "${cfweb::pki::openssl} dhparam -rand /dev/urandom",
                 '-out', $dhparam,

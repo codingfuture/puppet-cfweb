@@ -3,14 +3,14 @@
 #
 
 class cfweb::appcommon::citool(
-    String[1] $source = 'https://github.com/futoin/citool',
+    String[1] $source = 'https://github.com/futoin/cid',
     Integer[0] $update_cache = 1440,
     Optional[String[1]] $version = undef,
 ) {
     include cfsystem
     include cfweb::nginx
 
-    $home_dir = "${cfweb::nginx::web_dir}/citool"
+    $home_dir = "${cfweb::web_dir}/citool"
     $dir = "${home_dir}/.citool"
     $citool_bin = "${dir}/bin/citool"
     $user = 'citool'
@@ -50,8 +50,8 @@ class cfweb::appcommon::citool(
         home       => $home_dir,
         managehome => true,
         require    => Group[$group],
-    } ->
-    exec { 'Setup CITool':
+    }
+    -> exec { 'Setup CITool':
         command     => "/usr/bin/git ${git_proxy} clone '${source}' '${dir}'",
         creates     => $citool_bin,
         user        => $user,
@@ -61,8 +61,8 @@ class cfweb::appcommon::citool(
         notify      => Exec['Checkout CITool'],
         require     => Anchor['cfnetwork:firewall'],
         loglevel    => 'warning',
-    } ->
-    exec { 'Update CITool':
+    }
+    -> exec { 'Update CITool':
         command     => "/usr/bin/git ${git_proxy} fetch origin",
         user        => $user,
         group       => $group,

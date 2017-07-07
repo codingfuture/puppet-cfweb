@@ -20,6 +20,7 @@ class cfweb (
     validate_re($web_service, '^[a-z][a-z0-9_]*$')
 
     $internal_addr = cfnetwork::bind_address($internal_face)
+    $web_dir = '/www'
 
     if !$internal_addr {
         fail('$cfweb::internal_face must be set to interface with valid address')

@@ -26,8 +26,8 @@ define cfweb::appcommon::ruby(
         cwd         => $cfweb::appcommon::rvm::home_dir,
         require     => Exec['Setup RVM'],
         loglevel    => 'warning',
-    } ~>
-    exec { "Installed ruby: ${title}":
+    }
+    ~> exec { "Installed ruby: ${title}":
         command     => "${rvm_bin} autolibs disable; ${rvm_bin} install ${version}",
         refreshonly => true,
         user        => $cfweb::appcommon::rvm::user,
@@ -36,16 +36,16 @@ define cfweb::appcommon::ruby(
         cwd         => $cfweb::appcommon::rvm::home_dir,
         require     => Exec['Setup RVM'],
         loglevel    => 'warning',
-    } ->
-    cfweb::appcommon::rubygem{ "${title}:bundler":
+    }
+    -> cfweb::appcommon::rubygem{ "${title}:bundler":
         package => 'bundler',
         ruby    => $version,
-    } ->
-    cfweb::appcommon::rubygem{ "${title}:faye-websocket":
+    }
+    -> cfweb::appcommon::rubygem{ "${title}:faye-websocket":
         package => 'faye-websocket',
         ruby    => $version,
-    } ->
-    cfweb::appcommon::rubygem{ "${title}:puma":
+    }
+    -> cfweb::appcommon::rubygem{ "${title}:puma":
         package => 'puma',
         ruby    => $version,
     }
