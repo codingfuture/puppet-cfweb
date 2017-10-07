@@ -104,7 +104,7 @@ define cfweb::site (
     $deploy_user = "deploy_${title}"
 
     $site_dir = "${cfweb::nginx::web_dir}/${site}"
-    $tmp_dir = "${site_dir}/tmp"
+    $tmp_dir = "${site_dir}/.tmp"
     $persistent_dir = "${cfweb::nginx::persistent_dir}/${site}"
     $conf_prefix = "${cfweb::nginx::sites_dir}/${site}"
     # This must be created by deploy script
@@ -146,8 +146,12 @@ define cfweb::site (
         ensure_resource( 'user', $deploy_user, {
             ensure  => present,
             gid     => $group,
+            groups  => [$cfweb::deploy::futoin::group],
             home    => $site_dir,
-            require => Group[$group],
+            require => [
+                Group[$group],
+                Group[$cfweb::deploy::futoin::group],
+            ]
         })
     }
 
@@ -335,7 +339,7 @@ define cfweb::site (
     #---
     if $deploy {
         cfweb::deploy { $title:
-            strategy       => pick($deploy['strategy'], 'citool'),
+            strategy       => pick($deploy['strategy'], 'futoin'),
             params         => $deploy - strategy,
             site           => $title,
             run_user       => $user,

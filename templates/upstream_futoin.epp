@@ -1,10 +1,8 @@
 <% |
     String $upstream,
     String $sock,
-    Integer[0] $max_conn,
 | -%>
 
 upstream <%= $upstream %> {
     server unix://<%= $sock %>;
-    keepalive <%= $max_conn %>;
 }

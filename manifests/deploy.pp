@@ -16,7 +16,7 @@ define cfweb::deploy(
     assert_private()
 
     case $strategy {
-        'citool' : {
+        'futoin' : {
             $impl = "cfweb::deploy::${strategy}"
         }
         default : {

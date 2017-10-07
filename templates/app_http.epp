@@ -4,7 +4,7 @@
     Array[String[1]] $locations,
 |
 
-$locs = $locations + ['@nodejs']
+$locs = $locations + ['@http']
 -%>
 
 <% $locs.each |$l| { -%>

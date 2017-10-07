@@ -3,5 +3,5 @@
 #
 
 
-module PuppetX::CfWeb::Php
+module PuppetX::CfWeb::Futoin
 end
