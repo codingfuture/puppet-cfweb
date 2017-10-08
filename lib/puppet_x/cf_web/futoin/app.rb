@@ -56,7 +56,7 @@ module PuppetX::CfWeb::Futoin::App
         Puppet::Util::Execution.execute(
             [
                 '/usr/bin/sudo',
-                '-u', "deploy_#{site}",
+                '-u', user,
                 '-H',
                 '/usr/local/bin/cid',
                 'deploy',

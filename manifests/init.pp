@@ -43,8 +43,8 @@ class cfweb (
     #---
     file { $apps_home:
         ensure => directory,
-        owner   => 'root',
-        group => 'root',
+        owner  => 'root',
+        group  => 'root',
         mode   => '0755',
     }
 

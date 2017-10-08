@@ -109,7 +109,7 @@ define cfweb::site (
         default => $force_user,
     }
     $group = $user
-    $deploy_user = "deploy_${title}"
+    $deploy_user = $user
 
     $site_dir = "${cfweb::nginx::web_dir}/${site}"
     $deployer_home = "${cfweb::apps_home}/${deploy_user}"
@@ -132,12 +132,23 @@ define cfweb::site (
     }
 
     if $is_dynamic {
+        include cfweb::appcommon::cid
+        $cid_group = $cfweb::appcommon::cid::group
+
         ensure_resource('group', $group, { ensure => present })
         ensure_resource( 'user', $user, {
             ensure  => present,
             gid     => $group,
+            groups  => [$cid_group],
             home    => $home_dir,
             require => Group[$group],
+        })
+
+        ensure_resource( 'file', $deployer_home, {
+            ensure => directory,
+            owner  => $deploy_user,
+            group  => $group,
+            mode   => '0750',
         })
 
         file { [
@@ -151,40 +162,17 @@ define cfweb::site (
         }
     }
 
-    if $deploy {
-        include cfweb::appcommon::cid
-        $cid_group = $cfweb::appcommon::cid::group
-
-        ensure_resource('group', $group, { ensure => present })
-        ensure_resource( 'user', $deploy_user, {
-            ensure  => present,
-            gid     => $group,
-            groups  => [$cid_group],
-            home    => $deployer_home,
-            require => [
-                Group[$group],
-                Group[$cid_group],
-            ]
-        })
-        ensure_resource( 'file', $deployer_home, {
-            ensure => directory,
-            owner  => $deploy_user,
-            group  => $group,
-            mode   => '0750',
-        })
-    }
-
     file { $site_dir:
         ensure  => directory,
         mode    => '0770',
         owner   => $user,
         group   => $group,
         require => User[$user],
-    } ->
-    file { "${site_dir}/.env":
-        mode    => '0440',
-        owner   => $user,
-        group   => $group,
+    }
+    -> file { "${site_dir}/.env":
+        mode  => '0440',
+        owner => $user,
+        group => $group,
     }
 
     file { $document_root:

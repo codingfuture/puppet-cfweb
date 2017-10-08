@@ -50,10 +50,10 @@ define cfweb::deploy::futoin(
         mode    => '0770',
     }
     -> file { "${site_dir}/.runtime":
-        ensure  => directory,
-        owner   => $deploy_user,
-        group   => $run_user,
-        mode    => '0770',
+        ensure => directory,
+        owner  => $deploy_user,
+        group  => $run_user,
+        mode   => '0770',
     }
     -> file { "${site_dir}/persistent":
         ensure => link,

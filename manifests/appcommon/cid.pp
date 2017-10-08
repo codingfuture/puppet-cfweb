@@ -43,7 +43,7 @@ class cfweb::appcommon::cid {
         shell          => '/bin/bash',
         purge_ssh_keys => true,
     }
-    
+
     package { 'python-pip': }
     # just in case
     -> file { '/usr/bin/pip':
@@ -107,12 +107,12 @@ class cfweb::appcommon::cid {
     cfnetwork::client_port { "any:https:${user}":
         user => $user,
     }
-    
+
     # Allow pip global seetup
-    cfnetwork::client_port { "any:http:root-pip":
+    cfnetwork::client_port { 'any:http:root-pip':
         user => 'root',
     }
-    cfnetwork::client_port { "any:https:root-pip":
+    cfnetwork::client_port { 'any:https:root-pip':
         user => 'root',
     }
 }
