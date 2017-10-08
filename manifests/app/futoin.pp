@@ -10,7 +10,7 @@ define cfweb::app::futoin (
     String[1] $conf_prefix,
     String[1] $type,
     Array[String[1]] $dbaccess_names,
-    String[1] $template_global = 'cfweb/upstream_futoin',
+    String[1] $template_global = 'cfweb/upstream_http',
     String[1] $template = 'cfweb/app_http',
 
     Integer[1] $memory_weight = 100,
@@ -28,14 +28,15 @@ define cfweb::app::futoin (
     }
 
     #---
-    $sock = "/run/${service_name}/futoin.sock"
+    $sock = "/run/${service_name}/http.sock"
     $upstream = "${type}_${site}"
 
     file { "${conf_prefix}.global.${type}":
         mode    => '0640',
         content => epp($template_global, {
-            upstream    => $upstream,
-            futoin_sock => $sock,
+            upstream   => $upstream,
+            sock       => $sock,
+            sock_count => 1,
         }),
     }
     file { "${conf_prefix}.server.${type}":
@@ -57,6 +58,9 @@ define cfweb::app::futoin (
 
         cpu_weight   => $cpu_weight,
         io_weight    => $io_weight,
+
+        misc         => getparam(Cfweb::Site[$site], 'deploy'),
+        require      => Anchor['cfnetwork:firewall'],
     }
 
     #---

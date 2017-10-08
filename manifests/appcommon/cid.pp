@@ -32,7 +32,24 @@ class cfweb::appcommon::cid {
         }
     }
 
+    group { $group:
+        ensure => present,
+    }
+    -> user { $user:
+        ensure         => present,
+        home           => $home,
+        gid            => $group,
+        system         => true,
+        shell          => '/bin/bash',
+        purge_ssh_keys => true,
+    }
+    
     package { 'python-pip': }
+    -> package { 'pip':
+        ensure   => latest,
+        provider => pip,
+        require  => Anchor['cfnetwork:firewall'],
+    }
     -> package { 'futoin-cid':
         ensure   => latest,
         provider => pip,
@@ -44,16 +61,6 @@ class cfweb::appcommon::cid {
     -> file { '/etc/futoin.json':
         mode    => '0444',
         content => cfsystem::pretty_json($global_futoin_json),
-    }
-    -> group { $group:
-        ensure => present,
-    }
-    -> user { $user:
-        ensure         => present,
-        gid            => $group,
-        system         => true,
-        shell          => '/bin/bash',
-        purge_ssh_keys => true,
     }
     -> file { $home:
         ensure => directory,
@@ -67,7 +74,7 @@ class cfweb::appcommon::cid {
     }
     -> file { $deploy_callback:
         mode    => '0755',
-        content => file('cfweb/_cf_cid_callback'),
+        content => file('cfweb/cf_cid_callback.sh'),
     }
     -> file { $tool_dir:
         ensure => directory,
@@ -81,7 +88,7 @@ class cfweb::appcommon::cid {
     }
     -> exec { $sudoers_file:
         creates => $sudoers_file,
-        command => "/bin/sh -c 'cid sudoers ${user} > ${sudoers_file}'",
+        command => "/bin/sh -c '/usr/local/bin/cid sudoers ${user} > ${sudoers_file}'",
     }
     -> file { $sudoers_file:
         mode => '0640',
@@ -93,5 +100,13 @@ class cfweb::appcommon::cid {
     }
     cfnetwork::client_port { "any:https:${user}":
         user => $user,
+    }
+    
+    # Allow pip global seetup
+    cfnetwork::client_port { "any:http:root-pip":
+        user => 'root',
+    }
+    cfnetwork::client_port { "any:https:root-pip":
+        user => 'root',
     }
 }

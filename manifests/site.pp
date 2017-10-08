@@ -45,7 +45,7 @@ define cfweb::site (
     validate_re($title, '^[a-z][a-z0-9_]*$')
 
     #---
-    if !$shared_certs and size($tls_ports) > 0 {
+    if !size($shared_certs) and size($tls_ports) > 0 {
         $auto_cert_name = "auto__${server_name}"
         create_resources(
             'cfweb::pki::cert',
@@ -57,13 +57,21 @@ define cfweb::site (
             $auto_cert
         )
         $dep_certs = [$auto_cert_name]
-    } elsif $shared_certs {
+    } elsif size($shared_certs) {
         $shared_certs.each |$v| {
             if !defined(Cfweb::Pki::Cert[$v]) {
                 fail("Please make sure Cfweb::Pki::Cert[${v}] is defined for use in ${title}")
             }
         }
         $dep_certs = $shared_certs
+    } else {
+        $dep_certs = []
+    }
+
+    if size($dep_certs) {
+        $dep_certs_resources = Cfweb::Pki::Cert[$dep_certs]
+    } else {
+        $dep_certs_resources = undef
     }
 
     # Default hosts configure listen socket
@@ -84,7 +92,7 @@ define cfweb::site (
                 port       => $port,
                 tls        => true,
                 is_backend => $is_backend,
-                require    => Cfweb::Pki::Cert[$dep_certs],
+                require    => $dep_certs_resources,
             })
         }
     }
@@ -142,23 +150,29 @@ define cfweb::site (
     }
 
     if $deploy {
+        include cfweb::appcommon::cid
+        $cid_group = $cfweb::appcommon::cid::group
         ensure_resource('group', $group, { ensure => present })
         ensure_resource( 'user', $deploy_user, {
             ensure  => present,
             gid     => $group,
-            groups  => [$cfweb::deploy::futoin::group],
+            groups  => [$cid_group],
             home    => $site_dir,
             require => [
                 Group[$group],
-                Group[$cfweb::deploy::futoin::group],
+                Group[$cid_group],
             ]
         })
+        
+        $site_dir_owner = $deploy_user
+    } else {
+        $site_dir_owner = $user
     }
 
     file { $site_dir:
         ensure  => directory,
         mode    => '0750',
-        owner   => $user,
+        owner   => $site_dir_owner,
         group   => $group,
         require => User[$user],
     }
@@ -190,6 +204,7 @@ define cfweb::site (
                 { $name => {
                     local_user    => $user,
                     custom_config => 'cfweb::appcommon::dbaccess',
+                    env_file      => "${site_dir}/.env",
                 } },
                 merge({
                     # TODO: get rid of facts
@@ -215,6 +230,7 @@ define cfweb::site (
                         { $name => {
                             local_user    => $user,
                             custom_config => 'cfweb::appcommon::dbaccess',
+                            env_file      => "${site_dir}/.env",
                         } },
                         merge({
                             # TODO: get rid of facts
@@ -236,6 +252,11 @@ define cfweb::site (
         $dbaccess_deps = []
         $dbaccess_app_deps = {}
     }
+
+    $all_db_deps = Cfweb::Appcommon::Dbaccess[
+        $dbaccess_deps +
+        flatten($dbaccess_app_deps.values())
+    ]
 
     # Define apps
     #---
@@ -347,8 +368,7 @@ define cfweb::site (
             site_dir       => $site_dir,
             apps           => keys($apps),
             persistent_dir => $persistent_dir,
-            # Note: it must run AFTER the rest is configured
-            require        => $cfg_notify,
+            require        => $all_db_deps,
         }
     }
 }

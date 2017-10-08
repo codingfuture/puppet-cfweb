@@ -22,10 +22,14 @@ define cfweb::deploy::futoin(
     Optional[String[1]] $match = undef,
     Array[String[1]] $deploy_set = [],
     Hash[String[1], Hash] $fw_ports = {},
+    Optional[String[1]] $custom_script = undef,
 ) {
-    require cfweb::appcommon::cid
+    include cfweb::appcommon::cid
 
-    $service_name = "app-${site}-${type}"
+    $service_name = "app-${site}-futoin"
+    $cid = '/usr/local/bin/cid'
+
+    #--------------
 
     if $type == 'rms' {
         $url_arg = 'rmsRepo'
@@ -35,9 +39,10 @@ define cfweb::deploy::futoin(
         $deploy_args = "${type} 'pick_default(${match}, '')'"
     }
 
-    exec { "futoin-setup-${site}":
+    Package['futoin-cid']
+    -> exec { "futoin-setup-${site}":
         command => [
-            'cid deploy setup',
+            "${cid} deploy setup",
             "--deployDir=${site_dir}",
             "--user=${run_user}",
             "--group=${run_user}",
@@ -46,42 +51,43 @@ define cfweb::deploy::futoin(
         umask   => '027',
         user    => $deploy_user,
     }
-    -> exec { "futoin-deploy-${site}":
-        command => [
-            '/usr/local/bin/cid',
-            "deploy ${deploy_args}",
-            "--${url_arg}=${url}",
-            "--deployDir=${site_dir}",
-        ].join(' '),
-        umask   => '027',
-        user    => $deploy_user,
-    }
-    ~> Cfweb_App[$service_name]
+    -> anchor { "futoin-deploy-${site}": }
 
+    #--------------
     $deploy_set.each |$cmd| {
         Exec["futoin-setup-${site}"]
         -> exec { "futoin-setup-${site}: ${cmd}":
-            command => "cid deploy set ${cmd} --deployDir=${site_dir}",
+            command => "${cid}  deploy set ${cmd} --deployDir=${site_dir}",
             umask   => '027',
             user    => $deploy_user,
         }
-        -> Exec["futoin-deploy-${site}"]
+        -> Anchor["futoin-deploy-${site}"]
     }
 
-    # Allow package retrieval
-    cfnetwork::client_port { "any:http:${deploy_user}":
-        user => $deploy_user,
-    }
-    cfnetwork::client_port { "any:https:${deploy_user}":
-        user => $deploy_user,
+    #--------------
+    Anchor["futoin-deploy-${site}"]
+    -> Cfweb_App[$service_name]
+
+    #--------------
+    if $custom_script {
+        $custom_script_file = "${site_dir}/.custom_script.sh"
+
+        file { $custom_script_file:
+            owner   => $deploy_user,
+            mode    => '0700',
+            content => $custom_script,
+        }
+        -> exec { $custom_script_file:
+            cwd   => $site_dir,
+            umask => '027',
+            user  => $deploy_user,
+        }
+        -> Anchor["futoin-deploy-${site}"]
     }
 
 
-    $fw_ports.each |$svc, $def| {
-        create_services('cfnetwork::client_port', {
-            "any:${svc}:${deploy_user}" => merge($def, {
-                user => $deploy_user
-            }),
-        })
+    #--------------
+    cfweb::internal::deployerfw { $deploy_user:
+        fw_ports => $fw_ports,
     }
 }

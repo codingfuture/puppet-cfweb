@@ -82,7 +82,7 @@ case $cmd in
         case $subcmd in
             install|update)
                 if echo $TOOL_WHITELIST | grep -q "$tool"; then
-                    sudo -u futoin cid tool $subcmd $tool $ver
+                    sudo -H -u futoin cid tool $subcmd $tool $ver
                 else
                     echo "Tool $tool is not whitelisted yet"
                 fi

@@ -14,11 +14,7 @@ end
 module PuppetX::CfWeb
     CFWEB_TYPES = [
         'global',
-        'nodejs',
-        'php',
-        'ruby',
-        # 'go',
-        #'jvm',
+        'futoin',
     ]
 
     SLICE_PREFIX = 'system-'
