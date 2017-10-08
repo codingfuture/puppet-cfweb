@@ -31,29 +31,36 @@ module PuppetX::CfWeb::Futoin::App
         run_dir = "/run/#{service_name}"
         
         #---
-        run_symlink = "#{site_dir}/.run"
-        
-        begin
-            File.lstat(run_symlink)
-        rescue
-            File.symlink(run_dir, run_symlink)
+        if deploy_conf['type'] == 'rms'
+            url_arg = 'rmsRepo'
+            deploy_args = [
+                'rms',
+                deploy_conf['pool']
+            ]
+        else
+            url_arg = 'vcsRepo'
+            deploy_args = [ deploy_conf['type'] ]
         end
         
-        #---
+        if deploy_conf['match']
+            deploy_args += [ deploy_conf['match'] ]
+        end
+        
+        deploy_args += [
+            "--#{url_arg}=#{deploy_conf['url']}",
+            "--limit-memory=#{mem_limit}M",
+            "--deployDir=#{site_dir}",
+        ]
         
         warning("CID deploy: #{site_dir}")
         Puppet::Util::Execution.execute(
             [
                 '/usr/bin/sudo',
-                '-u', "deploy_#{user}",
+                '-u', "deploy_#{site}",
                 '-H',
                 '/usr/local/bin/cid',
-                '--',
-                "deploy #{deploy_args}",
-                "--#{url_arg}=#{url}",
-                "--limit-memory=#{mem_limit}M",
-                "--deployDir=#{site_dir}",
-            ]
+                'deploy',
+            ] + deploy_args
         )
         
         #---
@@ -74,7 +81,7 @@ module PuppetX::CfWeb::Futoin::App
                 'LimitNOFILE' => 'infinity',
                 'WorkingDirectory' => "#{site_dir}",
                 'Slice' => "#{PuppetX::CfWeb::SLICE_PREFIX}#{user}.slice",
-                'ExecStart' => 'cid service master',
+                'ExecStart' => '/usr/local/bin/cid service master',
                 'ExecReload' => '/bin/kill -USR1 $MAINPID',
             },
         }

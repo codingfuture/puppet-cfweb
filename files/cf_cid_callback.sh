@@ -1,4 +1,12 @@
-#!/bin/sh
+#!/bin/bash
+
+DEPLOY_USER=futoin
+
+if [ "$(id -un)" != "${DEPLOY_USER}" ]; then
+    echo "Must be called through 'sudo -u ${DEPLOY_USER}'"
+    exit 1
+fi
+
 
 TOOL_WHITELIST=""
 TOOL_WHITELIST+=" ant"
@@ -71,18 +79,21 @@ TOOL_WHITELIST+=" yarn"
 TOOL_WHITELIST+=" zip"
 TOOL_WHITELIST+=" "
 
-cmd=$2
+cmd=$1
+
+cd /
+export CID_DEPLOY_HOME=/www/tools
 
 case $cmd in
     tool)
-        subcmd=$3
-        tool=$4
-        ver=$5
+        subcmd=$2
+        tool=$3
+        ver=$4
 
         case $subcmd in
             install|update)
                 if echo $TOOL_WHITELIST | grep -q "$tool"; then
-                    sudo -H -u futoin cid tool $subcmd $tool $ver
+                    cid tool $subcmd $tool $ver
                 else
                     echo "Tool $tool is not whitelisted yet"
                 fi
@@ -91,6 +102,10 @@ case $cmd in
                 echo "Unsupported tool sub-command $subcmd" >&2
                 ;;
         esac
+        ;;
+    build-dep)
+        shift
+        cid build-dep "$@"
         ;;
     *)
         echo "Unsupported command $cmd" >&2

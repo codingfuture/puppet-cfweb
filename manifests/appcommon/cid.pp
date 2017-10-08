@@ -9,14 +9,14 @@ class cfweb::appcommon::cid {
     $group = 'futoin'
     $home = "/home/${user}"
     $tool_dir = "${cfweb::web_dir}/tools"
-    $deploy_callback = "${cfsystem::custombin::bin_dir}/cf_cid_callback"
-    $sudoers_file = "/etc/sudoers/${user}"
+    $deploy_callback = "${cfweb::nginx::bin_dir}/cf_cid_callback"
+    $sudoers_file = "/etc/sudoers.d/${user}"
 
     $global_futoin_json = {
         env => {
             startup => systemd,
             webServer => nginx,
-            externalSetup => "/usr/bin/sudo ${deploy_callback}",
+            externalSetup => "/usr/bin/sudo -u ${user} -n -H ${deploy_callback}",
             rvmDir => "${tool_dir}/rvm",
             nvmDir => "${tool_dir}/nvm",
             composerDir => "${tool_dir}/composer",
@@ -45,6 +45,10 @@ class cfweb::appcommon::cid {
     }
     
     package { 'python-pip': }
+    # just in case
+    -> file { '/usr/bin/pip':
+        ensure => absent,
+    }
     -> package { 'pip':
         ensure   => latest,
         provider => pip,
@@ -54,12 +58,13 @@ class cfweb::appcommon::cid {
         ensure   => latest,
         provider => pip,
     }
+    -> exec { '/usr/local/bin/pip install -e /external/cid-tool': }
     -> file { '/etc/futoin':
         ensure => directory,
         mode   => '0755',
     }
-    -> file { '/etc/futoin.json':
-        mode    => '0444',
+    -> file { '/etc/futoin/futoin.json':
+        mode    => '0644',
         content => cfsystem::pretty_json($global_futoin_json),
     }
     -> file { $home:
@@ -83,8 +88,9 @@ class cfweb::appcommon::cid {
         mode   => '0755',
     }
     -> cfauth::sudoentry { "grp_${group}":
-        user    => "%${group}",
-        command => [ $deploy_callback ]
+        user     => "%${group}",
+        command  => [ $deploy_callback ],
+        env_keep => ['nodeVer', 'rubyVer'],
     }
     -> exec { $sudoers_file:
         creates => $sudoers_file,

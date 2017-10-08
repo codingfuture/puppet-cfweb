@@ -112,6 +112,8 @@ define cfweb::site (
     $deploy_user = "deploy_${title}"
 
     $site_dir = "${cfweb::nginx::web_dir}/${site}"
+    $deployer_home = "${cfweb::apps_home}/${deploy_user}"
+    $home_dir = $deployer_home
     $tmp_dir = "${site_dir}/.tmp"
     $persistent_dir = "${cfweb::nginx::persistent_dir}/${site}"
     $conf_prefix = "${cfweb::nginx::sites_dir}/${site}"
@@ -134,7 +136,7 @@ define cfweb::site (
         ensure_resource( 'user', $user, {
             ensure  => present,
             gid     => $group,
-            home    => $site_dir,
+            home    => $home_dir,
             require => Group[$group],
         })
 
@@ -152,29 +154,37 @@ define cfweb::site (
     if $deploy {
         include cfweb::appcommon::cid
         $cid_group = $cfweb::appcommon::cid::group
+
         ensure_resource('group', $group, { ensure => present })
         ensure_resource( 'user', $deploy_user, {
             ensure  => present,
             gid     => $group,
             groups  => [$cid_group],
-            home    => $site_dir,
+            home    => $deployer_home,
             require => [
                 Group[$group],
                 Group[$cid_group],
             ]
         })
-        
-        $site_dir_owner = $deploy_user
-    } else {
-        $site_dir_owner = $user
+        ensure_resource( 'file', $deployer_home, {
+            ensure => directory,
+            owner  => $deploy_user,
+            group  => $group,
+            mode   => '0750',
+        })
     }
 
     file { $site_dir:
         ensure  => directory,
-        mode    => '0750',
-        owner   => $site_dir_owner,
+        mode    => '0770',
+        owner   => $user,
         group   => $group,
         require => User[$user],
+    } ->
+    file { "${site_dir}/.env":
+        mode    => '0440',
+        owner   => $user,
+        group   => $group,
     }
 
     file { $document_root:
@@ -186,7 +196,7 @@ define cfweb::site (
     if $is_dynamic or $deploy {
         file { [$persistent_dir, $tmp_dir]:
             ensure  => directory,
-            mode    => '0750',
+            mode    => '1770',
             owner   => $user,
             group   => $group,
             require => User[$user],

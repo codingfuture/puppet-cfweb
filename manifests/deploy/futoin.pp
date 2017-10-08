@@ -31,24 +31,42 @@ define cfweb::deploy::futoin(
 
     #--------------
 
-    if $type == 'rms' {
-        $url_arg = 'rmsRepo'
-        $deploy_args = "rms '${pool}' 'pick_default(${match}, '')'"
-    } else {
-        $url_arg = 'vcsRepo'
-        $deploy_args = "${type} 'pick_default(${match}, '')'"
-    }
 
     Package['futoin-cid']
+    -> file { "${site_dir}/.futoin-deploy.lock":
+        ensure  => present,
+        replace => no,
+        content => '',
+        owner   => $deploy_user,
+        group   => $run_user,
+        mode    => '0770',
+    }
+    -> file { "${cfweb::apps_home}/${deploy_user}/.futoin-global.lock":
+        ensure  => present,
+        replace => no,
+        content => '',
+        owner   => $deploy_user,
+        group   => $run_user,
+        mode    => '0770',
+    }
+    -> file { "${site_dir}/.runtime":
+        ensure  => directory,
+        owner   => $deploy_user,
+        group   => $run_user,
+        mode    => '0770',
+    }
+    -> file { "${site_dir}/persistent":
+        ensure => link,
+        target => $persistent_dir,
+    }
     -> exec { "futoin-setup-${site}":
         command => [
             "${cid} deploy setup",
-            "--deployDir=${site_dir}",
             "--user=${run_user}",
             "--group=${run_user}",
-            "--runtimeDir=/run/${service_name}",
         ].join(' '),
-        umask   => '027',
+        cwd     => $site_dir,
+        umask   => '0027',
         user    => $deploy_user,
     }
     -> anchor { "futoin-deploy-${site}": }
@@ -57,8 +75,9 @@ define cfweb::deploy::futoin(
     $deploy_set.each |$cmd| {
         Exec["futoin-setup-${site}"]
         -> exec { "futoin-setup-${site}: ${cmd}":
-            command => "${cid}  deploy set ${cmd} --deployDir=${site_dir}",
-            umask   => '027',
+            command => "${cid}  deploy set ${cmd}",
+            cwd     => $site_dir,
+            umask   => '0027',
             user    => $deploy_user,
         }
         -> Anchor["futoin-deploy-${site}"]
@@ -79,7 +98,7 @@ define cfweb::deploy::futoin(
         }
         -> exec { $custom_script_file:
             cwd   => $site_dir,
-            umask => '027',
+            umask => '0027',
             user  => $deploy_user,
         }
         -> Anchor["futoin-deploy-${site}"]
