@@ -10,8 +10,28 @@ module PuppetX::CfWeb::Futoin::App
     
     def check_futoin(conf)
         begin
+            site_dir = conf[:site_dir]
             service_name = conf[:service_name]
-            systemctl(['status', "#{service_name}.service"])
+            
+            futoin_conf_file = "#{site_dir}/.futoin.merged.json"
+            return false unless File.exists? futoin_conf_file
+            
+            futoin_conf = File.read(futoin_conf_file)
+            futoin_conf = JSON.parse(futoin_conf)
+            
+            futoin_conf['deploy']['autoServices'].each do |name, instances|
+                info = futoin_conf['entryPoints'][name]
+                
+                next if info['tool'] == 'nginx'
+                
+                i = 0
+                
+                instances.each do |v|
+                    service_name_i = "#{service_name}_#{name}-#{i}"
+                    i += 1
+                    systemctl(['status', "#{service_name_i}.service"])
+                end
+            end
         rescue => e
             warning(e)
             #warning(e.backtrace)
@@ -67,7 +87,6 @@ module PuppetX::CfWeb::Futoin::App
                     'deploy', 'setup',
                     "--user=#{user}",
                     "--group=#{user}",
-                    "--limit-memory=#{mem_limit}M",
                 ],
                 {
                     :failonfail => true,
@@ -145,41 +164,65 @@ module PuppetX::CfWeb::Futoin::App
         end
         
         #---
-        futoin_conf = File.read("#{site_dir}/futoin.json")
+        futoin_conf = File.read("#{site_dir}/.futoin.merged.json")
         futoin_conf = JSON.parse(futoin_conf)
         
+        # Services
         #---
-        saveMaxConn(site, type, 3)
+        service_names = []
+        
+        futoin_conf['deploy']['autoServices'].each do |name, instances|
+            info = futoin_conf['entryPoints'][name]
+            
+            if info['tool'] == 'nginx'
+                # TODO: update global nginx config
+            end
+            
+            max_conn = 0
+            i = 0
+            
+            instances.each do |v|
+                service_name_i = "#{service_name}_#{name}-#{i}"
+                service_names << service_name_i
+                max_conn += v['maxConnections']
+                
+                content_ini = {
+                    'Unit' => {
+                        'Description' => "CFWEB App: #{site}",
+                    },
+                    'Service' => {
+                        'LimitNOFILE' => 'infinity',
+                        'WorkingDirectory' => "#{site_dir}",
+                        'Slice' => "#{PuppetX::CfWeb::SLICE_PREFIX}#{user}.slice",
+                        'ExecStart' => "/usr/local/bin/cid service exec #{name} #{i}",
+                        'ExecReload' => "/usr/local/bin/cid service reload #{name} #{i} $MAINPID",
+                        'ExecStop' => "/usr/local/bin/cid service stop #{name} #{i} $MAINPID",
+                    },
+                }
+                
+                service_changed = self.cf_system().createService({
+                    :service_name => service_name_i,
+                    :user => user,
+                    :content_ini => content_ini,
+                    :mem_limit => v['maxMemory'],
+                })
+                
+                if service_changed
+                    systemctl('reload-or-restart', "#{service_name_i}.service")
+                end
+                
+                # make sure it's running
+                systemctl('start', "#{service_name_i}.service")
+                
+                i += 1
+            end
+            
+            saveMaxConn(site, name, max_conn)
+        end
 
         # Service
         #---
-
-        content_ini = {
-            'Unit' => {
-                'Description' => "CFWEB App: #{site}",
-            },
-            'Service' => {
-                'LimitNOFILE' => 'infinity',
-                'WorkingDirectory' => "#{site_dir}",
-                'Slice' => "#{PuppetX::CfWeb::SLICE_PREFIX}#{user}.slice",
-                'ExecStart' => '/usr/local/bin/cid service master',
-                'ExecReload' => '/bin/kill -USR1 $MAINPID',
-            },
-        }
         
-        service_changed = self.cf_system().createService({
-            :service_name => service_name,
-            :user => user,
-            :content_ini => content_ini,
-            :cpu_weight => conf[:cpu_weight],
-            :io_weight => conf[:io_weight],
-            :mem_limit => mem_limit,
-        })
-        
-        if service_changed
-            systemctl('restart', "#{service_name}.service")
-        end
-        
-        return [service_name]
+        return service_names
     end
 end

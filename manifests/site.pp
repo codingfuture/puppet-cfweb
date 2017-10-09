@@ -191,11 +191,12 @@ define cfweb::site (
                     local_user    => $user,
                     custom_config => 'cfweb::appcommon::dbaccess',
                     env_file      => "${site_dir}/.env",
+                    config_prefix => "DB_${k.upcase}_",
                 } },
                 merge({
                     # TODO: get rid of facts
                     max_connections => pick_default(
-                        $::facts.dig('cfweb', 'sites', $site, 'maxconn'),
+                        $::facts.dig('cfweb', 'sites', $title, $k),
                         $cfdb::max_connections_default
                     ),
                 }, $da)
@@ -217,14 +218,12 @@ define cfweb::site (
                             local_user    => $user,
                             custom_config => 'cfweb::appcommon::dbaccess',
                             env_file      => "${site_dir}/.env",
+                            config_prefix => "DB_${app_type.upcase}_",
                         } },
                         merge({
                             # TODO: get rid of facts
                             max_connections => pick_default(
-                                $::facts.dig(
-                                    'cfweb', 'sites', $site,
-                                    'apps', $app_type, 'maxconn'
-                                ),
+                                $::facts.dig('cfweb', 'sites', $title, $app_type),
                                 $cfdb::max_connections_default
                             ),
                         }, $da)

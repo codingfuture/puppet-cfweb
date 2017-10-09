@@ -55,19 +55,8 @@ Facter.add('cfweb') do
             
             sections.fetch('cf30web2_app', {}).each do |k, info|
                 site = info['site']
-                type = info['type']
-                maxconn = cfwebconn.fetch(site, {}).fetch(type, 0)
                 
-                sites[site] ||= {
-                    'apps' => {},
-                    'maxconn' => 0,
-                }
-                site_info = sites[site]
-                site_info['maxconn'] += maxconn
-                
-                site_info['apps'][type] = {
-                    'maxconn' => cfwebconn.fetch(site, {}).fetch(type, 0)
-                }
+                sites[site] = cfwebconn.fetch(site, {})
             end
             
             ret['sites'] = sites
