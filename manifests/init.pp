@@ -21,7 +21,6 @@ class cfweb (
 
     $internal_addr = cfnetwork::bind_address($internal_face)
     $web_dir = '/www'
-    $apps_home = '/home/apps'
 
     if !$internal_addr {
         fail('$cfweb::internal_face must be set to interface with valid address')
@@ -38,14 +37,6 @@ class cfweb (
 
     cfweb::internal::clusterhost { $cluster:
         is_secondary => $is_secondary,
-    }
-
-    #---
-    file { $apps_home:
-        ensure => directory,
-        owner  => 'root',
-        group  => 'root',
-        mode   => '0755',
     }
 
     #---

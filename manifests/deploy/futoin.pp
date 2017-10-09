@@ -28,6 +28,7 @@ define cfweb::deploy::futoin(
 
     $service_name = "app-${site}-futoin"
     $cid = '/usr/local/bin/cid'
+    $user = $run_user
 
     #--------------
 
@@ -37,76 +38,30 @@ define cfweb::deploy::futoin(
         ensure  => present,
         replace => no,
         content => '',
-        owner   => $deploy_user,
-        group   => $run_user,
-        mode    => '0770',
+        owner   => $user,
+        group   => $user,
+        mode    => '0700',
     }
-    -> file { "${cfweb::apps_home}/${deploy_user}/.futoin-global.lock":
+    -> file { "${site_dir}/.futoin.json":
         ensure  => present,
         replace => no,
-        content => '',
-        owner   => $deploy_user,
-        group   => $run_user,
-        mode    => '0770',
-    }
-    -> file { "${site_dir}/.runtime":
-        ensure => directory,
-        owner  => $deploy_user,
-        group  => $run_user,
-        mode   => '0770',
+        content => '{"env":{}}',
+        owner   => $user,
+        group   => $user,
+        mode    => '0700',
     }
     -> file { "${site_dir}/persistent":
         ensure => link,
         target => $persistent_dir,
     }
-    -> exec { "futoin-setup-${site}":
-        command => [
-            "${cid} deploy setup",
-            "--user=${run_user}",
-            "--group=${run_user}",
-        ].join(' '),
-        cwd     => $site_dir,
-        umask   => '0027',
-        user    => $deploy_user,
-    }
     -> anchor { "futoin-deploy-${site}": }
-
-    #--------------
-    $deploy_set.each |$cmd| {
-        Exec["futoin-setup-${site}"]
-        -> exec { "futoin-setup-${site}: ${cmd}":
-            command => "${cid}  deploy set ${cmd}",
-            cwd     => $site_dir,
-            umask   => '0027',
-            user    => $deploy_user,
-        }
-        -> Anchor["futoin-deploy-${site}"]
-    }
 
     #--------------
     Anchor["futoin-deploy-${site}"]
     -> Cfweb_App[$service_name]
 
     #--------------
-    if $custom_script {
-        $custom_script_file = "${site_dir}/.custom_script.sh"
-
-        file { $custom_script_file:
-            owner   => $deploy_user,
-            mode    => '0700',
-            content => $custom_script,
-        }
-        -> exec { $custom_script_file:
-            cwd   => $site_dir,
-            umask => '0027',
-            user  => $deploy_user,
-        }
-        -> Anchor["futoin-deploy-${site}"]
-    }
-
-
-    #--------------
-    cfweb::internal::deployerfw { $deploy_user:
+    cfweb::internal::deployerfw { $user:
         fw_ports => $fw_ports,
     }
 }

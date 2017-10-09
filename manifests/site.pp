@@ -112,8 +112,8 @@ define cfweb::site (
     $deploy_user = $user
 
     $site_dir = "${cfweb::nginx::web_dir}/${site}"
-    $deployer_home = "${cfweb::apps_home}/${deploy_user}"
-    $home_dir = $deployer_home
+    $deployer_home = $site_dir
+    $home_dir = $site_dir
     $tmp_dir = "${site_dir}/.tmp"
     $persistent_dir = "${cfweb::nginx::persistent_dir}/${site}"
     $conf_prefix = "${cfweb::nginx::sites_dir}/${site}"
@@ -144,13 +144,6 @@ define cfweb::site (
             require => Group[$group],
         })
 
-        ensure_resource( 'file', $deployer_home, {
-            ensure => directory,
-            owner  => $deploy_user,
-            group  => $group,
-            mode   => '0750',
-        })
-
         file { [
                 "${cfweb::nginx::bin_dir}/start-${title}",
                 "${cfweb::nginx::bin_dir}/stop-${title}",
@@ -168,11 +161,6 @@ define cfweb::site (
         owner   => $user,
         group   => $group,
         require => User[$user],
-    }
-    -> file { "${site_dir}/.env":
-        mode  => '0440',
-        owner => $user,
-        group => $group,
     }
 
     file { $document_root:
