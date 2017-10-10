@@ -17,13 +17,13 @@ define cfweb::app::futoin (
     Optional[Integer[1]] $memory_max = undef,
     Cfsystem::CpuWeight $cpu_weight = 100,
     Cfsystem::IoWeight $io_weight = 100,
-    
+
     Hash $tune = {},
 ) {
     if size(getparam(Cfweb::Site[$site], 'apps')) != 1 {
         fail('"futoin" CID must be exlusive app per site')
     }
-    
+
     #---
     $service_name = "app-${site}-${type}"
 

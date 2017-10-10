@@ -191,7 +191,7 @@ define cfweb::site (
                     local_user    => $user,
                     custom_config => 'cfweb::appcommon::dbaccess',
                     env_file      => "${site_dir}/.env",
-                    config_prefix => "DB_${k.upcase}_",
+                    config_prefix => "DB_${k.upcase()}_",
                 } },
                 merge({
                     # TODO: get rid of facts
@@ -218,7 +218,7 @@ define cfweb::site (
                             local_user    => $user,
                             custom_config => 'cfweb::appcommon::dbaccess',
                             env_file      => "${site_dir}/.env",
-                            config_prefix => "DB_${app_type.upcase}_",
+                            config_prefix => "DB_${app_type.upcase()}_",
                         } },
                         merge({
                             # TODO: get rid of facts

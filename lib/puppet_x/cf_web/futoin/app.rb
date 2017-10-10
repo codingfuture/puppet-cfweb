@@ -39,6 +39,38 @@ module PuppetX::CfWeb::Futoin::App
         end
     end
     
+    def prep_nginx_config(config_hash, prefix="")
+        content = []
+
+        config_hash.each do |k, v|
+            next if v.is_a? Hash
+            
+            if k[0] == '-'
+                v = v.split("\n")
+                v.each { |x|
+                    content << "#{prefix}#{x}"
+                }
+            elsif v.is_a? Array
+                v.each { |lv|
+                    content << "#{prefix}#{k} #{lv};"
+                }
+            else
+                content << "#{prefix}#{k} #{lv};"
+            end
+        end
+        
+        config_hash.each do |k, v|
+            next unless v.is_a? Hash
+            
+            content << ""
+            content << "#{prefix}#{k} {"
+            content += prep_nginx_config(v, "#{prefix}  ")
+            content << "}"
+        end
+
+        return content
+    end
+    
     def create_futoin(conf)
         cf_system = cf_system()
         site = conf[:site]
@@ -207,6 +239,13 @@ module PuppetX::CfWeb::Futoin::App
             info = entryPoints[name]
             
             if info['tool'] == 'nginx'
+                extra_conf = info.fetch('tune', {})
+                extra_conf = extra_conf.fetch('config', {})
+                extra_conf = extra_conf.fetch('http', {})
+                extra_conf = extra_conf.fetch('server', {})
+                
+                vhost_server += prep_nginx_config(extra_conf)
+                
                 next
             end
             
