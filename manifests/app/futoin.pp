@@ -17,7 +17,14 @@ define cfweb::app::futoin (
     Optional[Integer[1]] $memory_max = undef,
     Cfsystem::CpuWeight $cpu_weight = 100,
     Cfsystem::IoWeight $io_weight = 100,
+    
+    Hash $tune = {},
 ) {
+    if size(getparam(Cfweb::Site[$site], 'apps')) != 1 {
+        fail('"futoin" CID must be exlusive app per site')
+    }
+    
+    #---
     $service_name = "app-${site}-${type}"
 
     cfsystem_memory_weight { $service_name:
@@ -28,26 +35,6 @@ define cfweb::app::futoin (
     }
 
     #---
-    $sock = "/run/${service_name}/http.sock"
-    $upstream = "${type}_${site}"
-
-    file { "${conf_prefix}.global.${type}":
-        mode    => '0640',
-        content => epp($template_global, {
-            upstream   => $upstream,
-            sock       => $sock,
-            sock_count => 1,
-        }),
-    }
-    file { "${conf_prefix}.server.${type}":
-        mode    => '0640',
-        content => epp($template, {
-            site      => $site,
-            upstream  => $upstream,
-            locations => ['/'],
-        }),
-    }
-
     cfweb_app { $service_name:
         ensure       => present,
         type         => $type,
@@ -59,7 +46,12 @@ define cfweb::app::futoin (
         cpu_weight   => $cpu_weight,
         io_weight    => $io_weight,
 
-        misc         => getparam(Cfweb::Site[$site], 'deploy'),
+        misc         => {
+            conf_prefix => $conf_prefix,
+            limits      => cfweb::limits_merge($site),
+            deploy      => getparam(Cfweb::Site[$site], 'deploy'),
+            tune        => $tune,
+        },
         require      => Anchor['cfnetwork:firewall'],
     }
 

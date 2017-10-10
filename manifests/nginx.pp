@@ -138,6 +138,7 @@ class cfweb::nginx (
 
     [
         'cf_mime.types',
+        'cf_http_params',
         'cf_fastcgi_params',
         'cf_scgi_params',
         'cf_uwsgi_params'

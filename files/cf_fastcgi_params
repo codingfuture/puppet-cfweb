@@ -23,3 +23,14 @@ fastcgi_param  SERVER_NAME        $server_name;
 
 # PHP only, required if PHP was built with --enable-force-cgi-redirect
 fastcgi_param  REDIRECT_STATUS    200;
+
+# Workaround possible HTTP_PROXY attack
+fastcgi_param HTTP_PROXY "";
+        
+# misc.
+fastcgi_keep_conn on;
+fastcgi_ignore_client_abort on;
+fastcgi_intercept_errors on;
+fastcgi_max_temp_file_size 128k;
+fastcgi_read_timeout 600s;
+fastcgi_next_upstream error timeout http_502 non_idempotent;

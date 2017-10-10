@@ -41,7 +41,7 @@ Puppet::Type.type(:cfweb_app).provide(
                 new_services += self.send("create_#{conf[:type]}", conf)
             rescue => e
                 warning(e)
-                #warning(e.backtrace)
+                warning(e.backtrace)
                 err("Transition error in setup")
             end
         end

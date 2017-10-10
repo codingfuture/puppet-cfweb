@@ -105,7 +105,7 @@ server {
 <%  if $acme_well_known_dir { -%>
     location ^~ /.well-known/ {
         root $acme_well_known_dir;
-        limit_req unlikely nodelay;
+        limit_req zone=unlikely nodelay;
     }
 <%  } -%>
 

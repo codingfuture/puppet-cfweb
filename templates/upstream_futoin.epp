@@ -1,8 +1,0 @@
-<% |
-    String $upstream,
-    String $sock,
-| -%>
-
-upstream <%= $upstream %> {
-    server unix://<%= $sock %>;
-}

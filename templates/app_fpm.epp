@@ -19,16 +19,7 @@
         }
 
         include /etc/nginx/cf_fastcgi_params;
-        fastcgi_param HTTP_PROXY "";
         fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-
         fastcgi_pass <%= $upstream %>;
-        
-        # misc.
-        fastcgi_keep_conn on;
-        fastcgi_ignore_client_abort on;
-        fastcgi_intercept_errors on;
-        fastcgi_max_temp_file_size 128k;
-        fastcgi_read_timeout 600s;
     }
 <% } -%>
