@@ -205,6 +205,33 @@ module PuppetX::CfWeb::Futoin::App
             else
                 info("\n---\n#{res}---")
             end
+        rescue Exception => e
+            # allow to continue, to keep services running
+            #---
+            futoin_conf_file = "#{site_dir}/.futoin.merged.json"
+            raise e unless File.exists? futoin_conf_file
+            
+            err(e.to_s)
+            
+            futoin_conf = File.read(futoin_conf_file)
+            futoin_conf = JSON.parse(futoin_conf)
+            
+            res = []
+            
+            futoin_conf['deploy']['autoServices'].each do |name, instances|
+                info = futoin_conf['entryPoints'][name]
+                
+                next if info['tool'] == 'nginx'
+                
+                i = 0
+                
+                instances.each do |v|
+                    res << "#{service_name}_#{name}-#{i}"
+                    i += 1
+                end
+            end
+            
+            return res
         ensure
             Dir.chdir(orig_cwd)
         end
