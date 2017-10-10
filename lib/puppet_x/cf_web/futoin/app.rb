@@ -393,6 +393,9 @@ module PuppetX::CfWeb::Futoin::App
             end
             
             if serve_static
+                vhost_server << "  disable_symlinks if_not_owner;"
+                vhost_server << "  index #{path_tune.fetch('index', 'index.html')};"
+                
                 if path_tune.fetch('etag', false)
                     vhost_server << "  etag on;"
                 else
@@ -416,7 +419,7 @@ module PuppetX::CfWeb::Futoin::App
                         'xml',
                     ]
                     
-                    vhost_server << "  location ~* \.(#{text_assets.joim('|')})$ {"
+                    vhost_server << "  location ~* \.(#{text_assets.join('|')})$ {"
                         if path_tune.fetch('gzip', true)
                             vhost_server << "  gzip on;"
                             vhost_server << "  gzip_types *;"
