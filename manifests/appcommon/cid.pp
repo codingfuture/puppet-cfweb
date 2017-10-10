@@ -116,4 +116,6 @@ class cfweb::appcommon::cid {
     cfnetwork::client_port { 'any:https:root-pip':
         user => 'root',
     }
+
+    class { 'cfweb::internal::cidrepos': stage => 'cf-apt-setup' }
 }

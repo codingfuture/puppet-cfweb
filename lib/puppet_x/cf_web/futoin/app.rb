@@ -411,7 +411,7 @@ module PuppetX::CfWeb::Futoin::App
             
             if app
                 if serve_static
-                    vhost_server << "  try_files $uri $uri/ @#{app};"
+                    vhost_server << "  try_files $uri @#{app};"
                 else
                     vhost_server << "  try_files /FAKE-WORKAROUND @#{app};"
                 end
