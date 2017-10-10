@@ -17,6 +17,7 @@ class cfweb::appcommon::cid {
             startup => systemd,
             webServer => nginx,
             externalSetup => "/usr/bin/sudo -u ${user} -n -H ${deploy_callback}",
+            externalServices => ['nginx'],
             rvmDir => "${tool_dir}/rvm",
             nvmDir => "${tool_dir}/nvm",
             composerDir => "${tool_dir}/composer",
