@@ -2,7 +2,13 @@
 
 ## Description
 
+Complex management of security enforced web cluster in Continuous Deployment mode.
+
 **This module is still in development!**
+
+Provided for alpha-testing purposes and as reference continuous deployment integration of
+[FutoIn CID](https://github.com/futoin/cid-tool).
+
 
 ### Terminology & Concept
 

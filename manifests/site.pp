@@ -137,12 +137,23 @@ define cfweb::site (
 
         ensure_resource('group', $group, { ensure => present })
         ensure_resource( 'user', $user, {
-            ensure  => present,
-            gid     => $group,
-            groups  => [$cid_group],
-            home    => $home_dir,
-            require => Group[$group],
+            ensure         => present,
+            gid            => $group,
+            groups         => [$cid_group],
+            home           => $home_dir,
+            purge_ssh_keys => true,
+            require        => Group[$group],
         })
+
+        cfsystem::clusterssh { "cfweb:site:${cfweb::cluster}:${user}":
+            namespace  => 'cfweb:site',
+            cluster    => "${cfweb::cluster}:${user}",
+            user       => $user,
+            is_primary => !$cfweb::is_secondary,
+            key_type   => $cfweb::pki::ssh_key_type,
+            key_bits   => $cfweb::pki::ssh_key_bits,
+            peer_ipset => $cfweb::cluster_ipset,
+        }
 
         file { [
                 "${cfweb::nginx::bin_dir}/start-${title}",
