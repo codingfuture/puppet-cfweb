@@ -64,4 +64,27 @@ define cfweb::deploy::futoin(
     cfweb::internal::deployerfw { $user:
         fw_ports => $fw_ports,
     }
+
+    #--------------
+    $deploy_type = $type ? {
+        'rms' => "${type} ${pool}",
+        default => $type
+    }
+
+    file { "${cfweb::nginx::bin_dir}/deploy-${site}":
+        mode    => '0700',
+        content => epp('cfweb/futoin_manual_deploy.epp', {
+            site_dir    => $site_dir,
+            user        => $user,
+            deploy_type => $deploy_type,
+            match       => $match,
+        }),
+    }
+
+    file { "${cfweb::nginx::bin_dir}/redeploy-mark-${site}":
+        mode    => '0700',
+        content => epp('cfweb/futoin_mark_redeploy.epp', {
+            site_dir => $site_dir,
+        }),
+    }
 }

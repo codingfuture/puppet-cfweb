@@ -10,8 +10,6 @@ define cfweb::app::futoin (
     String[1] $conf_prefix,
     String[1] $type,
     Array[String[1]] $dbaccess_names,
-    String[1] $template_global = 'cfweb/upstream_http',
-    String[1] $template = 'cfweb/app_http',
 
     Integer[1] $memory_weight = 100,
     Optional[Integer[1]] $memory_max = undef,

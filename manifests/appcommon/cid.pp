@@ -59,7 +59,7 @@ class cfweb::appcommon::cid {
         ensure   => latest,
         provider => pip,
     }
-    -> exec { '/usr/local/bin/pip install -e /external/cid-tool': }
+    # -> exec { '/usr/local/bin/pip install -e /external/cid-tool': }
     -> file { '/etc/futoin':
         ensure => directory,
         mode   => '0755',

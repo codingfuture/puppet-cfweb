@@ -111,6 +111,9 @@ module PuppetX::CfWeb::Futoin::App
             "--deployDir=#{site_dir}",
         ]
         
+        redeploy_file = "#{site_dir}/.redeploy"
+        deploy_args << '--redeploy' if File.exists? redeploy_file
+        
         warning("CID deploy: #{site_dir}")
         orig_cwd = Dir.pwd
         
@@ -205,6 +208,8 @@ module PuppetX::CfWeb::Futoin::App
             else
                 info("\n---\n#{res}---")
             end
+            
+            File.unlink redeploy_file if File.exists? redeploy_file
         rescue Exception => e
             # allow to continue, to keep services running
             #---
