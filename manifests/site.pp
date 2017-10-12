@@ -36,6 +36,8 @@ define cfweb::site (
         newname    => Optional[String[1]],
     }]] $limits = {},
 
+    Hash[String[1], Variant[String, Numeric]] $dotenv = {},
+
     Optional[Hash[String[1], Any]] $deploy = undef,
     Optional[String[1]] $force_user = undef,
 ) {
@@ -119,6 +121,7 @@ define cfweb::site (
     $conf_prefix = "${cfweb::nginx::sites_dir}/${site}"
     # This must be created by deploy script
     $document_root = "${site_dir}/current"
+    $env_file = "${site_dir}/.env"
 
     if $is_dynamic or $deploy {
         ensure_resource('exec', "add_nginx_to_${group}", {
@@ -164,6 +167,16 @@ define cfweb::site (
             ensure => link,
             target => $cfweb::nginx::generic_control
         }
+
+        $dotenv.each |$k, $v| {
+            cfsystem::dotenv { "${env_file}:${k}":
+                user     => $user,
+                variable => $k,
+                value    => $v,
+                env_file => $env_file,
+                notify   => Cfweb_App[$user],
+            }
+        }
     }
 
     file { $site_dir:
@@ -201,7 +214,7 @@ define cfweb::site (
                 { $name => {
                     local_user    => $user,
                     custom_config => 'cfweb::appcommon::dbaccess',
-                    env_file      => "${site_dir}/.env",
+                    env_file      => $env_file,
                     config_prefix => "DB_${k.upcase()}_",
                 } },
                 merge({
@@ -228,7 +241,7 @@ define cfweb::site (
                         { $name => {
                             local_user    => $user,
                             custom_config => 'cfweb::appcommon::dbaccess',
-                            env_file      => "${site_dir}/.env",
+                            env_file      => $env_file,
                             config_prefix => "DB_${app_type.upcase()}_",
                         } },
                         merge({

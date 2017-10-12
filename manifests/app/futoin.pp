@@ -52,6 +52,7 @@ define cfweb::app::futoin (
         },
         require      => Anchor['cfnetwork:firewall'],
     }
+    -> File["${conf_prefix}.conf"]
 
     #---
     file { [
