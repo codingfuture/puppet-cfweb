@@ -4,7 +4,9 @@
 
 
 
-class cfweb::appcommon::cid {
+class cfweb::appcommon::cid (
+    String[1] $version = 'latest'
+) {
     $user = 'futoin'
     $group = 'futoin'
     $home = "/home/${user}"
@@ -58,7 +60,7 @@ class cfweb::appcommon::cid {
         require  => Anchor['cfnetwork:firewall'],
     }
     -> package { 'futoin-cid':
-        ensure   => latest,
+        ensure   => $version,
         provider => pip,
     }
     # -> exec { '/usr/local/bin/pip install -e /external/cid-tool': }

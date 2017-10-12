@@ -109,11 +109,11 @@ class cfweb::nginx (
         mode   => '0751',
     }
     -> file { [$empty_root, $bin_dir]:
-        ensure => directory,
-        mode   => '0751',
-        owner  => root,
-        group  => $group,
-        purge  => true,
+        ensure  => directory,
+        mode    => '0751',
+        owner   => root,
+        group   => $group,
+        purge   => true,
         recurse => true,
         force   => true,
     }
