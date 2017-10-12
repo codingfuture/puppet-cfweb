@@ -33,4 +33,4 @@ fastcgi_ignore_client_abort on;
 fastcgi_intercept_errors on;
 fastcgi_max_temp_file_size 128k;
 fastcgi_read_timeout 600s;
-fastcgi_next_upstream error timeout http_502 non_idempotent;
+fastcgi_next_upstream error timeout http_503 non_idempotent;

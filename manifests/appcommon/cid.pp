@@ -24,6 +24,8 @@ class cfweb::appcommon::cid {
             flywayDir => "${tool_dir}/flyway",
             liquibaseDir => "${tool_dir}/liquibase",
             sdkmanDir => "${tool_dir}/sdkman",
+            phpBinOnly => true,
+            phpfpmErrorLog => syslog,
         }
     }
 
@@ -91,7 +93,13 @@ class cfweb::appcommon::cid {
     -> cfauth::sudoentry { "grp_${group}":
         user     => "%${group}",
         command  => [ $deploy_callback ],
-        env_keep => ['nodeVer', 'rubyVer'],
+        env_keep => [
+            'nodeVer',
+            'rubyVer',
+            'phpVer',
+            'phpExtRequire',
+            'phpExtTry',
+        ],
     }
     -> exec { $sudoers_file:
         creates => $sudoers_file,

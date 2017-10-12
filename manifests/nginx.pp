@@ -100,6 +100,7 @@ class cfweb::nginx (
         ensure => directory,
         mode   => '0750',
         purge  => true,
+        force  => true,
     }
     -> file { [$web_dir, $errors_root, $persistent_dir]:
         ensure => directory,
@@ -113,6 +114,8 @@ class cfweb::nginx (
         owner  => root,
         group  => $group,
         purge  => true,
+        recurse => true,
+        force   => true,
     }
     -> file { $generic_control:
         content => file('cfweb/generic_control.sh'),

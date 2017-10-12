@@ -33,6 +33,17 @@ define cfweb::app::futoin (
     }
 
     #---
+
+    # prevent global failures on deploy issue
+    file { [
+            "${conf_prefix}.global.futoin",
+            "${conf_prefix}.server.futoin",
+        ]:
+        ensure  => present,
+        replace => no,
+        content => '',
+    }
+
     cfweb_app { $service_name:
         ensure       => present,
         type         => $type,
