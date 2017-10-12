@@ -396,7 +396,7 @@ module PuppetX::CfWeb::Futoin::App
         
         # Forbid dot-files
         #---
-        vhost_server << "location ~ /\. {"
+        vhost_server << "location ~ /\\. {"
         vhost_server << "  deny all;"
         vhost_server << "  limit_req zone=unlikely nodelay;"
         vhost_server << "  log_not_found off;"
@@ -451,7 +451,7 @@ module PuppetX::CfWeb::Futoin::App
                         'xml',
                     ]
                     
-                    vhost_server << "  location ~* \.(#{text_assets.join('|')})$ {"
+                    vhost_server << "  location ~* \\.(#{text_assets.join('|')})$ {"
                         if path_tune.fetch('gzip', true)
                             vhost_server << "  gzip on;"
                             vhost_server << "  gzip_types *;"
