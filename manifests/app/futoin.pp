@@ -44,7 +44,8 @@ define cfweb::app::futoin (
         content => '',
     }
 
-    cfweb_app { $service_name:
+    Class['cfweb::appcommon::cid']
+    -> cfweb_app { $service_name:
         ensure       => present,
         type         => $type,
         site         => $site,
@@ -60,6 +61,7 @@ define cfweb::app::futoin (
             limits      => cfweb::limits_merge($site),
             deploy      => getparam(Cfweb::Site[$site], 'deploy'),
             tune        => $tune,
+            persist_dir => "${cfweb::nginx::persistent_dir}/app_${site}",
         },
         require      => Anchor['cfnetwork:firewall'],
     }

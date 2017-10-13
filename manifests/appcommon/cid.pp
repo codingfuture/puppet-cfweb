@@ -51,8 +51,8 @@ class cfweb::appcommon::cid (
 
     package { 'python-pip': }
     # just in case
-    -> file { '/usr/bin/pip':
-        ensure => absent,
+    -> exec { '/bin/rm -f /usr/bin/pip':
+        onlyif => '/usr/bin/test -e /usr/local/bin/pip',
     }
     -> package { 'pip':
         ensure   => latest,

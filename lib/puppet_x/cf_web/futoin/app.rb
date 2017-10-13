@@ -84,6 +84,7 @@ module PuppetX::CfWeb::Futoin::App
         limits = misc['limits']
         conf_prefix = misc['conf_prefix']
         tune = misc['tune']
+        persist_dir = misc['persist_dir']
         
         mem_limit = cf_system.getMemory(service_name)
 
@@ -112,13 +113,16 @@ module PuppetX::CfWeb::Futoin::App
         ]
         
         redeploy_file = "#{site_dir}/.redeploy"
-        deploy_args << '--redeploy' if File.exists? redeploy_file
+        redeploy = File.exists? redeploy_file
+        deploy_conf = "#{site_dir}/futoin.json"
         
         warning("CID deploy: #{site_dir}")
         orig_cwd = Dir.pwd
         
         begin
             Dir.chdir(site_dir)
+            pre_conf = ''
+            pre_conf = File.read(deploy_conf) if File.exists? deploy_conf
             
             # Basic setup
             #---
@@ -138,7 +142,20 @@ module PuppetX::CfWeb::Futoin::App
             
             # Extra setup
             #---
-            (deploy_conf['deploy_set'] || []).each do |v|
+            phpfpm_tune = {
+                'phpini' => {
+                    'open_basedir' => [
+                        "#{File.realpath(site_dir)}/",
+                        "#{File.realpath(persist_dir)}/",
+                    ].join(':')
+                }
+            }
+            
+            deploy_set = [
+                %Q{tooltune phpfpm #{Shellwords.escape(JSON.generate(phpfpm_tune))}}
+            ] + (deploy_conf['deploy_set'] || [])
+            
+            deploy_set.each do |v|
                 Puppet::Util::Execution.execute(
                     [
                         '/usr/local/bin/cid',
@@ -179,6 +196,9 @@ module PuppetX::CfWeb::Futoin::App
             
             # Actual deployment
             #---
+            redeploy = true if pre_conf != File.read(deploy_conf)
+            deploy_args << '--redeploy' if redeploy
+
             res = Puppet::Util::Execution.execute(
                 [
                     '/usr/local/bin/cid',
@@ -499,9 +519,7 @@ module PuppetX::CfWeb::Futoin::App
         service_names = []
         
         autoServices.each do |name, instances|
-            info = entryPoints[name]
-            
-            next if info['tool'] == 'nginx'
+            next if name == 'nginx'
             
             max_conn = 0
             i = 0
@@ -513,7 +531,7 @@ module PuppetX::CfWeb::Futoin::App
                 
                 content_ini = {
                     'Unit' => {
-                        'Description' => "CFWEB App: #{site}",
+                        'Description' => "CFWEB App: #{site} (#{name}-#{i})",
                     },
                     'Service' => {
                         'LimitNOFILE' => 'infinity',
