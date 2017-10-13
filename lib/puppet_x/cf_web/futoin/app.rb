@@ -584,7 +584,7 @@ module PuppetX::CfWeb::Futoin::App
 
         # Make sure nginx is refresh as well
         #---
-        systemctl('reload', "#{service_name_i}.service")
+        systemctl('reload', "cfnginx.service")
         
         return service_names
     end
