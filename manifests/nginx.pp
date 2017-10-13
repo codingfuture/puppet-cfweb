@@ -138,6 +138,11 @@ class cfweb::nginx (
         provider => 'systemd',
         require  => Anchor['cfnetwork:firewall'],
     }
+    -> anchor { 'cfnginx-ready': }
+    -> exec { 'cfnginx_reload':
+        command     => '/bin/systemctl reload-or-restart cfnginx.service',
+        refreshonly => true,
+    }
 
     [
         'cf_mime.types',

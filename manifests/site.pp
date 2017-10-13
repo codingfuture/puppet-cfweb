@@ -125,12 +125,10 @@ define cfweb::site (
 
     if $is_dynamic or $deploy {
         ensure_resource('exec', "add_nginx_to_${group}", {
-            command  => [
-                "/usr/sbin/adduser ${cfweb::nginx::user} ${group}",
-                "/bin/systemctl reload ${cfweb::nginx::service_name}"
-            ].join(' && '),
+            command  => "/usr/sbin/adduser ${cfweb::nginx::user} ${group}",
             'unless' => "/usr/bin/id -Gn ${cfweb::nginx::user} | /bin/grep -q ${group}",
             require  => Group[$group],
+            notify   => Exec['cfnginx_reload'],
         })
     }
 
@@ -270,7 +268,7 @@ define cfweb::site (
     # Define apps
     #---
     $cfg_notify = [
-        Service[$cfweb::nginx::service_name],
+        Exec['cfnginx_reload'],
     ]
 
     if $is_dynamic {
@@ -311,6 +309,7 @@ define cfweb::site (
                     require        =>
                         Cfweb::Appcommon::Dbaccess[$app_dbaccess_deps],
                     notify         => $cfg_notify,
+                    before         => Anchor['cfnginx-ready'],
                 },
             },
             $app_info
@@ -363,6 +362,7 @@ define cfweb::site (
             custom_conf        => pick_default($custom_conf, ''),
         }),
         notify  => $cfg_notify,
+        before  => Anchor['cfnginx-ready'],
     }
 
     # Deploy procedure
@@ -378,6 +378,7 @@ define cfweb::site (
             apps           => keys($apps),
             persistent_dir => $persistent_dir,
             require        => $all_db_deps,
+            before         => Anchor['cfnginx-ready'],
         }
     }
 }
