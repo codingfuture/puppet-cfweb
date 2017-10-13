@@ -20,9 +20,9 @@ module PuppetX::CfWeb::Futoin::App
             futoin_conf = JSON.parse(futoin_conf)
             
             futoin_conf['deploy']['autoServices'].each do |name, instances|
-                info = futoin_conf['entryPoints'][name]
+                ep = futoin_conf['entryPoints'][name]
                 
-                next if info['tool'] == 'nginx'
+                next if ep['tool'] == 'nginx'
                 
                 i = 0
                 
@@ -114,7 +114,7 @@ module PuppetX::CfWeb::Futoin::App
         
         redeploy_file = "#{site_dir}/.redeploy"
         redeploy = File.exists? redeploy_file
-        deploy_conf = "#{site_dir}/futoin.json"
+        deploy_futoin_file = "#{site_dir}/futoin.json"
         
         warning("CID deploy: #{site_dir}")
         orig_cwd = Dir.pwd
@@ -122,7 +122,7 @@ module PuppetX::CfWeb::Futoin::App
         begin
             Dir.chdir(site_dir)
             pre_conf = ''
-            pre_conf = File.read(deploy_conf) if File.exists? deploy_conf
+            pre_conf = File.read(deploy_futoin_file) if File.exists? deploy_futoin_file
             
             # Basic setup
             #---
@@ -142,31 +142,47 @@ module PuppetX::CfWeb::Futoin::App
             
             # Extra setup
             #---
-            phpfpm_tune = {
-                'phpini' => {
-                    'open_basedir' => [
-                        "#{File.realpath(site_dir)}/",
-                        "#{File.realpath(persist_dir)}/",
-                    ].join(':')
-                }
-            }
-            
-            deploy_set = [
-                %Q{tooltune phpfpm #{Shellwords.escape(JSON.generate(phpfpm_tune))}}
-            ] + (deploy_conf['deploy_set'] || [])
-            
-            deploy_set.each do |v|
-                Puppet::Util::Execution.execute(
-                    [
-                        '/usr/local/bin/cid',
-                        'deploy', 'set'] +
-                        Shellwords.split(v),
+            cid_vesion = Puppet::Util::Execution.execute(
+                [
+                    '/usr/local/bin/cid', '--version'
+                ],
                 {
                     :failonfail => true,
                     :uid => user,
                     :gid => user,
                 }
+            ).strip()
+            
+            phpfpm_tune = {
+                'phpini' => {
+                    'open_basedir' => [
+                        "#{File.realpath(site_dir)}/",
+                        "#{File.realpath(persist_dir)}/",
+                    ].join(':'),
+                }
+            }
+            
+            deploy_set = [
+                %Q{tooltune cid version=#{Shellwords.escape(cid_vesion)}},
+                %Q{tooltune phpfpm #{Shellwords.escape(JSON.generate(phpfpm_tune))}},
+            ] + (deploy_conf['deploy_set'] || [])
+            
+            deploy_set.each do |v|
+                res = Puppet::Util::Execution.execute(
+                    [
+                        '/usr/local/bin/cid',
+                        'deploy', 'set'] +
+                        Shellwords.split(v),
+                    {
+                        :uid => user,
+                        :gid => user,
+                    }
                 )
+                
+                if res.exitstatus != 0
+                    err("\n---\n#{res}---")
+                    raise 'Failed at deploy set'
+                end
             end
             
             # Custom script
@@ -196,7 +212,7 @@ module PuppetX::CfWeb::Futoin::App
             
             # Actual deployment
             #---
-            redeploy = true if pre_conf != File.read(deploy_conf)
+            redeploy = true if pre_conf != File.read(deploy_futoin_file)
             deploy_args << '--redeploy' if redeploy
 
             res = Puppet::Util::Execution.execute(
@@ -244,9 +260,9 @@ module PuppetX::CfWeb::Futoin::App
             res = []
             
             futoin_conf['deploy']['autoServices'].each do |name, instances|
-                info = futoin_conf['entryPoints'][name]
+                ep = futoin_conf['entryPoints'][name]
                 
-                next if info['tool'] == 'nginx'
+                next if ep['tool'] == 'nginx'
                 
                 i = 0
                 
@@ -270,7 +286,10 @@ module PuppetX::CfWeb::Futoin::App
         webcfg = futoin_conf.fetch('webcfg', {})
         mounts = webcfg.fetch('mounts', {}).clone
         
-        mounts['/'] = webcfg['main'] if webcfg['main']
+        if webcfg['main']
+            mounts['/'] ||= {}
+            mounts['/']['app'] = webcfg['main']
+        end
         
         # Nginx config
         #---
@@ -288,10 +307,10 @@ module PuppetX::CfWeb::Futoin::App
         upstream_queue = tune.fetch('upstreamQueue', nil)
         
         autoServices.each do |name, instances|
-            info = entryPoints[name]
+            ep = entryPoints[name]
             
-            if info['tool'] == 'nginx'
-                extra_conf = info.fetch('tune', {})
+            if ep['tool'] == 'nginx'
+                extra_conf = ep.fetch('tune', {})
                 extra_conf = extra_conf.fetch('config', {})
                 extra_conf = extra_conf.fetch('http', {})
                 extra_conf = extra_conf.fetch('server', {})
@@ -385,7 +404,7 @@ module PuppetX::CfWeb::Futoin::App
                 vhost_server << "  fastcgi_pass #{upstream_name};"
                 vhost_server << "  fastcgi_next_upstream_tries #{next_tries};"
                 vhost_server << "  include /etc/nginx/cf_fastcgi_params;"
-                file_path = File.join(site_dir, 'current', info.fetch('path', ''))
+                file_path = File.join(site_dir, 'current', ep.fetch('path', ''))
                 vhost_server << "  fastcgi_param SCRIPT_FILENAME #{file_path};"
             elsif protocol == 'scgi'
                 vhost_server << "  scgi_pass #{upstream_name};"
@@ -425,14 +444,14 @@ module PuppetX::CfWeb::Futoin::App
         
         # App-defined mounts
         #---        
-        mounts.each do |path, info|
-            info = { 'app' => info } if info.is_a? String
+        mounts.each do |path, mp|
+            mp = { 'app' => mp } if mp.is_a? String
             
             vhost_server << "location #{path} {"
             #---
-            app = info['app']
-            path_tune = info.fetch('tune', {})
-            serve_static = info.fetch('static', false)
+            app = mp['app']
+            path_tune = mp.fetch('tune', {})
+            serve_static = mp.fetch('static', false)
             
             if app
                 if serve_static
@@ -519,7 +538,7 @@ module PuppetX::CfWeb::Futoin::App
         service_names = []
         
         autoServices.each do |name, instances|
-            next if name == 'nginx'
+            next if futoin_conf['entryPoints'][name]['tool'] == 'nginx'
             
             max_conn = 0
             i = 0
@@ -563,8 +582,9 @@ module PuppetX::CfWeb::Futoin::App
             saveMaxConn(site, name, max_conn)
         end
 
-        # Service
+        # Make sure nginx is refresh as well
         #---
+        systemctl('reload', "#{service_name_i}.service")
         
         return service_names
     end
