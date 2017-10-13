@@ -101,6 +101,7 @@ class cfweb::appcommon::cid (
             'phpVer',
             'phpExtRequire',
             'phpExtTry',
+            'pythonVer',
         ],
     }
     -> exec { $sudoers_file:

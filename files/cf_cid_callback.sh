@@ -83,6 +83,7 @@ cmd=$1
 
 cd /
 export CID_DEPLOY_HOME=/www/tools
+umask 0022
 
 case $cmd in
     tool)

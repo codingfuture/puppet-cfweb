@@ -181,7 +181,7 @@ module PuppetX::CfWeb::Futoin::App
                 
                 if res.exitstatus != 0
                     err("\n---\n#{res}---")
-                    raise 'Failed at deploy set'
+                    raise "Failed at deploy set: #{v}"
                 end
             end
             
@@ -411,9 +411,9 @@ module PuppetX::CfWeb::Futoin::App
                 vhost_server << "  scgi_next_upstream_tries #{next_tries};"
                 vhost_server << "  include /etc/nginx/cf_scgi_params;"
             elsif protocol == 'uwsgi'
-                vhost_server << "  uwscgi_pass #{upstream_name};"
-                vhost_server << "  uwscgi_next_upstream_tries #{next_tries};"
-                vhost_server << "  include /etc/nginx/cf_uwscgi_params;"
+                vhost_server << "  uwsgi_pass #{upstream_name};"
+                vhost_server << "  uwsgi_next_upstream_tries #{next_tries};"
+                vhost_server << "  include /etc/nginx/cf_uwsgi_params;"
             else
                 raise "Not supported protocol '#{protocol}'"
             end
