@@ -111,6 +111,17 @@ class cfweb::appcommon::cid (
         mode => '0640',
     }
 
+    # Disable PHP-fpm regardless if installed
+    ['', '5.6', '7.0', '7.1', '7.2'].each |$ver| {
+        exec { "cfweb-mask-php-fpm-${ver}":
+            command => [
+                "/bin/systemctl stop php${ver}-fpm",
+                "/bin/systemctl mask php${ver}-fpm",
+            ].join(';'),
+            creates => "/etc/systemd/system/php${ver}-fpm.service",
+        }
+    }
+
     # Allow package retrieval
     cfnetwork::client_port { "any:http:${user}":
         user => $user,
