@@ -162,9 +162,17 @@ module PuppetX::CfWeb::Futoin::App
                 }
             }
             
+            uwsgi_tune = {
+                'uwsgi' => {
+                    'chmod-socket' => '660'
+                },
+                'reloadable' => false, # Fails to re-read conf, sources, reopen socket, etc.
+            }
+            
             deploy_set = [
                 %Q{tooltune cid version=#{Shellwords.escape(cid_vesion)}},
                 %Q{tooltune phpfpm #{Shellwords.escape(JSON.generate(phpfpm_tune))}},
+                %Q{tooltune uwsgi #{Shellwords.escape(JSON.generate(uwsgi_tune))}},
             ] + (deploy_conf['deploy_set'] || [])
             
             deploy_set.each do |v|
@@ -538,10 +546,12 @@ module PuppetX::CfWeb::Futoin::App
         service_names = []
         
         autoServices.each do |name, instances|
-            next if futoin_conf['entryPoints'][name]['tool'] == 'nginx'
+            tool = futoin_conf['entryPoints'][name]['tool']
+            next if tool == 'nginx'
             
             max_conn = 0
             i = 0
+            mem_lock = ['uwsgi'].include? tool
             
             instances.each do |v|
                 service_name_i = "#{service_name}_#{name}-#{i}"
@@ -567,14 +577,14 @@ module PuppetX::CfWeb::Futoin::App
                     :user => user,
                     :content_ini => content_ini,
                     :mem_limit => v['maxMemory'],
+                    :mem_lock => mem_lock,
                 })
                 
                 if service_changed
                     systemctl('reload-or-restart', "#{service_name_i}.service")
+                else
+                    systemctl('start', "#{service_name_i}.service")
                 end
-                
-                # make sure it's running
-                systemctl('start', "#{service_name_i}.service")
                 
                 i += 1
             end
