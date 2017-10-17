@@ -17,6 +17,7 @@ define cfweb::deploy::futoin(
         'vcstag'
     ] $type,
 
+    String[1] $tool,
     String[1] $url,
     Optional[String[1]] $pool = undef,
     Optional[String[1]] $match = undef,

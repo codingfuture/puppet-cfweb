@@ -132,15 +132,10 @@ class cfweb::nginx (
         service_name  => $service_name,
         limits        => $limits,
     }
-    -> service { $service_name:
-        ensure   => running,
-        enable   => true,
-        provider => 'systemd',
-        require  => Anchor['cfnetwork:firewall'],
-    }
     -> anchor { 'cfnginx-ready': }
     -> exec { 'cfnginx_reload':
         command     => '/bin/systemctl reload-or-restart cfnginx.service',
+        onlyif      => '/usr/bin/test -f /etc/systemd/system/cfnginx.service',
         refreshonly => true,
     }
 

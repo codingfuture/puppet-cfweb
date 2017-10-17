@@ -49,11 +49,11 @@ class cfweb::appcommon::cid (
         purge_ssh_keys => true,
     }
 
-    package { 'python-pip': }
-    # just in case
-    -> exec { '/bin/rm -f /usr/bin/pip':
-        onlyif => '/usr/bin/test -e /usr/local/bin/pip',
+    package { 'python-pip':
+        ensure => absent,
     }
+    # just in case
+    -> exec { '/usr/bin/easy_install pip': }
     -> package { 'pip':
         ensure   => latest,
         provider => pip,

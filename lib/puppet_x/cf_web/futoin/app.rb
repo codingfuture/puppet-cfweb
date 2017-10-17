@@ -107,7 +107,7 @@ module PuppetX::CfWeb::Futoin::App
         end
         
         deploy_args += [
-            "--#{url_arg}=#{deploy_conf['url']}",
+            "--#{url_arg}=#{deploy_conf['tool']}:#{deploy_conf['url']}",
             "--limit-memory=#{mem_limit}M",
             "--deployDir=#{site_dir}",
         ]
@@ -594,7 +594,11 @@ module PuppetX::CfWeb::Futoin::App
 
         # Make sure nginx is refresh as well
         #---
-        systemctl('reload', "cfnginx.service")
+        begin
+            systemctl('reload', "cfnginx.service")
+        rescue Exception => e
+            warning(e.to_s)
+        end
         
         return service_names
     end
