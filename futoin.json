@@ -4,5 +4,8 @@
   "vcs": "git",
   "package": [
     "pkg"
-  ]
+  ],
+  "tools": {
+    "puppet": "*"
+  }
 }
