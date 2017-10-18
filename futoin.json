@@ -7,5 +7,13 @@
   ],
   "tools": {
     "puppet": "*"
+  },
+  "plugins": {
+    "release": "futoin.cid.misc.releasetool"
+  },
+  "toolTune": {
+    "release": {
+      "changelog": "CHANGELOG.md"
+    }
   }
 }
