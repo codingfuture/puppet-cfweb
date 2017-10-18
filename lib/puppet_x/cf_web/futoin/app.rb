@@ -164,7 +164,8 @@ module PuppetX::CfWeb::Futoin::App
             
             uwsgi_tune = {
                 'uwsgi' => {
-                    'chmod-socket' => '660'
+                    'chmod-socket' => '660',
+                    'pythonpath' => File.join(site_dir, 'current'),
                 },
                 'reloadable' => false, # Fails to re-read conf, sources, reopen socket, etc.
             }
