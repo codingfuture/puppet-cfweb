@@ -52,10 +52,10 @@ define cfweb::pki::key(
                 fail("Not supported key type ${key_type_act} for ${key_name}")
             }
         }
-        
+
         #---
         $pki_user = $cfweb::pki::ssh_user
-        
+
         Exec[$exec_name]
         -> file { $key_file:
             owner   => $pki_user,

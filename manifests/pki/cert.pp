@@ -82,18 +82,18 @@ define cfweb::pki::cert(
 
             file { $crt_file:
                 content   => $certs['chained'],
-                owner   => $pki_user,
-                group   => $pki_user,
-                mode    => '0640',
+                owner     => $pki_user,
+                group     => $pki_user,
+                mode      => '0640',
                 show_diff => false,
                 notify    => Exec['cfweb_sync_pki'],
             }
 
             file { $trusted_file:
                 content   => $certs['trusted'],
-                owner   => $pki_user,
-                group   => $pki_user,
-                mode    => '0640',
+                owner     => $pki_user,
+                group     => $pki_user,
+                mode      => '0640',
                 show_diff => false,
                 notify    => Exec['cfweb_sync_pki'],
             }
