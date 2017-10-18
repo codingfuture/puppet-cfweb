@@ -1,0 +1,8 @@
+{
+  "name": "codingfuture-cfweb",
+  "version": "0.1.0",
+  "vcs": "git",
+  "package": [
+    "pkg"
+  ]
+}
