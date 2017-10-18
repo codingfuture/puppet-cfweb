@@ -93,13 +93,13 @@ class cfweb (
             }
         } else {
             create_resources(
-                    'cfweb::site',
+                    pick($site['type'], 'cfweb::site'),
                     {
                         $site_name => {
                             is_backend => false,
                         }
                     },
-                    $site
+                    $site - 'type'
             )
         }
     }
@@ -118,13 +118,13 @@ class cfweb (
             }
         } else {
             create_resources(
-                    'cfweb::site',
+                    pick($site['type'], 'cfweb::site'),
                     {
                         $site_name => {
                             is_backend => true,
                         }
                     },
-                    $site
+                    $site - 'type'
             )
         }
     }
