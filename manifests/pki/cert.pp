@@ -29,6 +29,7 @@ define cfweb::pki::cert(
     $crt_file = "${cert_base}.crt"
     $csr_file = "${cert_base}.csr"
     $trusted_file = "${crt_file}.trusted"
+    $pki_user = $cfweb::pki::ssh_user
 
     if $cfweb::is_secondary {
         exec { $exec_name:
@@ -58,7 +59,13 @@ define cfweb::pki::cert(
             require => Exec["cfweb::pki::key::${key_name_act}"],
             notify  => Exec['cfweb_sync_pki']
         }
-
+        -> file { $csr_file:
+            owner   => $pki_user,
+            group   => $pki_user,
+            mode    => '0640',
+            replace => no,
+            content => '',
+        }
 
         #---
         $cert_source_act = pick_default($cert_source, $cfweb::pki::cert_source)
@@ -75,12 +82,18 @@ define cfweb::pki::cert(
 
             file { $crt_file:
                 content   => $certs['chained'],
+                owner   => $pki_user,
+                group   => $pki_user,
+                mode    => '0640',
                 show_diff => false,
                 notify    => Exec['cfweb_sync_pki'],
             }
 
             file { $trusted_file:
                 content   => $certs['trusted'],
+                owner   => $pki_user,
+                group   => $pki_user,
+                mode    => '0640',
                 show_diff => false,
                 notify    => Exec['cfweb_sync_pki'],
             }
@@ -96,6 +109,13 @@ define cfweb::pki::cert(
                 creates => $crt_file,
                 require => Exec[$csr_exec],
                 notify  => Exec['cfweb_sync_pki'],
+            }
+            -> file { $crt_file:
+                owner   => $pki_user,
+                group   => $pki_user,
+                mode    => '0640',
+                replace => no,
+                content => '',
             }
         }
 
@@ -113,6 +133,13 @@ define cfweb::pki::cert(
                 creates => "${crt_file}.${cert_source_act}",
                 require => Exec[$csr_exec],
                 # no notify, sync should be done internally
+            }
+            -> file { $key_file:
+                owner   => $pki_user,
+                group   => $pki_user,
+                mode    => '0640',
+                replace => no,
+                content => '',
             }
         }
     }

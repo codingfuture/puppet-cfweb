@@ -14,8 +14,8 @@ HOSTS=
 HOSTS+=" <%= $v %>"
 <% } -%>
 
-if test "$(/usr/bin/id -u)" = 0; then
-    exec /usr/bin/sudo -H -u <%= $ssh_user %> $0 "$@"
+if [ "$(/usr/bin/id -un)" != "<%= $ssh_user %>" ]; then
+    exec /usr/bin/sudo -n -H -u <%= $ssh_user %> $0 "$@"
     # should not reach here
     exit -1
 fi

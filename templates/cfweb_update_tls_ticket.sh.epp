@@ -11,9 +11,11 @@
 
 set -e
 ticket_dir=<%= $ticket_dir %>
+user=<%= $user %> 
 do_sync=n
 
 cd $ticket_dir
+umask 0027
 
 for n in $(seq 1 <%= $key_count %>); do
     tf=ticket${n}.key
@@ -35,7 +37,9 @@ if find $ticket_dir/ticket1.key -type f -mmin +<%= $old_age %> | read; then
     do_sync=y
 fi
 
+chown -R $user:$user $ticket_dir
+
 if test "$do_sync" = y; then
-    /bin/systemctl reload <%= $web_service %>.service
+    /bin/systemctl try-reload <%= $web_service %>.service
     $cfweb_sync_pki reload
 fi

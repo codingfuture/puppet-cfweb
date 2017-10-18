@@ -7,7 +7,7 @@ class cfweb::pki::dir {
     assert_private()
 
     include cfsystem::custombin
-    include cfweb::pki::user
+    require cfweb::pki::user
 
     $root_dir = $cfweb::pki::root_dir
     $ssh_user = $cfweb::pki::ssh_user
