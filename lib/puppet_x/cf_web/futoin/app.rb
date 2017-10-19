@@ -65,7 +65,7 @@ module PuppetX::CfWeb::Futoin::App
             content << ""
             content << "#{prefix}#{k} {"
             content += prep_nginx_config(v, "#{prefix}  ")
-            content << "}"
+            content << prefix
         end
 
         return content
@@ -305,7 +305,7 @@ module PuppetX::CfWeb::Futoin::App
         vhost_global = []
         vhost_server = []
         
-        webroot = webcfg['webroot']
+        webroot = webcfg['root']
         vhost_server << "root #{File.join(site_dir, 'current', webroot)};" if webroot
         
         vhost_server << limits['static']['expr']
