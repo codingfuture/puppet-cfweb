@@ -65,7 +65,7 @@ module PuppetX::CfWeb::Futoin::App
             content << ""
             content << "#{prefix}#{k} {"
             content += prep_nginx_config(v, "#{prefix}  ")
-            content << prefix
+            content << "#{prefix}}"
         end
 
         return content
