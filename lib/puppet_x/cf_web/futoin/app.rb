@@ -108,7 +108,6 @@ module PuppetX::CfWeb::Futoin::App
         
         deploy_args += [
             "--#{url_arg}=#{deploy_conf['tool']}:#{deploy_conf['url']}",
-            "--limit-memory=#{mem_limit}M",
             "--deployDir=#{site_dir}",
         ]
         
@@ -132,6 +131,7 @@ module PuppetX::CfWeb::Futoin::App
                     'deploy', 'setup',
                     "--user=#{user}",
                     "--group=#{user}",
+                    "--limit-memory=#{mem_limit}M",
                 ],
                 {
                     :failonfail => true,
