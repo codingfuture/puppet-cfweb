@@ -14,6 +14,9 @@ define cfweb::internal::deployerfw (
     cfnetwork::client_port { "any:https:${deploy_user}":
         user => $deploy_user,
     }
+    cfnetwork::client_port { "any:ssh:${deploy_user}":
+        user => $deploy_user,
+    }
 
 
     $fw_ports.each |$svc, $def| {
