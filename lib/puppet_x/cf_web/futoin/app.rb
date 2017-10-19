@@ -55,7 +55,7 @@ module PuppetX::CfWeb::Futoin::App
                     content << "#{prefix}#{k} #{lv};"
                 }
             else
-                content << "#{prefix}#{k} #{lv};"
+                content << "#{prefix}#{k} #{v};"
             end
         end
         
