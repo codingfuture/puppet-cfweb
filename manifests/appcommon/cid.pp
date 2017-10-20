@@ -52,6 +52,7 @@ class cfweb::appcommon::cid (
     package { 'python-pip':
         ensure => absent,
     }
+    -> package { 'python-setuptools': }
     # just in case
     -> exec { '/usr/bin/easy_install pip': }
     -> package { 'pip':
