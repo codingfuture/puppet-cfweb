@@ -9,12 +9,12 @@ class cfweb::nginx::aptrepo {
     $lsbdistcodename = $::facts['lsbdistcodename']
     $subdir = downcase($::facts['operatingsystem'])
     $release = $::facts['operatingsystem'] ? {
-        'Debian' => (versioncmp($::facts['operatingsystemrelease'], '9') >= 0) ? {
-            true    => 'jessie',
+        'Debian' => (versioncmp($::facts['operatingsystemrelease'], '10') >= 0) ? {
+            true    => 'stretch',
             default => $lsbdistcodename
         },
-        'Ubuntu' => (versioncmp($::facts['operatingsystemrelease'], '16.04') >= 0) ? {
-            true    => 'xenial',
+        'Ubuntu' => (versioncmp($::facts['operatingsystemrelease'], '16.10') >= 0) ? {
+            true    => 'yakkety',
             default => $lsbdistcodename
         },
         default  => $lsbdistcodename
