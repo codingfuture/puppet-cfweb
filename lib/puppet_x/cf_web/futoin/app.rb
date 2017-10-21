@@ -578,6 +578,7 @@ module PuppetX::CfWeb::Futoin::App
                     },
                     'Service' => {
                         'LimitNOFILE' => 'infinity',
+                        'UMask' => '0007',
                         'WorkingDirectory' => "#{site_dir}",
                         'Slice' => "#{PuppetX::CfWeb::SLICE_PREFIX}#{user}.slice",
                         'ExecStart' => "/usr/local/bin/cid service exec #{name} #{i}",

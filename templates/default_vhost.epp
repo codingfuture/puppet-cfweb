@@ -47,7 +47,7 @@ server {
     ssl_stapling on;
 <%  } -%>
 
-    add_header Strict-Transport-Security 'max-age=15768000; includeSubdomains; preload';
+    add_header Strict-Transport-Security 'max-age=15768000; includeSubdomains';
 <% } -%>
 
         

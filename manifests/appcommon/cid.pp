@@ -5,8 +5,15 @@
 
 
 class cfweb::appcommon::cid (
-    String[1] $version = 'latest'
+    String[1] $version = 'latest',
+    Integer[0] $reserve_ram = 256,
 ) {
+    cfsystem_memory_weight { 'cfweb:cid':
+        ensure => present,
+        weight => 1,
+        min_mb => $reserve_ram,
+    }
+
     $user = 'futoin'
     $group = 'futoin'
     $home = "/home/${user}"
