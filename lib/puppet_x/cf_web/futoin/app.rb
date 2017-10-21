@@ -583,7 +583,8 @@ module PuppetX::CfWeb::Futoin::App
                 })
                 
                 if service_changed
-                    systemctl('reload-or-restart', "#{service_name_i}.service")
+                    # if unit changes then we need to restart to get new limits working
+                    systemctl('restart', "#{service_name_i}.service")
                 else
                     systemctl('start', "#{service_name_i}.service")
                 end
