@@ -316,6 +316,8 @@ module PuppetX::CfWeb::Futoin::App
         keep_alive_percent = tune.fetch('upstreamKAPercent', 25).to_i
         upstream_queue = tune.fetch('upstreamQueue', nil)
         
+        autoServiceLocations = {}
+        
         autoServices.each do |name, instances|
             ep = entryPoints[name]
             
@@ -331,6 +333,8 @@ module PuppetX::CfWeb::Futoin::App
             end
             
             protocol = instances[0]['socketProtocol']
+            next if protocol == 'custom'
+            
             upstream_name = "futoin_#{site}_#{name}"
             
             vhost_global << "upstream #{upstream_name} {"
@@ -380,8 +384,10 @@ module PuppetX::CfWeb::Futoin::App
                     end
 
                     socket = "#{sock_addr}:#{v['socketPort']}"
+                elsif !socket_type
+                    next
                 else
-                    raise %Q{Unsupported socket type "#{socket_type}" for "#{app}"}
+                    raise %Q{Unsupported socket type "#{socket_type}" for "#{name}"}
                 end
 
                 vhost_global << %Q{  server #{socket} #{options.join(' ')};}
@@ -396,38 +402,44 @@ module PuppetX::CfWeb::Futoin::App
             body_size = instances[0]['maxRequestSize'].downcase
             
             #--
-            vhost_server << "location @#{name} {"
+            location_conf = []
             
             if limits[name]
-                vhost_server << "  #{limits[name]['expr']}"
+                location_conf << "  #{limits[name]['expr']}"
             else
-                vhost_server << "  #{limits['dynamic']['expr']}"
+                location_conf << "  #{limits['dynamic']['expr']}"
             end
             
-            vhost_server << "  client_max_body_size #{body_size};";
+            location_conf << "  client_max_body_size #{body_size};";
             
             if protocol == 'http'
-                vhost_server << "  proxy_pass http://#{upstream_name};"
-                vhost_server << "  proxy_next_upstream_tries #{next_tries};"
-                vhost_server << "  include /etc/nginx/cf_http_params;"
+                location_conf << "  proxy_pass http://#{upstream_name};"
+                location_conf << "  proxy_next_upstream_tries #{next_tries};"
+                location_conf << "  include /etc/nginx/cf_http_params;"
             elsif protocol == 'fcgi'
-                vhost_server << "  fastcgi_pass #{upstream_name};"
-                vhost_server << "  fastcgi_next_upstream_tries #{next_tries};"
-                vhost_server << "  include /etc/nginx/cf_fastcgi_params;"
+                location_conf << "  fastcgi_pass #{upstream_name};"
+                location_conf << "  fastcgi_next_upstream_tries #{next_tries};"
+                location_conf << "  include /etc/nginx/cf_fastcgi_params;"
                 file_path = File.join(site_dir, 'current', ep.fetch('path', ''))
-                vhost_server << "  fastcgi_param SCRIPT_FILENAME #{file_path};"
+                location_conf << "  fastcgi_param SCRIPT_FILENAME #{file_path};"
             elsif protocol == 'scgi'
-                vhost_server << "  scgi_pass #{upstream_name};"
-                vhost_server << "  scgi_next_upstream_tries #{next_tries};"
-                vhost_server << "  include /etc/nginx/cf_scgi_params;"
+                location_conf << "  scgi_pass #{upstream_name};"
+                location_conf << "  scgi_next_upstream_tries #{next_tries};"
+                location_conf << "  include /etc/nginx/cf_scgi_params;"
             elsif protocol == 'uwsgi'
-                vhost_server << "  uwsgi_pass #{upstream_name};"
-                vhost_server << "  uwsgi_next_upstream_tries #{next_tries};"
-                vhost_server << "  include /etc/nginx/cf_uwsgi_params;"
+                location_conf << "  uwsgi_pass #{upstream_name};"
+                location_conf << "  uwsgi_next_upstream_tries #{next_tries};"
+                location_conf << "  include /etc/nginx/cf_uwsgi_params;"
+            elsif protocol == 'custom'
+                next
             else
                 raise "Not supported protocol '#{protocol}'"
             end
             
+            autoServiceLocations[name] = location_conf
+            
+            vhost_server << "location @#{name} {"
+            vhost_server += location_conf
             vhost_server << "}"
             vhost_server << ""
         end
@@ -467,7 +479,7 @@ module PuppetX::CfWeb::Futoin::App
                 if serve_static
                     vhost_server << "  try_files $uri @#{app};"
                 else
-                    vhost_server << "  try_files /FAKE-WORKAROUND @#{app};"
+                    vhost_server += autoServiceLocations[app]
                 end
             else
                 serve_static = true # force
