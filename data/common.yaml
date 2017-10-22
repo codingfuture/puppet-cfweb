@@ -14,6 +14,11 @@ lookup_options:
     merge: unique
   cfweb::standalone:
     merge: unique
+  cfweb::pki::keys:
+    merge: unique
+  cfweb::pki::certs:
+    merge: unique
+
 
 cfweb::nginx::limits:
     peraddr:

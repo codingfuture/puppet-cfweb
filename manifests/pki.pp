@@ -80,7 +80,7 @@ class cfweb::pki(
     $certs.each |$cert_name| {
         create_resources(
                 'cfweb::pki::cert',
-                { $cert_name => $cfweb::global::cert[$cert_name] }
+                { $cert_name => $cfweb::global::certs[$cert_name] }
         )
     }
 }
