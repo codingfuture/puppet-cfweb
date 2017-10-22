@@ -587,6 +587,13 @@ module PuppetX::CfWeb::Futoin::App
                     },
                 }
                 
+                sock_path = v['socketPath']
+                
+                # Workaround for Node.js & misc.
+                if sock_path
+                    content_ini['Service']['ExecStartPre'] = "/bin/rm -f #{sock_path}"
+                end
+                
                 service_changed = self.cf_system().createService({
                     :service_name => service_name_i,
                     :user => user,
