@@ -60,7 +60,7 @@ define cfweb::site (
         )
         $dep_certs = [$auto_cert_name]
     } elsif size($shared_certs) {
-        require cfweb::pki
+        include cfweb::pki
 
         $shared_certs.each |$v| {
             if !defined(Cfweb::Pki::Cert[$v]) {
