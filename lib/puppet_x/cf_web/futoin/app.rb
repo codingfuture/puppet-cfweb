@@ -590,7 +590,7 @@ module PuppetX::CfWeb::Futoin::App
                 
                 # Workaround for Node.js & misc.
                 if sock_path
-                    script = "while ! chmod 770 #{sock_path}; do sleep 0.01; done"
+                    script = "while ! chmod 0770 -f #{sock_path}; do sleep 0.01; done"
                     content_ini['Service']['ExecStartPre'] = "/bin/rm -f #{sock_path}"
                     content_ini['Service']['ExecStartPost'] = "/bin/sh -c '#{script}'"
                 end
