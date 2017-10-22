@@ -578,7 +578,6 @@ module PuppetX::CfWeb::Futoin::App
                     },
                     'Service' => {
                         'LimitNOFILE' => 'infinity',
-                        'UMask' => '0007',
                         'WorkingDirectory' => "#{site_dir}",
                         'Slice' => "#{PuppetX::CfWeb::SLICE_PREFIX}#{user}.slice",
                         'ExecStart' => "/usr/local/bin/cid service exec #{name} #{i}",
@@ -591,7 +590,9 @@ module PuppetX::CfWeb::Futoin::App
                 
                 # Workaround for Node.js & misc.
                 if sock_path
+                    script = "while ! chmod 770 #{sock_path}; do sleep 0.01; done"
                     content_ini['Service']['ExecStartPre'] = "/bin/rm -f #{sock_path}"
+                    content_ini['Service']['ExecStartPost'] = "/bin/sh -c '#{script}'"
                 end
                 
                 service_changed = self.cf_system().createService({
