@@ -169,7 +169,8 @@ class cfweb::pki::dir {
             require     => [
                 User[$ssh_user],
                 Anchor['cfnetwork:firewall'],
-            ]
+            ],
+            notify      => Exec['cfnginx_reload'],
         }
     }
 }
