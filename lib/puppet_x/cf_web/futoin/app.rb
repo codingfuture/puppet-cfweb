@@ -501,6 +501,8 @@ module PuppetX::CfWeb::Futoin::App
                     vhost_server << "  autoindex off;"
                 end
                 
+                vhost_server << "  expires #{path_tune.fetch('expires', 'max')};"
+                
                 if path_tune.fetch('pattern', true)
                     text_assets = [
                         'html',
@@ -527,8 +529,6 @@ module PuppetX::CfWeb::Futoin::App
                         end
                     vhost_server << "  }"
                 else
-                    vhost_server << "  expires #{path_tune.fetch('expires', 'max')};"
-                
                     if path_tune.fetch('gzip', false)
                         vhost_server << "  gzip on;"
                         vhost_server << "  gzip_types *;"
