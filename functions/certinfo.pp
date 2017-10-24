@@ -8,14 +8,18 @@ function cfweb::certinfo(String[1] $cert_name) >> Hash {
 
     if $cert_name == 'default' {
         $cert = {}
-        $trusted_file = undef
     } else {
         $cert = $cfweb::global::certs[$cert_name]
-        $trusted_file = "${crt_file}.trusted"
     }
 
     if !$cert {
         fail("Please make sure Cfweb::Pki::Cert[${cert_name}] is defined")
+    }
+
+    if $cert['cert_source'] {
+        $trusted_file = "${crt_file}.trusted"
+    } else {
+        $trusted_file = undef
     }
 
     $key_name = pick($cert['key_name'], $cfweb::pki::key_name)
