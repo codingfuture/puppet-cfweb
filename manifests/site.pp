@@ -16,8 +16,8 @@ define cfweb::site (
     Boolean $is_backend = false,
 
     Hash[String[1],Hash] $auto_cert = {},
-    Array[String[1]] $shared_certs = [],
-    Hash[String[1],Hash] $dbaccess = {},
+    CfWeb::SharedCert $shared_cert = [],
+    Hash[String[1], CfWeb::DBAccess] $dbaccess = {},
     Hash[String[1],Hash,1] $apps = { 'static' => {} },
     Optional[String[1]] $custom_conf = undef,
     String[1] $web_root = '/',
@@ -25,18 +25,8 @@ define cfweb::site (
     Cfsystem::CpuWeight $cpu_weight = 100,
     Cfsystem::IoWeight $io_weight = 100,
 
-    Hash[String[1], Struct[{
-        type       => Enum['conn', 'req'],
-        var        => String[1],
-        count      => Optional[Integer[1]],
-        entry_size => Optional[Integer[1]],
-        rate       => Optional[String[1]],
-        burst      => Optional[Integer[0]],
-        nodelay    => Optional[Boolean],
-        newname    => Optional[String[1]],
-    }]] $limits = {},
-
-    Hash[String[1], Variant[String, Numeric]] $dotenv = {},
+    CfWeb::Limits $limits = {},
+    CfWeb::DotEnv $dotenv = {},
 
     Optional[Hash[String[1], Any]] $deploy = undef,
     Optional[String[1]] $force_user = undef,
@@ -47,6 +37,8 @@ define cfweb::site (
     validate_re($title, '^[a-z][a-z0-9_]*$')
 
     #---
+    $shared_certs = any2array($shared_cert)
+
     if !size($shared_certs) and size($tls_ports) > 0 {
         $auto_cert_name = "auto__${server_name}"
         create_resources(
@@ -62,10 +54,14 @@ define cfweb::site (
     } elsif size($shared_certs) {
         include cfweb::pki
 
-        $shared_certs.each |$v| {
-            if !defined(Cfweb::Pki::Cert[$v]) {
-                fail("Please make sure Cfweb::Pki::Cert[${v}] is defined for use in ${title}")
-            }
+        $shared_certs.each |$cert_name| {
+            $cert_params = $cfweb::global::certs[$cert_name]
+
+            ensure_resource(
+                'cfweb::pki::cert',
+                $cert_name,
+                $cert_params
+            )
         }
         $dep_certs = $shared_certs
     } else {
@@ -96,7 +92,6 @@ define cfweb::site (
                 port       => $port,
                 tls        => true,
                 is_backend => $is_backend,
-                require    => $dep_certs_resources,
             })
         }
     }
@@ -324,7 +319,7 @@ define cfweb::site (
         include cfweb::pki
 
         $certs = $dep_certs.map |$cert_name| {
-            getparam(Cfweb::Pki::Certinfo[$cert_name], 'info')
+            cfweb::certinfo($cert_name)
         }
     } else {
         $certs = []

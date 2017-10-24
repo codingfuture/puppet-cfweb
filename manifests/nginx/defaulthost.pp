@@ -25,7 +25,7 @@ define cfweb::nginx::defaulthost (
             $default_certs.dig('any'),
             'default'
         )).map |$cert_name| {
-            getparam(Cfweb::Pki::Certinfo[$cert_name], 'info')
+            cfweb::certinfo($cert_name)
         }
     } else {
         $certs = []

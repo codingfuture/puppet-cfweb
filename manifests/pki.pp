@@ -32,9 +32,6 @@ class cfweb::pki(
     String[1] $x509_l = 'Springfield',
     String[1] $x509_o = 'SomeOrg',
     String[1] $x509_ou = 'SomeUnit',
-
-    Array[String] $keys = [],
-    Array[String] $certs = [],
 ) {
     include stdlib
     include cfweb
@@ -69,18 +66,4 @@ class cfweb::pki(
         key_name => $key_name,
         x509_cn => 'www.example.com',
     })
-
-    #---
-    $keys.each |$key_name| {
-        create_resources(
-                'cfweb::pki::key',
-                { $key_name => $cfweb::global::keys[$key_name] }
-        )
-    }
-    $certs.each |$cert_name| {
-        create_resources(
-                'cfweb::pki::cert',
-                { $cert_name => $cfweb::global::certs[$cert_name] }
-        )
-    }
 }

@@ -38,6 +38,16 @@ define cfweb::pki::cert(
             notify  => Exec['cfweb_sync_pki']
         }
     } else {
+        if $key_name_act != $cfweb::pki::key_name {
+            $key_info = $cfweb::global::keys[$key_name_act]
+
+            if $key_info {
+                ensure_resource('cfweb::pki::key', $key_name_act, $key_info)
+            } else {
+                fail("Please define cfweb::global::keys[${key_name_act}]")
+            }
+        }
+
         $x_c = pick($x509_c, $cfweb::pki::x509_c)
         $x_st = pick($x509_st, $cfweb::pki::x509_st)
         $x_l = pick($x509_l, $cfweb::pki::x509_l)
@@ -148,14 +158,5 @@ define cfweb::pki::cert(
         undef   => undef,
         ''      => undef,
         default => $trusted_file,
-    }
-
-    cfweb::pki::certinfo { $title:
-        info => {
-            cert_name    => $cert_name,
-            key_file     => $key_file,
-            crt_file     => $crt_file,
-            trusted_file => $trusted_file_param,
-        }
     }
 }

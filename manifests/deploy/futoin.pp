@@ -67,6 +67,26 @@ define cfweb::deploy::futoin(
     }
 
     #--------------
+    if $tool == 'svn' {
+        file { "${site_dir}/.subversion":
+            ensure => directory,
+            owner  => $user,
+            group  => $user,
+            mode   => '0750',
+        }
+        -> file { "${site_dir}/.subversion/servers":
+            owner   => $user,
+            group   => $user,
+            mode    => '0640',
+            content => @("EOT"/$)
+            [global]
+            ssl-trust-default-ca = yes
+            ssl-authority-files = /etc/ssl/certs/ca-certificates.crt
+            |EOT
+        }
+    }
+
+    #--------------
     $deploy_type = $type ? {
         'rms' => "${type} ${pool}",
         default => $type
