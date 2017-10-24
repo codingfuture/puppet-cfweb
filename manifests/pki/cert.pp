@@ -91,7 +91,7 @@ define cfweb::pki::cert(
             $certs = cfweb::build_cert_chain(file($cert_source), $x_cn)
 
             file { $crt_file:
-                content   => $certs['chained'],
+                content   => $certs['chained'].join("\n"),
                 owner     => $pki_user,
                 group     => $pki_user,
                 mode      => '0640',
@@ -100,7 +100,7 @@ define cfweb::pki::cert(
             }
 
             file { $trusted_file:
-                content   => $certs['trusted'],
+                content   => $certs['trusted'].join("\n"),
                 owner     => $pki_user,
                 group     => $pki_user,
                 mode      => '0640',
