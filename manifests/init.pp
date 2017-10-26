@@ -21,6 +21,8 @@ class cfweb (
 
     $internal_addr = cfnetwork::bind_address($internal_face)
     $web_dir = '/www'
+    $acme_challenge_group = 'acme_challenge'
+    $acme_challenge_root = "${web_dir}/acme_challenge"
 
     if !$internal_addr {
         fail('$cfweb::internal_face must be set to interface with valid address')

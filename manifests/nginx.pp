@@ -57,6 +57,8 @@ class cfweb::nginx (
     $generic_control = "${bin_dir}/generic_control.sh"
     $empty_root = "${web_dir}/empty"
     $errors_root = "${web_dir}/error"
+    $acme_challenge_group = $cfweb::acme_challenge_group
+    $acme_challenge_root = $cfweb::acme_challenge_root
 
     group { $group:
         ensure => present,
@@ -123,6 +125,15 @@ class cfweb::nginx (
         owner   => root,
         group   => $group,
     }
+    -> group { $acme_challenge_group:
+        ensure => present
+    }
+    -> cfweb::nginx::group { $acme_challenge_group: }
+    -> file { $acme_challenge_root:
+        ensure => directory,
+        group  => $acme_challenge_group,
+        mode   => '2770',
+    }
     -> cfweb_nginx { $service_name:
         ensure        => present,
         memory_weight => $memory_weight,
@@ -133,7 +144,7 @@ class cfweb::nginx (
         limits        => $limits,
     }
     -> anchor { 'cfnginx-ready': }
-    -> exec { 'cfnginx_reload':
+    -> exec { 'cfweb_reload':
         command     => '/bin/systemctl reload-or-restart cfnginx.service',
         onlyif      => '/usr/bin/test -f /etc/systemd/system/cfnginx.service',
         refreshonly => true,

@@ -56,7 +56,7 @@ define cfweb::nginx::defaulthost (
             trusted_proxy  => pick($trusted_proxy, []),
             certs          => $certs,
         }),
-        notify  => Exec['cfnginx_reload'],
+        notify  => Exec['cfweb_reload'],
     }
 
     $fw_service = "cfweb${port}"

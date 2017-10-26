@@ -16,7 +16,10 @@ class cfweb::pki::user {
         ensure         => present,
         home           => $home_dir,
         gid            => $user,
-        groups         => ['ssh_access'],
+        groups         => [
+            'ssh_access',
+            $cfweb::acme_challenge_group
+        ],
         managehome     => true,
         shell          => '/bin/bash',
         purge_ssh_keys => true,

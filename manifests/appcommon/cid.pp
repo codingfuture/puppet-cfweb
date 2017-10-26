@@ -61,7 +61,9 @@ class cfweb::appcommon::cid (
     }
     -> package { 'python-setuptools': }
     # just in case
-    -> exec { '/usr/bin/easy_install pip': }
+    -> exec { '/usr/bin/easy_install pip':
+        creates => '/usr/local/bin/pip',
+    }
     -> package { 'pip':
         ensure   => latest,
         provider => pip,

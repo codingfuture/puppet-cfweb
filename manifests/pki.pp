@@ -25,7 +25,7 @@ class cfweb::pki(
         minute => 1
     },
 
-    Optional[Variant[String, Enum['letsencrypt', 'wosign']]]
+    Optional[Variant[String[1], Enum['acme']]]
         $cert_source = undef,
     String[2, 2] $x509_c = 'US',
     String[1] $x509_st = 'Denial',

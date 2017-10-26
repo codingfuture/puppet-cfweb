@@ -81,13 +81,41 @@ define cfweb::pki::cert(
         $cert_source_act = pick_default($cert_source, $cfweb::pki::cert_source)
 
         $dyn_cert = $cert_source_act ? {
-            'letsencrypt' => true,
-            'wosign' => true,
+            'acme' => true,
+            #'wosign' => true,
             default => false,
         }
 
         #---
-        if $cert_source and !$dyn_cert {
+        if $dyn_cert {
+            require "cfweb::pki::${cert_source_act}"
+
+            exec { "${exec_name}.${cert_source_act}":
+                command => [
+                    getvar("cfweb::pki::${cert_source_act}::command"),
+                    $key_file,
+                    $csr_file,
+                    $crt_file,
+                ].join(' '),
+                creates => "${crt_file}.${cert_source_act}",
+                require => Exec[$csr_exec],
+                # no notify, sync should be done internally
+            }
+            -> file { $crt_file:
+                owner   => $pki_user,
+                group   => $pki_user,
+                mode    => '0640',
+                replace => no,
+                content => '',
+            }
+            -> file { $trusted_file:
+                owner   => $pki_user,
+                group   => $pki_user,
+                mode    => '0640',
+                replace => no,
+                content => '',
+            }
+        } elsif $cert_source {
             $certs = cfweb::build_cert_chain(file($cert_source), $x_cn)
 
             file { $crt_file:
@@ -128,35 +156,5 @@ define cfweb::pki::cert(
                 content => '',
             }
         }
-
-        #---
-        if $dyn_cert {
-            include "cfweb::pki::${cert_source_act}"
-
-            exec { "${exec_name}.${cert_source_act}":
-                command => [
-                    getvar("cfweb::pki::${cert_source_act}::command"),
-                    $key_file,
-                    $csr_file,
-                    $crt_file,
-                ].join(' '),
-                creates => "${crt_file}.${cert_source_act}",
-                require => Exec[$csr_exec],
-                # no notify, sync should be done internally
-            }
-            -> file { $key_file:
-                owner   => $pki_user,
-                group   => $pki_user,
-                mode    => '0640',
-                replace => no,
-                content => '',
-            }
-        }
-    }
-
-    $trusted_file_param = $cert_source ? {
-        undef   => undef,
-        ''      => undef,
-        default => $trusted_file,
     }
 }

@@ -115,6 +115,7 @@ class cfweb::pki::dir {
             mode    => '0755',
             content => epp('cfweb/cfweb_sync_pki.sh.epp', {
                 pki_dir     => $root_dir,
+                acme_dir    => $cfweb::acme_challenge_root,
                 ssh_user    => $ssh_user,
                 hosts       => $cfweb::cluster_hosts - $::trusted['certname'],
                 web_service => $cfweb::web_service,
@@ -170,7 +171,7 @@ class cfweb::pki::dir {
                 User[$ssh_user],
                 Anchor['cfnetwork:firewall'],
             ],
-            notify      => Exec['cfnginx_reload'],
+            notify      => Exec['cfweb_reload'],
         }
     }
 }

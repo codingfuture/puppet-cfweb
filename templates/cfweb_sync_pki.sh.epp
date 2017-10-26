@@ -1,8 +1,9 @@
 <%- |
-    String $ssh_user,
-    String $pki_dir,
-    Array[String] $hosts,
-    String $web_service
+    String[1] $ssh_user,
+    String[1] $pki_dir,
+    String[1] $acme_dir,
+    Array[String[1]] $hosts,
+    String[1] $web_service
 | -%>
 #!/bin/bash
 
@@ -35,6 +36,21 @@ for h in $HOSTS; do
         --timeout=5 \
         <%= $pki_dir %>/ \
         <%= $ssh_user %>@${h}:<%= $pki_dir %> &
+        
+    /usr/bin/rsync \
+        --quiet \
+        --checksum \
+        --recursive \
+        --links \
+        --safe-links \
+        --perms \
+        --times \
+        --whole-file \
+        --delete \
+        --force \
+        --timeout=5 \
+        <%= $acme_dir%>/ \
+        <%= $ssh_user %>@${h}:<%= $acme_dir %> &        
 done
 
 wait

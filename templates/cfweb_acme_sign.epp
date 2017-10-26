@@ -1,0 +1,36 @@
+#!/bin/bash
+
+user="<%= $cfweb::pki::user::user %>"
+home_dir="<%= $cfweb::pki::user::home_dir %>"
+staging=<%= $cfweb::pki::acme::staging ? {
+    true => '--string',
+    default => '',
+}
+%>
+
+csr_file="$2"
+crt_file="$3"
+
+[ -z "$crt_file" ] && exit 1
+
+cd $home_dir
+
+/usr/bin/sudo -n -H -u "${user}" bash <<EOT
+    set -e
+    $home_dir/.acme.sh/acme.sh \
+        --syslog 3 \
+        --signcsr \
+        --webroot "<%= $cfweb::acme_challenge_root %>" \
+        $staging \
+        --csr "${csr_file}" \
+        --cert-file ${crt_file}.single \
+        --ca-file ${crt_file}.ca \
+        --fullchain-file ${crt_file}.trusted \
+        --pre-hook "/opt/codingfuture/bin/cfweb_sync_pki"
+    cat ${crt_file}.single ${crt_file}.ca >${crt_file}
+    chmod 640 ${crt_file}
+    /opt/codingfuture/bin/cfweb_sync_pki reload
+EOT
+
+/bin/systemctl try-reload cfnginx.service
+exit 0

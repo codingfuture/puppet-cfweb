@@ -121,12 +121,7 @@ define cfweb::site (
     $env_file = "${site_dir}/.env"
 
     if $is_dynamic or $deploy {
-        ensure_resource('exec', "add_nginx_to_${group}", {
-            command  => "/usr/sbin/adduser ${cfweb::nginx::user} ${group}",
-            'unless' => "/usr/bin/id -Gn ${cfweb::nginx::user} | /bin/grep -q ${group}",
-            require  => Group[$group],
-            notify   => Exec['cfnginx_reload'],
-        })
+        ensure_resource('cfweb::nginx::group', $group)
     }
 
     if $is_dynamic {
@@ -265,7 +260,7 @@ define cfweb::site (
     # Define apps
     #---
     $cfg_notify = [
-        Exec['cfnginx_reload'],
+        Exec['cfweb_reload'],
     ]
 
     if $is_dynamic {
