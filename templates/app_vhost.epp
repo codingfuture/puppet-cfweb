@@ -15,8 +15,6 @@
     Array[Hash] $certs,
     Array[String] $apps,
     String $custom_conf,
-
-    Optional[String] $acme_well_known_dir = undef,
 |
 
 $redirect_plain_act = $redirect_plain and size($plain_ports) and size($tls_ports)
@@ -80,6 +78,14 @@ $tls_snippet = inline_epp('
 ', {
 })
 
+$acme_challenge_snippet = "
+    location /.well-known/acme_challenge/ {
+        allow all;
+        alias /www/acme_challenge;
+        limit_req zone=unlikely nodelay;
+    }
+"
+
 -%>
 
 <% $apps.each |$a| { -%>
@@ -102,13 +108,6 @@ server {
 
     <%= cfweb::limit_conn($site, 'peraddrpersrv') %>
 
-<%  if $acme_well_known_dir { -%>
-    location ^~ /.well-known/ {
-        root $acme_well_known_dir;
-        limit_req zone=unlikely nodelay;
-    }
-<%  } -%>
-
 <% $apps.each |$a| { -%>
     include <%= "${conf_prefix}.server.${a}" %>;
 <% } -%>
@@ -130,8 +129,11 @@ server {
 
     
 <%= $trust_proxy_snippet -%>
+<%= $acme_challenge_snippet %>
 
-    return 302 https://$host$request_uri;
+    location / {
+        return 302 https://$host$request_uri;
+    }
 }
 <% } -%>
 
@@ -151,12 +153,15 @@ server {
     
 <%= $tls_snippet -%>
 <%= $trust_proxy_snippet -%>
+<%= $acme_challenge_snippet %>
 
-<% if $redirect_plain_act { -%>
-    return 302 https://<%= $server_name %>$request_uri;
-<% } else { -%>
-    return 302 $scheme://<%= $server_name %>$request_uri;
-<% } -%>
+    location / {
+    <% if $redirect_plain_act { -%>
+        return 302 https://<%= $server_name %>$request_uri;
+    <% } else { -%>
+        return 302 $scheme://<%= $server_name %>$request_uri;
+    <% } -%>
+    }
 }
 <% } -%>
 

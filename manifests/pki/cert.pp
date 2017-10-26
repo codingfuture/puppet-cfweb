@@ -87,35 +87,7 @@ define cfweb::pki::cert(
         }
 
         #---
-        if $dyn_cert {
-            require "cfweb::pki::${cert_source_act}"
-
-            exec { "${exec_name}.${cert_source_act}":
-                command => [
-                    getvar("cfweb::pki::${cert_source_act}::command"),
-                    $key_file,
-                    $csr_file,
-                    $crt_file,
-                ].join(' '),
-                creates => "${crt_file}.${cert_source_act}",
-                require => Exec[$csr_exec],
-                # no notify, sync should be done internally
-            }
-            -> file { $crt_file:
-                owner   => $pki_user,
-                group   => $pki_user,
-                mode    => '0640',
-                replace => no,
-                content => '',
-            }
-            -> file { $trusted_file:
-                owner   => $pki_user,
-                group   => $pki_user,
-                mode    => '0640',
-                replace => no,
-                content => '',
-            }
-        } elsif $cert_source {
+        if $cert_source and !$dyn_cert {
             $certs = cfweb::build_cert_chain(file($cert_source), $x_cn)
 
             file { $crt_file:
@@ -154,6 +126,30 @@ define cfweb::pki::cert(
                 mode    => '0640',
                 replace => no,
                 content => '',
+            }
+            -> file { $trusted_file:
+                owner   => $pki_user,
+                group   => $pki_user,
+                mode    => '0640',
+                replace => no,
+                content => '',
+            }
+        }
+
+        #---
+        if $dyn_cert {
+            require "cfweb::pki::${cert_source_act}"
+
+            exec { "${exec_name}.${cert_source_act}":
+                command => [
+                    getvar("cfweb::pki::${cert_source_act}::command"),
+                    $key_file,
+                    $csr_file,
+                    $crt_file,
+                ].join(' '),
+                creates => "${crt_file}.${cert_source_act}",
+                require => Exec[$csr_exec],
+                # no notify, sync should be done internally
             }
         }
     }
