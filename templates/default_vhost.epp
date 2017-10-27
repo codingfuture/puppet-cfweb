@@ -50,11 +50,16 @@ server {
     add_header Strict-Transport-Security 'max-age=15768000; includeSubdomains';
 <% } -%>
 
+    location /.well-known/acme-challenge/ {
+        allow all;
+        root /www/acme_challenge;
+        limit_req zone=dynamic nodelay;
+    }
         
     limit_conn peraddr 2;
-    limit_req zone=unlikely nodelay;
     
     location / {
         deny all;
+        limit_req zone=unlikely nodelay;
     }
 }

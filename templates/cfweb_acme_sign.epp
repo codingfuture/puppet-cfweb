@@ -41,7 +41,7 @@ EOT
 
 exit_code=$?
 
-[ $exit_code -eq 0 ] && /bin/systemctl try-reload cfnginx.service
+[ $exit_code -eq 0 ] && /bin/systemctl reload cfnginx.service
 
 #exit $exit_code
 exit 0
