@@ -180,6 +180,7 @@ define cfweb::pki::cert(
                     $key_file,
                     $csr_file,
                     $crt_file,
+                    $x_cn,
                 ].join(' '),
                 creates   => "${crt_file}.${cert_source_act}",
                 require   => [

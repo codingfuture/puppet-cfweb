@@ -2,6 +2,7 @@
 
 user="<%= $cfweb::pki::user::user %>"
 home_dir="<%= $cfweb::pki::user::home_dir %>"
+acme_dir="${home_dir}/.acme.sh"
 staging=<%= $cfweb::pki::acme::staging ? {
     true => '--string',
     default => '',
@@ -10,33 +11,28 @@ staging=<%= $cfweb::pki::acme::staging ? {
 
 csr_file="$2"
 crt_file="$3"
+cn="$4"
 
-[ -z "$crt_file" ] && exit 1
+[ -z "$cn" ] && exit 1
 
 cd $home_dir
 
 /usr/bin/sudo -n -H -u "${user}" bash <<EOT
     set -e
+
+    if [ ! -e $acme_dir/$cn/$cn.cer ]; then
+        $acme_dir.acme.sh/acme.sh \
+            --syslog 3 \
+            --signcsr \
+            --webroot "<%= $cfweb::acme_challenge_root %>" \
+            $staging \
+            --csr "${csr_file}" \
+            --pre-hook "/opt/codingfuture/bin/cfweb_sync_pki"
+    fi
     
-    post_hook=" \
-    cat ${crt_file}.single ${crt_file}.ca >${crt_file} && \
-    chmod 640 ${crt_file} && \
-    touch ${crt_file}.acme && \
-    /opt/codingfuture/bin/cfweb_sync_pki reload \
-"
-    
-    $home_dir/.acme.sh/acme.sh \
-        --syslog 3 \
-        --signcsr \
-        --webroot "<%= $cfweb::acme_challenge_root %>" \
-        $staging \
-        --csr "${csr_file}" \
-        --cert-file ${crt_file}.single \
-        --ca-file ${crt_file}.ca \
-        --fullchain-file ${crt_file}.trusted \
-        --pre-hook "/opt/codingfuture/bin/cfweb_sync_pki" \
-        --post-hook "$post_hook" \
-        --renew-hook "$post_hook"
+    cat $acme_dir/$cn/$cn.cer $acme_dir/$cn/ca.cer > $crt_file
+    cat $acme_dir/$cn/ca.cer > $crt_file.trusted
+    touch $crt_file.acme
 EOT
 
 exit_code=$?
