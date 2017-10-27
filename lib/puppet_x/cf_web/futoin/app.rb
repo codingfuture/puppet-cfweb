@@ -312,7 +312,7 @@ module PuppetX::CfWeb::Futoin::App
         vhost_server << limits['static']['expr']
         
         upstream_zone_size = tune.fetch('upstreamZoneSize', '64k')
-        fail_timeout = tune.fetch('upstreamFailTimeout', '10')
+        fail_timeout = tune.fetch('upstreamFailTimeout', '1s')
         keep_alive_percent = tune.fetch('upstreamKAPercent', 25).to_i
         upstream_queue = tune.fetch('upstreamQueue', nil)
         
