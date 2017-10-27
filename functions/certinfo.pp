@@ -4,25 +4,28 @@
 
 
 function cfweb::certinfo(String[1] $cert_name) >> Hash {
-    $crt_file = "${cfweb::pki::cert_dir}/${cert_name}.crt"
-
     if $cert_name == 'default' {
         $cert = {}
-    } elsif $cert_name =~ /^auto__/ {
+        $cert_name_act = $cert_name
+    } elsif $cert_name =~ /^auto#/ {
         $cert_source = pick_default(
             getparam(Cfweb::Pki::Cert[$cert_name], 'cert_source'),
             $cfweb::pki::cert_source
         )
+        $cert_name_act = $cert_name.regsubst(/^auto#/, '')
         $cert = {
             cert_source => $cert_source
         }
     } else {
         $cert = $cfweb::global::certs[$cert_name]
+        $cert_name_act = $cert_name
     }
 
     if !$cert {
         fail("Please make sure Cfweb::Pki::Cert[${cert_name}] is defined")
     }
+
+    $crt_file = "${cfweb::pki::cert_dir}/${cert_name_act}.crt"
 
     if $cert['cert_source'] {
         $trusted_file = "${crt_file}.trusted"

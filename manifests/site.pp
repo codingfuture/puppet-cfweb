@@ -51,7 +51,7 @@ define cfweb::site (
         }
         $dep_certs = $shared_certs
     } elsif size($tls_ports) > 0 {
-        $auto_cert_name = "auto__${server_name}"
+        $auto_cert_name = "auto#${server_name}"
         ensure_resource(
             'cfweb::pki::cert',
             $auto_cert_name,
