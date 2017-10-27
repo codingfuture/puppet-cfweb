@@ -4,9 +4,14 @@
 
 
 define cfweb::pki::cert(
-    $cert_name = $title,
-    $key_name = undef,
-    $cert_source = undef,
+    String[1]
+        $cert_name = $title,
+    Optional[String[1]]
+        $key_name = undef,
+    Array[String[1]]
+        $alt_names = [],
+    Optional[String[1]]
+        $cert_source = undef,
     Optional[String[2,2]]
         $x509_c = undef,
     Optional[String[1]]
@@ -19,7 +24,10 @@ define cfweb::pki::cert(
         $x509_ou = undef,
     Optional[String[1]]
         $x509_cn = undef,
-    Array[String[1]] $x509_alt_names = [],
+    Optional[String[1]]
+        $x509_email = undef,
+    Optional[String[1]]
+        $cert_hash = undef,
 ){
     include cfweb::pki
 
@@ -29,6 +37,7 @@ define cfweb::pki::cert(
     $cert_base = "${cfweb::pki::cert_dir}/${cert_name}"
     $crt_file = "${cert_base}.crt"
     $csr_file = "${cert_base}.csr"
+    $cnf_file = "${cert_base}.cnf"
     $trusted_file = "${crt_file}.trusted"
     $pki_user = $cfweb::pki::ssh_user
 
@@ -54,17 +63,41 @@ define cfweb::pki::cert(
         $x_l = pick($x509_l, $cfweb::pki::x509_l)
         $x_o = pick($x509_o, $cfweb::pki::x509_o)
         $x_ou = pick($x509_ou, $cfweb::pki::x509_ou)
+        $x_email = pick($x509_email, $cfweb::pki::x509_email)
         $x_cn = pick($x509_cn, $cert_name)
+        $x_cert_hash = pick($cert_hash, $cfweb::pki::cert_hash)
 
         # CSR must always be available
         $csr_exec = "${exec_name}::csr"
-        exec { $csr_exec:
+        file { $cnf_file:
+            owner   => $pki_user,
+            group   => $pki_user,
+            mode    => '0640',
+            content => epp(
+                'cfweb/cert_openssl_cnf.epp',
+                {
+                    x509_c     => $x_c,
+                    x509_st    => $x_st,
+                    x509_l     => $x_l,
+                    x509_o     => $x_o,
+                    x509_ou    => $x_ou,
+                    x509_cn    => $x_cn,
+                    x509_email => $x_email,
+                    alt_names  => $alt_names,
+                }
+            ),
+        }
+        ~> exec { "${csr_exec}:refresh":
+            command     => "/bin/rm -f ${csr_file} ${crt_file}*",
+            refreshonly => true,
+        }
+        -> exec { $csr_exec:
             command => [
                 "${cfweb::pki::openssl} req",
                 "-out ${csr_file}",
                 "-key ${key_file}",
-                '-new -sha256',
-                "-subj '/C=${x_c}/ST=${x_st}/L=${x_l}/O=${x_o}/OU=${x_ou}/CN=${x_cn}'",
+                "-new -${x_cert_hash}",
+                "-config ${cnf_file}",
             ].join(' '),
             creates => $csr_file,
             require => Exec["cfweb::pki::key::${key_name_act}"],

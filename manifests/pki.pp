@@ -4,13 +4,21 @@
 
 
 class cfweb::pki(
-    Integer $dhparam_bits = 2048,
+    String[2, 2] $x509_c,
+    String[1] $x509_st,
+    String[1] $x509_l,
+    String[1] $x509_o,
+    String[1] $x509_ou,
+    String[1] $x509_email,
 
-    String $key_name = 'multi',
+    Integer[1024, 8192] $dhparam_bits = 2048,
+
+    String[1] $key_name = 'multi',
     Enum['rsa', 'ecdsa'] $key_type = 'rsa',
     Cfsystem::Rsabits
         $key_bits = 2048,
-    String $key_curve = 'prime256v1',
+    String[1] $key_curve = 'prime256v1',
+    String[1] $cert_hash = 'sha256',
 
     String $ssh_user = 'cfwebpki',
     Cfsystem::Keytype
@@ -27,11 +35,6 @@ class cfweb::pki(
 
     Optional[Variant[String[1], Enum['acme']]]
         $cert_source = undef,
-    String[2, 2] $x509_c = 'US',
-    String[1] $x509_st = 'Denial',
-    String[1] $x509_l = 'Springfield',
-    String[1] $x509_o = 'SomeOrg',
-    String[1] $x509_ou = 'SomeUnit',
 ) {
     anchor { 'cfweb::pki:dyn_setup': }
 

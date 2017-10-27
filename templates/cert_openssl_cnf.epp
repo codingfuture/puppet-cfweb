@@ -1,0 +1,34 @@
+<% |
+    String[2,2] $x509_c,
+    String[1] $x509_st,
+    String[1] $x509_l,
+    String[1] $x509_o,
+    String[1] $x509_ou,
+    String[1] $x509_cn,
+    String[1] $x509_email,
+    Array[String[1]] $alt_names = [],
+| %>
+[ req ]
+prompt = no
+distinguished_name = dn
+req_extensions = req_ext
+
+[ dn ]
+C = <%= $x509_c %>
+ST = <%= $x509_st %>
+L = <%= $x509_l %>
+O = <%= $x509_o %>
+OU = <%= $x509_ou %>
+CN = <%= $x509_cn %>
+emailAddress = <%= $x509_email %>
+
+[ req_ext ]
+subjectAltName = @alt_names
+ 
+[ alt_names ]
+DNS.1 = <%= $x509_cn %>
+<%= inline_template('
+<% @alt_names.each_with_index { |v, k| -%>
+DNS.<%= k + 2 %> = <%= v %>
+<% } -%>
+') %>

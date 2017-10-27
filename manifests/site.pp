@@ -45,8 +45,8 @@ define cfweb::site (
             'cfweb::pki::cert',
             {
                 $auto_cert_name => {
-                    cert_name      => $server_name,
-                    x509_alt_names => $alt_names,
+                    cert_name => $server_name,
+                    alt_names => $alt_names,
                 }
             },
             $auto_cert
