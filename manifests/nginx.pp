@@ -178,4 +178,13 @@ class cfweb::nginx (
             content => file("cfweb/${v}.html"),
         }
     }
+
+    # OCSP
+    #---
+    cfnetwork::client_port { [
+            'any:http:nginx',
+            'any:https:nginx',
+        ]:
+        user => $user
+    }
 }
