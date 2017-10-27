@@ -130,7 +130,11 @@ class cfweb::nginx (
         ensure => present
     }
     -> cfweb::nginx::group { $acme_challenge_group: }
-    -> file { $acme_challenge_root:
+    -> file { [
+            $acme_challenge_root,
+            "${acme_challenge_root}/.well-known",
+            "${acme_challenge_root}/.well-known/acme-challenge",
+        ]:
         ensure => directory,
         group  => $acme_challenge_group,
         mode   => '2770',
