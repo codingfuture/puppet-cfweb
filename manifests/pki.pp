@@ -33,6 +33,9 @@ class cfweb::pki(
     String[1] $x509_o = 'SomeOrg',
     String[1] $x509_ou = 'SomeUnit',
 ) {
+    anchor { 'cfweb::pki:dyn_setup': }
+
+    #---
     include stdlib
     include cfweb
     include cfweb::pki::user

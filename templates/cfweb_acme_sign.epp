@@ -17,6 +17,14 @@ cd $home_dir
 
 /usr/bin/sudo -n -H -u "${user}" bash <<EOT
     set -e
+    
+    post_hook=" \
+    cat ${crt_file}.single ${crt_file}.ca >${crt_file} && \
+    chmod 640 ${crt_file} && \
+    touch ${crt_file}.acme && \
+    /opt/codingfuture/bin/cfweb_sync_pki reload \
+"
+    
     $home_dir/.acme.sh/acme.sh \
         --syslog 3 \
         --signcsr \
@@ -26,11 +34,14 @@ cd $home_dir
         --cert-file ${crt_file}.single \
         --ca-file ${crt_file}.ca \
         --fullchain-file ${crt_file}.trusted \
-        --pre-hook "/opt/codingfuture/bin/cfweb_sync_pki"
-    cat ${crt_file}.single ${crt_file}.ca >${crt_file}
-    chmod 640 ${crt_file}
-    /opt/codingfuture/bin/cfweb_sync_pki reload
+        --pre-hook "/opt/codingfuture/bin/cfweb_sync_pki" \
+        --post-hook "$post_hook" \
+        --renew-hook "$post_hook"
 EOT
 
-/bin/systemctl try-reload cfnginx.service
+exit_code=$?
+
+[ $exit_code -eq 0 ] && /bin/systemctl try-reload cfnginx.service
+
+#exit $exit_code
 exit 0

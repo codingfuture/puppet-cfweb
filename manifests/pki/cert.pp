@@ -19,6 +19,7 @@ define cfweb::pki::cert(
         $x509_ou = undef,
     Optional[String[1]]
         $x509_cn = undef,
+    Array[String[1]] $x509_alt_names = [],
 ){
     include cfweb::pki
 
@@ -132,23 +133,27 @@ define cfweb::pki::cert(
                 group   => $pki_user,
                 mode    => '0640',
                 replace => no,
-                content => '',
+                source  => $crt_file,
             }
         }
 
         #---
         if $dyn_cert {
-            require "cfweb::pki::${cert_source_act}"
+            include "cfweb::pki::${cert_source_act}"
 
-            exec { "${exec_name}.${cert_source_act}":
-                command => [
+            exec { "${exec_name}@${cert_source_act}":
+                command   => [
                     getvar("cfweb::pki::${cert_source_act}::command"),
                     $key_file,
                     $csr_file,
                     $crt_file,
                 ].join(' '),
-                creates => "${crt_file}.${cert_source_act}",
-                require => Exec[$csr_exec],
+                creates   => "${crt_file}.${cert_source_act}",
+                require   => [
+                    Exec[$csr_exec],
+                    Anchor['cfweb::pki:dyn_setup'],
+                ],
+                logoutput => true,
                 # no notify, sync should be done internally
             }
         }
