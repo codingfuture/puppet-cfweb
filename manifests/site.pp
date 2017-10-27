@@ -39,22 +39,22 @@ define cfweb::site (
     #---
     $shared_certs = any2array($shared_cert)
 
-    if !size($shared_certs) and size($tls_ports) > 0 {
+    if size($shared_certs) == 0 and size($tls_ports) > 0 {
         $auto_cert_name = "auto__${server_name}"
-        create_resources(
+        ensure_resource(
             'cfweb::pki::cert',
-            {
-                $auto_cert_name => {
+            $auto_cert_name,
+            merge(
+                $auto_cert,
+                {
                     cert_name => $server_name,
                     alt_names => $alt_names,
                 }
-            },
-            $auto_cert
+            )
         )
+
         $dep_certs = [$auto_cert_name]
     } elsif size($shared_certs) {
-        include cfweb::pki
-
         $shared_certs.each |$cert_name| {
             $cert_params = $cfweb::global::certs[$cert_name]
 

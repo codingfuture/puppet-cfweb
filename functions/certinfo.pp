@@ -8,6 +8,14 @@ function cfweb::certinfo(String[1] $cert_name) >> Hash {
 
     if $cert_name == 'default' {
         $cert = {}
+    } elsif $cert_name =~ /^auto__/ {
+        $cert_source = pick_default(
+            getparam(Cfweb::Pki::Cert[$cert_name], 'cert_source'),
+            $cfweb::pki::cert_source
+        )
+        $cert = {
+            cert_source => $cert_source
+        }
     } else {
         $cert = $cfweb::global::certs[$cert_name]
     }
