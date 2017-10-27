@@ -21,7 +21,7 @@ cd $home_dir
     set -e
 
     if [ ! -e $acme_dir/$cn/$cn.cer ]; then
-        $acme_dir.acme.sh/acme.sh \
+        $acme_dir/acme.sh \
             --syslog 3 \
             --signcsr \
             --webroot "<%= $cfweb::acme_challenge_root %>" \
