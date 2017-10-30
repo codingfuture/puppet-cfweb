@@ -116,6 +116,10 @@ module PuppetX::CfWeb::Futoin::App
         redeploy = File.exists? redeploy_file
         deploy_futoin_file = "#{site_dir}/futoin.json"
         
+        current_file = "#{site_dir}/current"
+        orig_current = nil
+        orig_current = File.readlink(current_file) if File.exists? current_file
+        
         warning("CID deploy: #{site_dir}")
         orig_cwd = Dir.pwd
         
@@ -168,7 +172,6 @@ module PuppetX::CfWeb::Futoin::App
                     'chmod-socket' => '660',
                     'pythonpath' => File.join(site_dir, 'current'),
                 },
-                'reloadable' => false, # Fails to re-read conf, sources, reopen socket, etc.
             }
             
             deploy_set = [
@@ -238,6 +241,8 @@ module PuppetX::CfWeb::Futoin::App
                 }
             )
             
+            new_current = File.readlink(current_file)
+            redeploy ||= (new_current != orig_current)
                 
             cf_system.atomicWrite(
                 '.deploy.log', res,
@@ -606,6 +611,8 @@ module PuppetX::CfWeb::Futoin::App
                 if service_changed
                     # if unit changes then we need to restart to get new limits working
                     systemctl('restart', "#{service_name_i}.service")
+                elsif redeploy
+                    systemctl('reload-or-restart', "#{service_name_i}.service")
                 else
                     systemctl('start', "#{service_name_i}.service")
                 end
