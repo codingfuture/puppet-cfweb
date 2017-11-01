@@ -17,8 +17,13 @@ cn="$4"
 
 cd $home_dir
 
-/usr/bin/sudo -n -H -u "${user}" bash <<EOT
+/usr/bin/sudo -n -H -u "${user}" bash -s <<EOT
     set -e
+    
+    cat >$crt_file.acme <<EOS
+        cat $acme_dir/$cn/$cn.cer $acme_dir/$cn/ca.cer > $crt_file
+        cat $acme_dir/$cn/ca.cer > $crt_file.trusted
+    EOS
 
     if [ ! -e $acme_dir/$cn/$cn.cer ]; then
         $acme_dir/acme.sh \
@@ -30,9 +35,7 @@ cd $home_dir
             --pre-hook "/opt/codingfuture/bin/cfweb_sync_pki"
     fi
     
-    cat $acme_dir/$cn/$cn.cer $acme_dir/$cn/ca.cer > $crt_file
-    cat $acme_dir/$cn/ca.cer > $crt_file.trusted
-    touch $crt_file.acme
+    sh $crt_file.acme
 EOT
 
 exit_code=$?

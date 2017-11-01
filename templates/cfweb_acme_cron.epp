@@ -1,0 +1,29 @@
+#!/bin/bash
+
+user="<%= $cfweb::pki::user::user %>"
+home_dir="<%= $cfweb::pki::user::home_dir %>"
+acme_dir="${home_dir}/.acme.sh"
+%>
+
+
+cd $home_dir
+
+/usr/bin/sudo -n -H -u "${user}" bash <<EOT
+    set -e
+
+    $acme_dir/acme.sh \
+        --syslog 3 \
+        --cron \
+        --home "${home_dir}"
+    
+    for s in $home_dir/shared/certs/*.acme; do
+        sh $s || true
+    done
+    
+    /opt/codingfuture/bin/cfweb_sync_pki
+EOT
+
+exit_code=$?
+/bin/systemctl reload cfnginx.service
+exit $exit_code
+

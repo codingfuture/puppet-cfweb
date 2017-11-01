@@ -11,12 +11,18 @@ class cfweb::pki::acme(
     $user = $cfweb::pki::user::user
     $home_dir = $cfweb::pki::user::home_dir
 
+    $command_ensure = $cfweb::is_secondary ? {
+        true => absent,
+        default => present,
+    }
+
     # Command to use in cert
     #---
     include cfsystem::custombin
     $command = "${cfsystem::custombin::bin_dir}/cfweb_acme_sign"
 
     file { $command:
+        ensure  => $command_ensure,
         mode    => '0500',
         content => epp('cfweb/cfweb_acme_sign.epp'),
     }
@@ -60,10 +66,20 @@ class cfweb::pki::acme(
     }
     -> Anchor['cfweb::pki:dyn_setup']
 
-    $cron_command = [
-        "${home_dir}/.acme.sh/acme.sh",
-        '--cron',
-        '--home',
-        "'${home_dir} > /dev/null"
-    ]
+    # ACME cron
+    #---
+    $cron_command = "${cfsystem::custombin::bin_dir}/cfweb_acme_cron"
+
+    file { $cron_command:
+        ensure  => $command_ensure,
+        mode    => '0500',
+        content => epp('cfweb/cfweb_acme_cron.epp'),
+    }
+    cron { 'ACME update':
+        ensure  => $command_ensure,
+        command => $cron_command,
+        hour    => '12',
+        minute  => '30',
+        weekday => '1-3', # Mon through Wed
+    }
 }
