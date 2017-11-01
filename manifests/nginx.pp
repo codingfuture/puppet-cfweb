@@ -126,6 +126,16 @@ class cfweb::nginx (
         owner   => root,
         group   => $group,
     }
+    -> file { [
+            "${bin_dir}/start",
+            "${bin_dir}/stop",
+            "${bin_dir}/restart",
+            "${bin_dir}/reload",
+            "${bin_dir}/deploy",
+        ]:
+        ensure => link,
+        target => $generic_control,
+    }
     -> group { $acme_challenge_group:
         ensure => present
     }

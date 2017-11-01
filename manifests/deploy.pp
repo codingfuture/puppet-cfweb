@@ -13,6 +13,8 @@ define cfweb::deploy(
     String[1] $persistent_dir,
     Array[String[1]] $apps,
 ) {
+    include cfweb::internal::deployuser
+
     assert_private()
 
     case $strategy {

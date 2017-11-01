@@ -12,6 +12,8 @@ class cfweb (
     String[1] $web_service = 'cfnginx',
     String[1] $internal_face = 'main',
     Array[String[1]] $cluster_hint = [],
+    String[1] $deployuser = 'deployweb',
+    Optional[Hash[String[1],Hash]] $deployuser_auth_keys = undef,
 ) inherits cfweb::global {
     include cfnetwork
     include cfsystem

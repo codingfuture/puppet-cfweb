@@ -6,7 +6,20 @@ action=$(echo $name | cut -d- -f1)
 site=$(echo $name | cut -d- -f2)
 app=$(echo $name | cut -d- -f3)
 
-if test -z "$app"; then
+if [ "$action" = "deploy" ]; then
+    site=$1
+    
+    if [ -n "$site" ]; then
+        f=${bin_dir}/${action}-${site}
+        
+        [ -f "$f" ] && $f
+    else
+        for f in ${bin_dir}/${action}-*; do
+            $f
+        done
+    fi
+
+elif test -z "$app"; then
     for f in ${bin_dir}/${action}-${site}-*; do
         $f
     done
