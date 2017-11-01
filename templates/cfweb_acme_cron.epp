@@ -3,7 +3,6 @@
 user="<%= $cfweb::pki::user::user %>"
 home_dir="<%= $cfweb::pki::user::home_dir %>"
 acme_dir="${home_dir}/.acme.sh"
-%>
 
 
 cd $home_dir
@@ -13,9 +12,8 @@ cd $home_dir
 
     $acme_dir/acme.sh \
         --syslog 3 \
-        --cron \
-        --home "${home_dir}"
-    
+        --cron
+        
     for s in $home_dir/shared/certs/*.acme; do
         sh $s || true
     done

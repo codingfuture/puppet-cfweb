@@ -6,8 +6,7 @@ acme_dir="${home_dir}/.acme.sh"
 staging=<%= $cfweb::pki::acme::staging ? {
     true => '--string',
     default => '',
-}
-%>
+} %>
 
 csr_file="$2"
 crt_file="$3"
