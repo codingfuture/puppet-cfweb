@@ -32,12 +32,12 @@ class cfweb::pki::dir {
             creates => $root_dir,
             require => [
                 User[$ssh_user],
+                Cfsystem::Clusterssh["cfweb:${cfweb::cluster}"],
                 Anchor['cfnetwork:firewall'],
                 Package['rsync'],
             ]
         }
-
-        exec { 'cfweb_sync_pki':
+        -> exec { 'cfweb_sync_pki':
             user        => $ssh_user,
             command     => [
                 '/usr/bin/ssh',
@@ -45,11 +45,6 @@ class cfweb::pki::dir {
                 $cfweb_sync_pki,
             ].join(' '),
             refreshonly => true,
-            require     => [
-                User[$ssh_user],
-                Anchor['cfnetwork:firewall'],
-                Package['rsync'],
-            ]
         }
 
         file { $cfweb_sync_pki:

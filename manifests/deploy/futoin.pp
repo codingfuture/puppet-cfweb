@@ -24,6 +24,7 @@ define cfweb::deploy::futoin(
     Array[String[1]] $deploy_set = [],
     Hash[String[1], Hash] $fw_ports = {},
     Optional[String[1]] $custom_script = undef,
+    Optional[Hash] $auto_deploy = undef,
 ) {
     include cfweb::appcommon::cid
 
@@ -107,5 +108,18 @@ define cfweb::deploy::futoin(
         content => epp('cfweb/futoin_mark_redeploy.epp', {
             site_dir => $site_dir,
         }),
+    }
+    
+    #---
+    if $auto_deploy {
+        create_resources(
+            'cron',
+            {
+                "CFWEB AutoDeploy: ${title}" => {
+                    command => "${cfweb::nginx::bin_dir}/deploy-${site}",
+                }
+            },
+            $auto_deploy
+        )
     }
 }
