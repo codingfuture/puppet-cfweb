@@ -32,7 +32,8 @@ define cfweb::pki::key(
                         pick($key_bits, $cfweb::pki::key_bits)
                     ].join(' '),
                     creates => $key_file,
-                    notify  => Exec['cfweb_sync_pki']
+                    notify  => Exec['cfweb_sync_pki'],
+                    require => File[$cfweb::pki::key_dir],
                 }
             }
             'ecdsa': {
@@ -45,7 +46,8 @@ define cfweb::pki::key(
                         '-out', $key_file,
                     ].join(' '),
                     creates => $key_file,
-                    notify  => Exec['cfweb_sync_pki']
+                    notify  => Exec['cfweb_sync_pki'],
+                    require => File[$cfweb::pki::key_dir],
                 }
             }
             default: {
