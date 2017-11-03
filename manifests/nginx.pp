@@ -5,7 +5,7 @@
 
 class cfweb::nginx (
     Integer[1] $memory_weight = 100,
-    Optional[Integer[1]] $memory_max = undef,
+    Optional[Integer[1]] $memory_max = 256,
     Cfsystem::CpuWeight $cpu_weight = 100,
     Cfsystem::IoWeight $io_weight = 100,
     Hash $settings_tune = {},
