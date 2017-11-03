@@ -608,13 +608,17 @@ module PuppetX::CfWeb::Futoin::App
                     :mem_lock => mem_lock,
                 })
                 
-                if service_changed
-                    # if unit changes then we need to restart to get new limits working
-                    systemctl('restart', "#{service_name_i}.service")
-                elsif redeploy
-                    systemctl('reload-or-restart', "#{service_name_i}.service")
-                else
-                    systemctl('start', "#{service_name_i}.service")
+                begin
+                    if service_changed
+                        # if unit changes then we need to restart to get new limits working
+                        systemctl('restart', "#{service_name_i}.service")
+                    elsif redeploy
+                        systemctl('reload-or-restart', "#{service_name_i}.service")
+                    else
+                        systemctl('start', "#{service_name_i}.service")
+                    end
+                rescue Exception => e
+                    err(e.to_s)
                 end
                 
                 i += 1

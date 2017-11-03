@@ -109,7 +109,7 @@ define cfweb::deploy::futoin(
             site_dir => $site_dir,
         }),
     }
-    
+
     #---
     if $auto_deploy {
         create_resources(
