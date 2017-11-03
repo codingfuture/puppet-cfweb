@@ -206,7 +206,6 @@ define cfweb::site (
                     local_user    => $user,
                     custom_config => 'cfweb::appcommon::dbaccess',
                     env_file      => $env_file,
-                    config_prefix => "DB_${k.upcase()}_",
                 } },
                 merge({
                     # TODO: get rid of facts
@@ -214,6 +213,7 @@ define cfweb::site (
                         $::facts.dig('cfweb', 'sites', $title, $k),
                         $cfdb::max_connections_default
                     ),
+                    config_prefix => "DB_${k.upcase()}_",
                 }, $da)
             )
             $name
