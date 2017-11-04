@@ -69,6 +69,7 @@ define cfweb::deploy::futoin(
     -> cfweb::internal::deployerfw { $deployer_group:
         fw_ports => $fw_ports,
     }
+    ensure_resource('cfweb::nginx::group', $deployer_group)
 
     #--------------
     if $tool == 'svn' {
