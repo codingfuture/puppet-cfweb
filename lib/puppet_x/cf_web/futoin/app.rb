@@ -90,6 +90,7 @@ module PuppetX::CfWeb::Futoin::App
         mem_limit = cf_system.getMemory(service_name)
 
         run_dir = "/run/#{service_name}"
+        deployer_group = "deployer_#{site}"
         
         #---
         if deploy_conf['type'] == 'rms'
@@ -141,7 +142,7 @@ module PuppetX::CfWeb::Futoin::App
                 {
                     :failonfail => true,
                     :uid => user,
-                    :gid => user,
+                    :gid => deployer_group,
                 }
             )
             
@@ -154,7 +155,7 @@ module PuppetX::CfWeb::Futoin::App
                 {
                     :failonfail => true,
                     :uid => user,
-                    :gid => user,
+                    :gid => deployer_group,
                 }
             ).strip()
             
@@ -188,7 +189,7 @@ module PuppetX::CfWeb::Futoin::App
                         Shellwords.split(v),
                     {
                         :uid => user,
-                        :gid => user,
+                        :gid => deployer_group,
                     }
                 )
                 
@@ -218,7 +219,7 @@ module PuppetX::CfWeb::Futoin::App
                     {
                         :failonfail => true,
                         :uid => user,
-                        :gid => user,
+                        :gid => deployer_group,
                     }
                 )
             end
@@ -237,7 +238,7 @@ module PuppetX::CfWeb::Futoin::App
                     :failonfail => false,
                     :combine => true,
                     :uid => user,
-                    :gid => user,
+                    :gid => deployer_group,
                 }
             )
             

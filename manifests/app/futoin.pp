@@ -17,6 +17,7 @@ define cfweb::app::futoin (
     Cfsystem::IoWeight $io_weight = 100,
 
     Hash $tune = {},
+    Hash[String[1], Hash] $fw_ports = {},
 ) {
     if size(getparam(Cfweb::Site[$site], 'apps')) != 1 {
         fail('"futoin" CID must be exlusive app per site')
@@ -30,6 +31,11 @@ define cfweb::app::futoin (
         weight => $memory_weight,
         min_mb => 64,
         max_mb => $memory_max,
+    }
+
+    #---
+    cfweb::internal::appfw { $user:
+        fw_ports => $fw_ports,
     }
 
     #---
@@ -63,7 +69,10 @@ define cfweb::app::futoin (
             tune        => $tune,
             persist_dir => "${cfweb::nginx::persistent_dir}/app_${site}",
         },
-        require      => Anchor['cfnetwork:firewall'],
+        require      => [
+            Anchor['cfnetwork:firewall'],
+            Cfweb::Internal::Appfw[$user],
+        ],
     }
     -> File["${conf_prefix}.conf"]
 

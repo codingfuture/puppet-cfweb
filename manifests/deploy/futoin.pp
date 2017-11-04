@@ -31,9 +31,9 @@ define cfweb::deploy::futoin(
     $service_name = "app-${site}-futoin"
     $cid = '/usr/local/bin/cid'
     $user = $run_user
+    $deployer_group = "deployer_${site}"
 
     #--------------
-
 
     Package['futoin-cid']
     -> file { "${site_dir}/.futoin-deploy.lock":
@@ -63,7 +63,10 @@ define cfweb::deploy::futoin(
     -> Cfweb_App[$service_name]
 
     #--------------
-    cfweb::internal::deployerfw { $user:
+    group { $deployer_group:
+        ensure => present,
+    }
+    -> cfweb::internal::deployerfw { $deployer_group:
         fw_ports => $fw_ports,
     }
 
