@@ -8,7 +8,7 @@ define cfweb::internal::appfw (
     String[1] $app_user = $title,
 ) {
     $fw_ports.each |$svc, $def| {
-        create_services('cfnetwork::client_port', {
+        create_resources('cfnetwork::client_port', {
             "any:${svc}:${app_user}" => merge($def, {
                 user => $app_user
             }),
