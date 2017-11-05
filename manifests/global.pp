@@ -9,8 +9,8 @@ class cfweb::global (
     Hash[String[1], Hash] $certs = {},
     Hash[String[1], Hash[String[1], CfWeb::BasicPassword]] $users = {},
     Hash[String[1], Array[String[1]]] $hosts = {},
-    Boolean $ruby = false,
-    Boolean $php = false,
-    Boolean $nodejs = false,
+    Boolean $ruby = true,
+    Boolean $php = true,
+    Boolean $nodejs = true,
 ) {
 }
