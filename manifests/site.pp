@@ -33,6 +33,7 @@ define cfweb::site (
 
     Boolean $robots_noindex = false,
     Optional[String[1]] $require_realm = undef,
+    Optional[String[1]] $require_hosts = undef,
 ) {
     include cfdb
     include cfweb::nginx
@@ -336,6 +337,16 @@ define cfweb::site (
         default => undef
     }
 
+    if $require_hosts {
+        $require_host_list = $cfweb::global::hosts[$require_hosts]
+
+        if !$require_host_list {
+            fail("Missing \$cfweb::global::hosts[${require_hosts}]")
+        }
+    } else {
+        $require_host_list = undef
+    }
+
     file { "${conf_prefix}.conf":
         mode    => '0640',
         content => epp('cfweb/app_vhost.epp', {
@@ -358,6 +369,7 @@ define cfweb::site (
             custom_conf        => pick_default($custom_conf, ''),
             robots_noindex     => $robots_noindex,
             require_realm      => $require_realm,
+            require_host_list  => $require_host_list,
         }),
         notify  => $cfg_notify,
         before  => Anchor['cfnginx-ready'],
