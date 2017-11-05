@@ -30,7 +30,7 @@ define cfweb::site (
 
     Optional[Hash[String[1], Any]] $deploy = undef,
     Optional[String[1]] $force_user = undef,
-    
+
     Boolean $robots_noindex = false,
 ) {
     include cfdb
