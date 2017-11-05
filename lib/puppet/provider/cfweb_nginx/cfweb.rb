@@ -197,7 +197,13 @@ Puppet::Type.type(:cfweb_nginx).provide(
         })
         
         conf = nginxConf(conf, 0)
-        config_changed = cf_system.atomicWrite(conf_file, conf, {:user => user})
+        config_changed = cf_system.atomicWrite(
+            conf_file, conf,
+            {
+                :user => user,
+                :mode => 0640,
+            }
+        )
        
         
         # Service File
