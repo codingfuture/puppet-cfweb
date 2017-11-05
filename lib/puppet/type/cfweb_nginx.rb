@@ -68,4 +68,10 @@ Puppet::Type.newtype(:cfweb_nginx) do
             value.is_a? Hash
         end
     end
+    
+    newproperty(:stress_hosts, :array_matching => :all) do
+        validate do |value|
+            value.is_a? String
+        end
+    end
 end

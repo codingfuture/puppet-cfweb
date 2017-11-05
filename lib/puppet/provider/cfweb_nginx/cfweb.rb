@@ -55,6 +55,7 @@ Puppet::Type.type(:cfweb_nginx).provide(
         user = service_name
         settings_tune = newconf[:settings_tune]
         limits = newconf[:limits]
+        stress_hosts = newconf[:stress_hosts]
 
         # Config File
         #==================================================
@@ -123,13 +124,30 @@ Puppet::Type.type(:cfweb_nginx).provide(
             'resolver_timeout' => '5s',
             #
             'limit_req_status' => 429,
+            'limit_req_log_level' => 'warn',
             'limit_conn_status' => 429,
+            'limit_conn_log_level' => 'warn',
         }.merge(settings_tune.fetch('http', {}))
 
         # Limits
         #---
         
         one_mb = 1024**2
+        
+        http_conf["# global limit helper vars"] = ''
+        http_conf["geo $cf_binary_remote_addr"] = geo_addr_conf = {
+            'default' => '$binary_remote_addr'
+        }
+        http_conf["geo $cf_server_name"] = geo_server_name_conf = {
+            'default' => '$server_name'
+        }
+        
+        if stress_hosts && stress_hosts.size then
+            stress_hosts.each { |shost|
+                geo_addr_conf[shost] = "''"
+                geo_server_name_conf[shost] = "''"
+            }
+        end
         
         http_conf["# global limits"] = ''
         limits.each do |zone, info|

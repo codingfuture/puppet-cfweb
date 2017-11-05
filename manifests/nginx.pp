@@ -21,6 +21,7 @@ class cfweb::nginx (
         burst      => Optional[Integer[0]],
         nodelay    => Optional[Boolean],
     }]] $limits = {},
+    Optional[Array[String[1]]] $stress_hosts = undef,
     Boolean $bleeding_edge_security = false,
 
     String $repo = 'http://nginx.org/packages/',
@@ -157,6 +158,7 @@ class cfweb::nginx (
         settings_tune => $settings_tune,
         service_name  => $service_name,
         limits        => $limits,
+        stress_hosts  => $stress_hosts,
     }
     -> anchor { 'cfnginx-ready': }
     -> exec { 'cfweb_reload':

@@ -23,30 +23,30 @@ lookup_options:
 cfweb::nginx::limits:
     peraddr:
         type: conn
-        var: '$binary_remote_addr'
+        var: '$cf_binary_remote_addr'
         count: 128
     peraddrpersrv:
         type: conn
-        var: '$binary_remote_addr$server_name'
+        var: '$cf_binary_remote_addr$cf_server_name'
         count: 32
         entry_size: 128
     static:
         type: req
-        var: '$binary_remote_addr'
+        var: '$cf_binary_remote_addr'
         rate: '100r/s'
         burst: 300
     dynamic:
         type: req
-        var: '$binary_remote_addr'
+        var: '$cf_binary_remote_addr'
         rate: '10r/s'
         burst: 20
     api:
         type: req
-        var: '$binary_remote_addr'
+        var: '$cf_binary_remote_addr'
         rate: '64r/s'
         burst: 64
     unlikely:
         type: req
-        var: '$binary_remote_addr'
+        var: '$cf_binary_remote_addr'
         rate: '1r/s'
         burst: 3

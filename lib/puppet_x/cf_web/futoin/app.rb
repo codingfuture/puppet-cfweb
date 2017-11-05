@@ -318,7 +318,7 @@ module PuppetX::CfWeb::Futoin::App
         vhost_server << limits['static']['expr']
         
         upstream_zone_size = tune.fetch('upstreamZoneSize', '64k')
-        fail_timeout = tune.fetch('upstreamFailTimeout', '1s')
+        fail_timeout = tune.fetch('upstreamFailTimeout', '0')
         keep_alive_percent = tune.fetch('upstreamKAPercent', 25).to_i
         upstream_queue = tune.fetch('upstreamQueue', nil)
         
@@ -344,11 +344,13 @@ module PuppetX::CfWeb::Futoin::App
             upstream_name = "futoin_#{site}_#{name}"
             
             vhost_global << "upstream #{upstream_name} {"
-            vhost_global << "  zone upstreams #{upstream_zone_size};"
-            vhost_global << "  hash $binary_remote_addr consistent;"
             
             if upstream_queue
                 vhost_global << "  queue #{upstream_queue};"
+                vhost_global << "  zone upstreams #{upstream_zone_size};"
+                vhost_global << "  hash $binary_remote_addr consistent;"
+            else
+                vhost_global << "  least_conn;"
             end
             
             #--
@@ -366,9 +368,12 @@ module PuppetX::CfWeb::Futoin::App
             #--
             instances.each do |v|
                 options = []
-                options << "max_conns=#{v['maxConnections']}"
                 options << "max_fails=0"
                 options << "fail_timeout=#{fail_timeout}"
+
+                if upstream_queue
+                    options << "max_conns=#{v['maxConnections']}"
+                end
 
                 socket_type = v['socketType']
 
@@ -404,7 +409,7 @@ module PuppetX::CfWeb::Futoin::App
             vhost_global << ""
             
             #================
-            next_tries = instances.size - 1
+            next_tries = instances.size
             body_size = instances[0]['maxRequestSize'].downcase
             
             #--
@@ -522,16 +527,16 @@ module PuppetX::CfWeb::Futoin::App
                     
                     vhost_server << "  location ~* \\.(#{text_assets.join('|')})$ {"
                         if path_tune.fetch('gzip', true)
-                            vhost_server << "  gzip on;"
-                            vhost_server << "  gzip_types *;"
+                            vhost_server << "    gzip on;"
+                            vhost_server << "    gzip_types *;"
                         else
-                            vhost_server << "  gzip off;"
+                            vhost_server << "    gzip off;"
                         end
                         
                         if path_tune.fetch('staticGzip', true)
-                            vhost_server << "  gzip_static on;"
+                            vhost_server << "    gzip_static on;"
                         else
-                            vhost_server << "  gzip_static off;"
+                            vhost_server << "    gzip_static off;"
                         end
                     vhost_server << "  }"
                 else
