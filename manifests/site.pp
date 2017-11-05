@@ -30,6 +30,8 @@ define cfweb::site (
 
     Optional[Hash[String[1], Any]] $deploy = undef,
     Optional[String[1]] $force_user = undef,
+    
+    Boolean $robots_noindex = false,
 ) {
     include cfdb
     include cfweb::nginx
@@ -353,6 +355,7 @@ define cfweb::site (
             apps               => keys($apps),
 
             custom_conf        => pick_default($custom_conf, ''),
+            robots_noindex     => $robots_noindex,
         }),
         notify  => $cfg_notify,
         before  => Anchor['cfnginx-ready'],

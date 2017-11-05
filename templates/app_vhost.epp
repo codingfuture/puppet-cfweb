@@ -15,6 +15,7 @@
     Array[Hash] $certs,
     Array[String] $apps,
     String $custom_conf,
+    Boolean $robots_noindex,
 |
 
 $redirect_plain_act = $redirect_plain and size($plain_ports) and size($tls_ports)
@@ -110,6 +111,17 @@ server {
 
 <% $apps.each |$a| { -%>
     include <%= "${conf_prefix}.server.${a}" %>;
+<% } -%>
+
+<% if $robots_noindex { -%>
+    location = /robots.txt {
+        add_header Content-Type text/plain;
+        return 200 "
+User-agent: *
+Disallow: /
+
+";
+    }
 <% } -%>
 
 <%= $custom_conf -%>
