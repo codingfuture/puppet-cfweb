@@ -79,17 +79,20 @@ class cfweb::nginx (
     }
     -> file { $conf_dir:
         ensure  => directory,
+        group   => $group,
         mode    => '0750',
         purge   => true,
         recurse => true,
         force   => true,
     }
     -> file { "${conf_dir}/nginx.conf":
+        group   => $group,
         mode    => '0640',
         replace => false,
         content => '',
     }
     -> file { "${conf_dir}/cf_tls.conf":
+        group   => $group,
         mode    => '0640',
         content => epp('cfweb/cf_tls.conf.epp', {
             dhparam       => $cfweb::pki::dhparam,
@@ -101,6 +104,7 @@ class cfweb::nginx (
     }
     -> file { $sites_dir:
         ensure  => directory,
+        group   => $group,
         mode    => '0750',
         purge   => true,
         recurse => true,
@@ -175,6 +179,7 @@ class cfweb::nginx (
         'cf_uwsgi_params'
     ].each |$v| {
         file { "${conf_dir}/${v}":
+            group   => $group,
             mode    => '0640',
             content => file("cfweb/${v}"),
             notify  => Cfweb_nginx[$service_name]

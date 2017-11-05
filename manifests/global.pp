@@ -4,9 +4,10 @@
 
 
 class cfweb::global (
-    Hash[String, Hash] $sites = {},
-    Hash[String, Hash] $keys = {},
-    Hash[String, Hash] $certs = {},
+    Hash[String[1], Hash] $sites = {},
+    Hash[String[1], Hash] $keys = {},
+    Hash[String[1], Hash] $certs = {},
+    Hash[String[1], Hash[String[1], CfWeb::BasicPassword]] $users = {},
     Boolean $ruby = false,
     Boolean $php = false,
     Boolean $nodejs = false,

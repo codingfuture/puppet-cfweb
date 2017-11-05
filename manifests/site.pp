@@ -32,6 +32,7 @@ define cfweb::site (
     Optional[String[1]] $force_user = undef,
 
     Boolean $robots_noindex = false,
+    Optional[String[1]] $require_realm = undef,
 ) {
     include cfdb
     include cfweb::nginx
@@ -356,9 +357,22 @@ define cfweb::site (
 
             custom_conf        => pick_default($custom_conf, ''),
             robots_noindex     => $robots_noindex,
+            require_realm      => $require_realm,
         }),
         notify  => $cfg_notify,
         before  => Anchor['cfnginx-ready'],
+    }
+
+    # Password database
+    #---
+    if $require_realm {
+        file { "${conf_prefix}.passwd":
+            group   => $cfweb::nginx::group,
+            mode    => '0640',
+            content => cfweb::passwd_db($require_realm),
+            notify  => $cfg_notify,
+            before  => Anchor['cfnginx-ready'],
+        }
     }
 
     # Deploy procedure

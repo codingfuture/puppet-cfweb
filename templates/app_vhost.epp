@@ -16,6 +16,7 @@
     Array[String] $apps,
     String $custom_conf,
     Boolean $robots_noindex,
+    Optional[String] $require_realm,
 |
 
 $redirect_plain_act = $redirect_plain and size($plain_ports) and size($tls_ports)
@@ -122,6 +123,11 @@ Disallow: /
 
 ";
     }
+<% } -%>
+
+<% if $require_realm { -%>
+    auth_basic "<%= $require_realm %>";
+    auth_basic_user_file <%= "${conf_prefix}.passwd" %>;
 <% } -%>
 
 <%= $custom_conf -%>
