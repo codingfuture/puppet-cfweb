@@ -597,7 +597,7 @@ module PuppetX::CfWeb::Futoin::App
                         'Slice' => "#{PuppetX::CfWeb::SLICE_PREFIX}#{user}.slice",
                         'ExecStart' => "/usr/local/bin/cid service exec #{name} #{i}",
                         'ExecReload' => %Q{/usr/local/bin/cid service reload #{name} #{i} "$MAINPID"},
-                        'ExecStop' => %Q{/usr/local/bin/cid service stop #{name} #{i} "$MAINPID"},
+                        'ExecStop' => %Q{sh -c '[ -n "$MAINPID" ] && /usr/local/bin/cid service stop #{name} #{i} $MAINPID'"},
                     },
                 }
                 
