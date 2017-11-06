@@ -326,8 +326,9 @@ module PuppetX::CfWeb::Futoin::App
         
         autoServices.each do |name, instances|
             ep = entryPoints[name]
+            ep_tool = ep['tool']
             
-            if ep['tool'] == 'nginx'
+            if ep_tool == 'nginx'
                 extra_conf = ep.fetch('tune', {})
                 extra_conf = extra_conf.fetch('config', {})
                 extra_conf = extra_conf.fetch('http', {})
@@ -355,6 +356,7 @@ module PuppetX::CfWeb::Futoin::App
             
             #--
             keepalive = ['fcgi', 'http'].include? protocol
+            force_maxconn = ['node'].include? ep_tool
             
             if keepalive and keep_alive_percent > 0
                 ka_conn = instances.reduce(0) { |m, v| m + v['maxConnections'] }
@@ -372,6 +374,8 @@ module PuppetX::CfWeb::Futoin::App
                 options << "fail_timeout=#{fail_timeout}"
 
                 if upstream_queue
+                    options << "max_conns=#{v['maxConnections']}"
+                elsif force_maxconn
                     options << "max_conns=#{v['maxConnections']}"
                 end
 
