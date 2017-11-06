@@ -4,10 +4,10 @@
 
 
 define cfweb::pki::key(
-    $key_name = $title,
-    $key_type = undef,
-    $key_bits = undef,
-    $key_curve = undef,
+    String[1] $key_name = $title,
+    Optional[Enum['rsa', 'ecdsa']] $key_type = undef,
+    Optional[Cfsystem::Rsabits] $key_bits = undef,
+    Optional[String[1]] $key_curve = undef,
 ){
     include cfweb::pki
 

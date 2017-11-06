@@ -20,7 +20,6 @@ define cfweb::site (
     Hash[String[1], CfWeb::DBAccess] $dbaccess = {},
     Hash[String[1],Hash,1] $apps = { 'static' => {} },
     Optional[String[1]] $custom_conf = undef,
-    String[1] $web_root = '/',
 
     Cfsystem::CpuWeight $cpu_weight = 100,
     Cfsystem::IoWeight $io_weight = 100,

@@ -27,6 +27,7 @@ define cfweb::app::static (
         'index.html',
         'index.htm',
     ],
+    String[1] $web_root = '/',
 ) {
     if $default_app {
         $default_app_act = $default_app
@@ -39,8 +40,6 @@ define cfweb::app::static (
 
         $default_app_act = $other_apps[0]
     }
-
-    $web_root = getparam(Cfweb::Site[$site], 'web_root')
 
     file { "${conf_prefix}.global.static":
         mode    => '0640',
