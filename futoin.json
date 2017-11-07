@@ -1,6 +1,6 @@
 {
   "name": "codingfuture-cfweb",
-  "version": "0.11.0",
+  "version": "0.11.1",
   "vcs": "git",
   "package": [
     "pkg"
