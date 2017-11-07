@@ -6,7 +6,8 @@
     "pkg"
   ],
   "tools": {
-    "puppet": "*"
+    "puppet": "*",
+    "release": "*"
   },
   "plugins": {
     "release": "futoin.cid.misc.releasetool"

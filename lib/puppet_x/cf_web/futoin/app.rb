@@ -330,10 +330,12 @@ module PuppetX::CfWeb::Futoin::App
             
             if ep_tool == 'nginx'
                 ep_tune = ep.fetch('tune', {})
-                extra_conf = {}
-                extra_conf.merge! ep_tune.fetch('config', {})
-                extra_conf.merge! ep_tune.fetch('http', {})
-                extra_conf.merge! ep_tune.fetch('server', {})
+                extra_conf = (
+                    ep_tune
+                        .fetch('config', {})
+                        .fetch('http', {})
+                        .fetch('server', {})
+                )
                 
                 vhost_server += prep_nginx_config(extra_conf)
                 
