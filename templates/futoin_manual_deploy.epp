@@ -1,6 +1,7 @@
 <% |
     String[1] $site_dir,
     String[1] $user,
+    String[1] $group,
     String[1] $deploy_type,
     Optional[String[1]] $match,
 |
@@ -14,7 +15,7 @@ if $match and $match.size > 0 {
 #!/bin/bash
 set -e
 cd <%= $site_dir %>
-sudo -n -H -u <%= $user %> \
+sudo -n -H -u <%= $user %> -g <%= $group %> \
     cid deploy \
     <%= $deploy_type %> <%= $arg_match %> \
     "$@" </dev/null

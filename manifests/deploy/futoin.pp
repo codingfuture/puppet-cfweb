@@ -102,6 +102,7 @@ define cfweb::deploy::futoin(
         content => epp('cfweb/futoin_manual_deploy.epp', {
             site_dir    => $site_dir,
             user        => $user,
+            group       => $deployer_group,
             deploy_type => $deploy_type,
             match       => $match,
         }),
