@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 0.11.2 (2017-11-19) ===
 FIXED: manual deploy to run under deployer group
 
 === 0.11.1 (2017-11-07) ===
