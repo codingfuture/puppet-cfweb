@@ -1,4 +1,7 @@
 
+=== (next) ===
+FIXED: not to put systemd app units into failed state due to ExecStop failures
+
 === 0.11.2 (2017-11-19) ===
 FIXED: manual deploy to run under deployer group
 
