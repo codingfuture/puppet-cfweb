@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 0.11.3 (2017-11-21) ===
 FIXED: not to put systemd app units into failed state due to ExecStop failures
 FIXED: to reload apps on manual deploy
 
