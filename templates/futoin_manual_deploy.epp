@@ -13,9 +13,25 @@ if $match and $match.size > 0 {
 };
 -%>
 #!/bin/bash
+
+bin_dir=$(dirname $0)
+name=$(basename $0)
+action=$(echo $name | cut -d- -f1)
+site=$(echo $name | cut -d- -f2)
+
 set -e
 cd <%= $site_dir %>
+
+old_val=
+
+if [ -e current ]; then
+    old_val=$(/bin/readlink current)
+fi
+
 sudo -n -H -u <%= $user %> -g <%= $group %> \
     cid deploy \
-    <%= $deploy_type %> <%= $arg_match %> \
-    "$@" </dev/null
+    <%= $deploy_type %> <%= $arg_match %> </dev/null
+
+if [ "$(/bin/readlink current)" != "$old_val" ]; then
+    ${bin_dir}/reload-${site}
+fi
