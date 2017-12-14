@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 0.11.4 (2017-12-14) ===
 FIXED: to allow "http", "https" and "ssh" for per-site outgoing connections (used to work as aliases)
 
 === 0.11.3 (2017-11-21) ===
