@@ -20,10 +20,12 @@ define cfweb::internal::deployerfw (
 
 
     $fw_ports.each |$svc, $def| {
-        create_resources('cfnetwork::client_port', {
-            "any:${svc}:${deploy_group}" => merge($def, {
-                group => $deploy_group
-            }),
-        })
+        if !defined( Cfnetwork::Client_port["any:${svc}:${deploy_group}"] ) {
+            create_resources('cfnetwork::client_port', {
+                "any:${svc}:${deploy_group}" => merge($def, {
+                    group => $deploy_group
+                }),
+            })
+        }
     }
 }
