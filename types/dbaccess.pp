@@ -3,4 +3,4 @@
 #
 
 
-type CfWeb::DBAccess = Hash[String[1],Variant[String,Integer]]
+type CfWeb::DBAccess = Hash[String[1],Any]

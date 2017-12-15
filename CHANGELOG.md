@@ -1,5 +1,8 @@
 
-=== (flyway) ===
+=== (next) ===
+FIXED: CfWeb::DBAccess definition
+
+=== 0.11.5 (2017-12-14) ===
 FIXED: quick workaround for flyway executable missing permissions
 
 === 0.11.4 (2017-12-14) ===
