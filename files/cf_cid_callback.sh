@@ -98,6 +98,10 @@ case $cmd in
                 else
                     echo "Tool $tool is not whitelisted yet"
                 fi
+
+                if [ "$tool" = "flyway" ]; then
+                    chmod +x $CID_DEPLOY_HOME/flyway/*/flyway
+                fi
                 ;;
             *)
                 echo "Unsupported tool sub-command $subcmd" >&2

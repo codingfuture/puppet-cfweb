@@ -1,4 +1,7 @@
 
+=== (flyway) ===
+FIXED: quick workaround for flyway executable missing permissions
+
 === 0.11.4 (2017-12-14) ===
 FIXED: to allow "http", "https" and "ssh" for per-site outgoing connections (used to work as aliases)
 
