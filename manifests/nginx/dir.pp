@@ -1,4 +1,4 @@
 #
-# Copyright 2016-2017 (c) Andrey Galkin
+# Copyright 2016-2018 (c) Andrey Galkin
 #
 
