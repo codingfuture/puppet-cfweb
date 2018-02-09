@@ -1,6 +1,6 @@
 {
   "name": "codingfuture-cfweb",
-  "version": "0.11.6",
+  "version": "0.12.0",
   "author": "Andrey Galkin",
   "summary": "All-in-one setup of web and application servers",
   "license": "Apache-2.0",
