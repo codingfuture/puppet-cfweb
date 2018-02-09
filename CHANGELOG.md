@@ -1,5 +1,8 @@
 
 === 0.11.6 (2017-12-15) ===
+NEW: version bump of cf* series
+
+=== 0.11.6 (2017-12-15) ===
 FIXED: CfWeb::DBAccess definition
 
 === 0.11.5 (2017-12-14) ===
