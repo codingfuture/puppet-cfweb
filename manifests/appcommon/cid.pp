@@ -121,6 +121,9 @@ class cfweb::appcommon::cid (
     -> file { $sudoers_file:
         mode => '0640',
     }
+    -> file { '/etc/cron.d/php':
+        ensure => absent,
+    }
 
     # Disable PHP-fpm regardless if installed
     ['', '5.6', '7.0', '7.1', '7.2'].each |$ver| {
