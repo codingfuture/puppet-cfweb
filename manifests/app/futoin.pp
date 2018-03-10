@@ -12,6 +12,7 @@ define cfweb::app::futoin (
     Array[String[1]] $dbaccess_names,
 
     Integer[1] $memory_weight = 100,
+    Integer[64] $memory_min = 64,
     Optional[Integer[1]] $memory_max = undef,
     Cfsystem::CpuWeight $cpu_weight = 100,
     Cfsystem::IoWeight $io_weight = 100,
@@ -29,7 +30,7 @@ define cfweb::app::futoin (
     cfsystem_memory_weight { $service_name:
         ensure => present,
         weight => $memory_weight,
-        min_mb => 64,
+        min_mb => $memory_min,
         max_mb => $memory_max,
     }
 

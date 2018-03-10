@@ -2,6 +2,7 @@
 === (next) ===
 FIXED: uWSGI & PHP-FPM to use proper syslog tag
 NEW: cflogsink / syslog logging support
+NEW: cfweb::app:futoin::memory_min option
 
 === 0.12.0 (2017-02-09) ===
 NEW: version bump of cf* series

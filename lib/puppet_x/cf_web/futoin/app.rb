@@ -169,6 +169,7 @@ module PuppetX::CfWeb::Futoin::App
             }
             
             uwsgi_tune = {
+                'minMemory' => '16M',
                 'uwsgi' => {
                     'chmod-socket' => '660',
                     'pythonpath' => File.join(site_dir, 'current'),

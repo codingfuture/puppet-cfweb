@@ -328,6 +328,7 @@ check its README.
 
 * Site' upper resource limits in scope of `cfsystem` resource distribution framework. 
     * `Integer[1] $memory_weight = 100`
+    * `Integer[64] $memory_min = 64`
     * `Optional[Integer[1]] $memory_max = undef`
     * `Cfsystem::CpuWeight $cpu_weight = 100`
     * `Cfsystem::IoWeight $io_weight = 100`
