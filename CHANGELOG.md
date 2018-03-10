@@ -1,5 +1,6 @@
 
 === (next) ===
+FIXED: uWSGI & PHP-FPM to use proper syslog tag
 NEW: cflogsink / syslog logging support
 
 === 0.12.0 (2017-02-09) ===

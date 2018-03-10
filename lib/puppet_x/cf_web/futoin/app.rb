@@ -179,6 +179,7 @@ module PuppetX::CfWeb::Futoin::App
                 %Q{tooltune cid version=#{Shellwords.escape(cid_vesion)}},
                 %Q{tooltune phpfpm #{Shellwords.escape(JSON.generate(phpfpm_tune))}},
                 %Q{tooltune uwsgi #{Shellwords.escape(JSON.generate(uwsgi_tune))}},
+                %Q{env syslogTag #{service_name}}
             ] + (deploy_conf['deploy_set'] || [])
             
             deploy_set.each do |v|
