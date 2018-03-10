@@ -67,13 +67,36 @@ Puppet::Type.type(:cfweb_nginx).provide(
         worker_connections = (mem_limit * 1024 / mem_per_conn / worker_processes).to_i
         ssl_sess_factor = cfweb_tune.fetch('ssl_sess_factor', 3).to_i
         ssl_sess_per_mb = 4000
-        
-        
+
+        #---
+        if cfweb_tune.fetch('use_syslog', false)
+            access_log = "syslog:server=unix:/dev/hdlog,facility=local2,tag=access_#{service_name},nohostname vhosts"
+            error_log = "syslog:server=unix:/dev/hdlog,facility=local1,tag=#{service_name},nohostname error"
+            log_conf = {
+                'error_log' => error_log,
+                'access_log' => access_log,
+            }
+        else
+            access_log = '/var/log/nginx/access.log vhosts'
+            error_log = '/var/log/nginx/error.log error'
+            log_conf = {}
+        end
+    
+        config_changed = cf_system.atomicWrite(
+            "#{conf_dir}/log.conf",
+            nginxConf( log_conf, 0),
+            {
+                :user => user,
+                :mode => 0640,
+            }
+        )
+
+        #---        
         global_conf = {
             'worker_processes' => worker_processes,
             'worker_cpu_affinity' => 'auto',
             'pcre_jit' => 'on',
-            'error_log' => '/var/log/nginx/error.log error',
+            'error_log' => error_log,
         }.merge(settings_tune.fetch('global', {}))
         worker_processes = global_conf['worker_processes'].to_i
         
@@ -86,21 +109,21 @@ Puppet::Type.type(:cfweb_nginx).provide(
         max_conn = global_conf['worker_processes'].to_i *
                    events_conf['worker_connections'].to_i
         ssl_sess_cache = (max_conn * ssl_sess_factor / ssl_sess_per_mb + 1).to_i
-        
+
         http_conf = {
             'default_type' => 'application/octet-stream',
             #
             'log_format main' => [
                     '\'$remote_addr - $remote_user [$time_local]',
                     '"$request" $status $body_bytes_sent "$http_referer"',
-                    '"$http_user_agent" "$http_x_forwarded_for"\''
+                    '"$http_user_agent"\''
             ].join(' '),
             'log_format vhosts' => [
-                    '\'$host $remote_addr - $remote_user [$time_local]',
+                    '\'$host:$server_port $remote_addr - $remote_user [$time_local]',
                     '"$request" $status $body_bytes_sent "$http_referer"',
-                    '"$http_user_agent" "$http_x_forwarded_for"\''
+                    '"$http_user_agent" $request_time\''
             ].join(' '),
-            'access_log' => '/var/log/nginx/access.log vhosts',
+            'access_log' => access_log,
             #
             'keepalive_timeout' => '65 60',
             'keepalive_requests' => 100,

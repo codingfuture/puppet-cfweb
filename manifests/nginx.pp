@@ -61,6 +61,25 @@ class cfweb::nginx (
     $acme_challenge_group = $cfweb::acme_challenge_group
     $acme_challenge_root = $cfweb::acme_challenge_root
 
+    #---
+    $act_settings_tune = merge(
+        {
+            cfweb => merge(
+                {
+                    use_syslog => defined(Class['cflogsink::client']) or lookup('cflogsink::target')
+                },
+                pick($settings_tune['cfweb'], {})
+            )
+        },
+        $settings_tune
+    )
+
+    if $act_settings_tune['cfweb']['use_syslog'] {
+        include cfsystem::hdsyslog
+    }
+    #---
+
+
     group { $group:
         ensure => present,
     }
@@ -85,7 +104,7 @@ class cfweb::nginx (
         recurse => true,
         force   => true,
     }
-    -> file { "${conf_dir}/nginx.conf":
+    -> file { [ "${conf_dir}/nginx.conf", "${conf_dir}/log.conf" ]:
         group   => $group,
         mode    => '0640',
         replace => false,
@@ -159,7 +178,7 @@ class cfweb::nginx (
         memory_weight => $memory_weight,
         cpu_weight    => $cpu_weight,
         io_weight     => $io_weight,
-        settings_tune => $settings_tune,
+        settings_tune => $act_settings_tune,
         service_name  => $service_name,
         limits        => $limits,
         stress_hosts  => $stress_hosts,

@@ -175,6 +175,11 @@ Main setup and configuration of nginx web server.
     * `$cpu_weight = 100`
     * `$io_weight = 100`
 * `$settings_tune = {}` - tree for fine tune of nginx.conf
+    * `cfweb = {}` - tune of `cfweb` itself
+        - 'extra_files = 20000' - extra file descriptors, affects open file cache
+        - 'mem_per_conn = 128' - expected memory requirement per connection in KiB
+        - 'ssl_sess_factor = 3' - multiplier of max conn for ssl cache size
+        - 'use_syslog' - auto-detected based on cflogsink::client
 * `$trusted_proxy = []` - list of trusted reverse-proxies
 * `$default_certs = {}` - cert names to use for the default catch all vhosts
 * `$backlog = 4096` - tune backlog

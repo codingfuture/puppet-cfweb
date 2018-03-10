@@ -1,4 +1,7 @@
 
+=== (next) ===
+NEW: cflogsink / syslog logging support
+
 === 0.12.0 (2017-02-09) ===
 NEW: version bump of cf* series
 

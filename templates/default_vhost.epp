@@ -25,6 +25,8 @@ server {
 <% } -%>
         ;
         
+    # NOTE: it's not redundant, there are some fine moments in log handling in server block
+    include /etc/nginx/log.conf;
         
 <% if $proxy_protocol { -%>
 <%  $trusted_proxy.each |$p| { -%>

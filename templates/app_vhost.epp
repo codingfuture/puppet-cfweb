@@ -106,6 +106,9 @@ server {
     listen <%= $l %>;
 <%  } -%>
 
+    # NOTE: it's not redundant, there are some fine moments in log handling in server block
+    include /etc/nginx/log.conf;
+
 <%= $tls_snippet -%>
 <%= $trust_proxy_snippet -%>
 
@@ -159,6 +162,8 @@ server {
     listen <%= $l %>;
 <%  } -%>
 
+    # NOTE: it's not redundant, there are some fine moments in log handling in server block
+    include /etc/nginx/log.conf;
     
 <%= $trust_proxy_snippet -%>
 <%= $acme_challenge_snippet %>
@@ -176,6 +181,9 @@ server {
 server {
     server_name <%= $alt_names.join(' ') %>;
     
+    # NOTE: it's not redundant, there are some fine moments in log handling in server block
+    include /etc/nginx/log.conf;
+
 <%  $listen_plain.each |$l| { -%>
     listen <%= $l %>;
 <%  } -%>
