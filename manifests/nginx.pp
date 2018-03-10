@@ -66,7 +66,10 @@ class cfweb::nginx (
         {
             cfweb => merge(
                 {
-                    use_syslog => defined(Class['cflogsink::client']) or lookup('cflogsink::target')
+                    use_syslog => (
+                        defined(Class['cflogsink::client']) or
+                        lookup('cflogsink::target', { default_value => false })
+                    )
                 },
                 pick($settings_tune['cfweb'], {})
             )
