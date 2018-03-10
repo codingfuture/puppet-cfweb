@@ -82,4 +82,17 @@ class cfweb::pki::acme(
         minute  => '30',
         weekday => '1-3', # Mon through Wed
     }
+
+    ensure_resource('file', '/etc/cron.deny', {
+        mode    => '640',
+        replace => false,
+        content => '',
+    })
+
+    file_line { 'Deny cfwebpki cron':
+        ensure  => present,
+        path    => '/etc/cron.deny',
+        line    => $user,
+        require => File['/etc/cron.deny'],
+    }
 }

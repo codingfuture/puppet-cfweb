@@ -2,6 +2,7 @@
 === (next) ===
 FIXED: uWSGI & PHP-FPM to use proper syslog tag
 FIXED: not to cleanup PHP sessions via cron
+FIXED: acme.sh cron racing with cfweb_acme_cron
 NEW: cflogsink / syslog logging support
 NEW: cfweb::app:futoin::memory_min option
 

@@ -13,11 +13,14 @@ cd $home_dir
     $acme_dir/acme.sh \
         --syslog 3 \
         --cron
-        
+
+    # Make sure it's never set
+    /usr/bin/crontab -r || true
+
     for s in $home_dir/shared/certs/*.acme; do
-        sh $s || true
+        /bin/sh $s || true
     done
-    
+
     /opt/codingfuture/bin/cfweb_sync_pki
 EOT
 
