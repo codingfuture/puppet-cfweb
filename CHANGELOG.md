@@ -1,5 +1,5 @@
 
-=== (next) ===
+=== 0.12.1 (2018-03-10) ===
 FIXED: uWSGI & PHP-FPM to use proper syslog tag
 FIXED: not to cleanup PHP sessions via cron
 FIXED: acme.sh cron racing with cfweb_acme_cron
