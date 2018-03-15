@@ -1,4 +1,7 @@
 
+# (next)
+CHANGED: to use cflogsink module for centralized logging, if configured
+
 # 0.12.1 (2018-03-10)
 FIXED: uWSGI & PHP-FPM to use proper syslog tag
 FIXED: not to cleanup PHP sessions via cron
