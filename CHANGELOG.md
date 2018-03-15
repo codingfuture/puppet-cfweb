@@ -1,6 +1,7 @@
 
 # (next)
 CHANGED: to use cflogsink module for centralized logging, if configured
+CHANGED: ruby & php repos not to have priority over default packages (fixes old openssl problem)
 
 # 0.12.1 (2018-03-10)
 FIXED: uWSGI & PHP-FPM to use proper syslog tag
