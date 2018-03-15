@@ -1,5 +1,5 @@
 
-# (next)
+# 0.12.2 (2018-03-15)
 CHANGED: to use cflogsink module for centralized logging, if configured
 CHANGED: ruby & php repos not to have priority over default packages (fixes old openssl problem)
 
