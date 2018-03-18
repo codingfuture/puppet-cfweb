@@ -91,7 +91,7 @@ class cfweb (
         $site = $cfweb::global::sites[$site_name]
 
         if !($site =~ Hash) {
-            notify { "cfweb:standalone:${site_name}":
+            cf_notify { "cfweb:standalone:${site_name}":
                 message  =>"Site '${site_name}' is missing from cfweb::global::sites: ${site}",
                 loglevel => 'err',
             }
@@ -116,7 +116,7 @@ class cfweb (
         $site = $cfweb::global::sites[$site_name]
 
         if !($site =~ Hash) {
-            notify { "cfweb:backends:${site_name}":
+            cf_notify { "cfweb:backends:${site_name}":
                 message  =>"Site '${site_name}' is missing from cfweb::global::sites: ${site}",
                 loglevel => 'err',
             }
