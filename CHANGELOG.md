@@ -1,4 +1,7 @@
 
+# (next)
+- CHANGED: to create per-app clusterssh only if necessary for deployment
+
 # 0.12.3 (2018-03-19)
 - CHANGED: to use cf_notify for warnings
 

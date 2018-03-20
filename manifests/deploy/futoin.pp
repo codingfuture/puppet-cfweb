@@ -59,6 +59,14 @@ define cfweb::deploy::futoin(
     -> anchor { "futoin-deploy-${site}": }
 
     #--------------
+    if $url !~ /https?:/ {
+        ensure_resource( 'cfweb::internal::clusterssh', $user )
+
+        Cfweb::Internal::Clusterssh[$user]
+        -> Anchor["futoin-deploy-${site}"]
+    }
+
+    #--------------
     Anchor["futoin-deploy-${site}"]
     -> Cfweb_App[$service_name]
 

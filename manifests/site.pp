@@ -142,16 +142,6 @@ define cfweb::site (
             require        => Group[$group],
         })
 
-        cfsystem::clusterssh { "cfweb:site:${cfweb::cluster}:${user}":
-            namespace  => 'cfweb:site',
-            cluster    => "${cfweb::cluster}:${user}",
-            user       => $user,
-            is_primary => !$cfweb::is_secondary,
-            key_type   => $cfweb::pki::ssh_key_type,
-            key_bits   => $cfweb::pki::ssh_key_bits,
-            peer_ipset => $cfweb::cluster_ipset,
-        }
-
         file { [
                 "${cfweb::nginx::bin_dir}/start-${title}",
                 "${cfweb::nginx::bin_dir}/stop-${title}",
