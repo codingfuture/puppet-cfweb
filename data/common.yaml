@@ -6,6 +6,10 @@ lookup_options:
     merge: deep
   cfweb::global::certs:
     merge: deep
+  cfweb::global::hosts:
+    merge: deep
+  cfweb::global::deploy_keys:
+    merge: deep
   cfweb::nginx::limits:
     merge: deep
   cfweb::backends:

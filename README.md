@@ -164,6 +164,8 @@ Designed this way to avoid discrepancies between nodes. Primary configuration ha
             - crypt => already hashed password (instead of the plain one)
             - comment => optional comment
 * `$hosts` -  has of named lists of hosts for IP-based access
+* `$deploy_keys = {}` - name to `{ private => ..., public => ...}` keys to be used solely for read-only
+    access of SSH sources for deployment.
 
 ### class `cfweb::nginx`
 
@@ -293,6 +295,7 @@ Main resource type to define virtualhost with related apps.
     * `$fw_ports = {}` - additional firewall ports to open for deployment process
     * `$custom_script = undef` - custom script to run before actual "cid deploy"
     * `$auto_deploy = undef` - cron config for periodic re-deploy
+    * `$key_name = undef` - SSH key name to use for read-only access of deployment sources
 
 ### app parameters
 

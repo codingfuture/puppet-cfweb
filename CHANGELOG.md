@@ -1,6 +1,7 @@
 
 # (next)
 - CHANGED: to create per-app clusterssh only if necessary for deployment
+- NEW: deploy/futoin::key_name && globals::deploy_keys support
 
 # 0.12.3 (2018-03-19)
 - CHANGED: to use cf_notify for warnings

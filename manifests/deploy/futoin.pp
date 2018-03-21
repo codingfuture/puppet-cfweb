@@ -25,6 +25,7 @@ define cfweb::deploy::futoin(
     Hash[String[1], Hash] $fw_ports = {},
     Optional[String[1]] $custom_script = undef,
     Optional[Hash] $auto_deploy = undef,
+    Optional[String[1]] $key_name = undef,
 ) {
     include cfweb::appcommon::cid
 
@@ -59,7 +60,13 @@ define cfweb::deploy::futoin(
     -> anchor { "futoin-deploy-${site}": }
 
     #--------------
-    if $url !~ /https?:/ {
+    if !empty($key_name) {
+        ensure_resource( 'cfweb::internal::deploykey', $user, { key_name => $key_name } )
+
+        Cfweb::Internal::Deploykey[$user]
+        -> Anchor["futoin-deploy-${site}"]
+    }
+    elsif $url !~ /https?:/ {
         ensure_resource( 'cfweb::internal::clusterssh', $user )
 
         Cfweb::Internal::Clusterssh[$user]
