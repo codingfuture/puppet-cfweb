@@ -1,6 +1,7 @@
 
 # (next)
 - CHANGED: to create per-app clusterssh only if necessary for deployment
+- FIXED: to allow 'local' bind iface for apps
 - NEW: deploy/futoin::key_name && globals::deploy_keys support
 
 # 0.12.3 (2018-03-19)

@@ -65,22 +65,22 @@ define cfweb::nginx::defaulthost (
         $fw_service,
         { server => "tcp/${port}" }
     )
-    cfnetwork::service_port { "${iface}:${fw_service}":
-        src => $trusted_proxy
-    }
+    ensure_resource(
+        'cfnetwork::service_port',
+        "${iface}:${fw_service}",
+        { src => $trusted_proxy }
+    )
 
-    # Allow root for testing purposes
-    if $iface != 'local' {
-        cfnetwork::service_port { "local:${fw_service}":
-            src => $trusted_proxy
-        }
-    }
-
-    cfnetwork::client_port { "local:${fw_service}":
-        user => 'root',
-        dst  => ($listen ? {
-            '*'     => undef,
-            default => $listen,
-        }),
-    }
+    # Allow local root access for testing purposes
+    #---
+    ensure_resource(
+        'cfnetwork::service_port',
+        "local:${fw_service}",
+        { src => $trusted_proxy }
+    )
+    ensure_resource(
+        'cfnetwork::client_port',
+        "local:${fw_service}",
+        { user => 'root' }
+    )
 }
