@@ -2,6 +2,7 @@
 # (next)
 - CHANGED: to create per-app clusterssh only if necessary for deployment
 - FIXED: to allow 'local' bind iface for apps
+- FIXED: removed "pip" from external setup whitelist
 - NEW: deploy/futoin::key_name && globals::deploy_keys support
 - NEW: X.509 PKI support for access control
 
