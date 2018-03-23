@@ -37,6 +37,7 @@ This module is also a reference implementation of [FutoIn CID](https://github.co
     * Access control
         * Per site HTTP Basic Auth configuration
         * IP-based client whitelisting
+        * X.509 PKI verification
     * Hardened security:
         * Each app runs under own user
         * cgroup resource isolation
@@ -166,6 +167,13 @@ Designed this way to avoid discrepancies between nodes. Primary configuration ha
 * `$hosts` -  has of named lists of hosts for IP-based access
 * `$deploy_keys = {}` - name to `{ private => ..., public => ...}` keys to be used solely for read-only
     access of SSH sources for deployment.
+* `$client_pki = {}` - named definitions of client PKI
+    * name to to hash:
+        - `ca` - CA PEM format as is
+        - or `ca_source` - suitable for puppet `File::source` parameter
+        - `crl` - CRL PEM format as is
+        - or `crl_source` - suitable for puppet `File::source` parameter
+        - `depth = 1` - client verification chain max depth
 
 ### class `cfweb::nginx`
 
@@ -284,6 +292,9 @@ Main resource type to define virtualhost with related apps.
 * `$robots_noindex = false` - add default /robots.txt which forbids indexing
 * `$require_realm = undef` - require basic auth of specified realm as defined in `$cfweb::global::users`
 * `$require_hosts = undef` - require clients only from whitelisted hosts
+* `$require_x509 = undef` - string of `cfweb::global::clientpki` name or a hash of:
+    * `clientpki` - `cfweb::global::clientpki` name
+    * `verify = on` - override verification mode
 * `$deploy = undef` - optional deployment parameters
     * `$strategy = 'futoin'`:
     * `$type` - 'rms', 'vcstag' or 'vcsref' 

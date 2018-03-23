@@ -3,6 +3,7 @@
 - CHANGED: to create per-app clusterssh only if necessary for deployment
 - FIXED: to allow 'local' bind iface for apps
 - NEW: deploy/futoin::key_name && globals::deploy_keys support
+- NEW: X.509 PKI support for access control
 
 # 0.12.3 (2018-03-19)
 - CHANGED: to use cf_notify for warnings

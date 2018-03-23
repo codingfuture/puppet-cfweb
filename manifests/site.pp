@@ -33,9 +33,11 @@ define cfweb::site (
     Boolean $robots_noindex = false,
     Optional[String[1]] $require_realm = undef,
     Optional[String[1]] $require_hosts = undef,
+    Optional[CfWeb::ClientX509] $require_x509 = undef,
 ) {
     include cfdb
     include cfweb::nginx
+    include cfweb::global
 
     validate_re($title, '^[a-z][a-z0-9_]*$')
 
@@ -336,6 +338,15 @@ define cfweb::site (
         $require_host_list = undef
     }
 
+    if $require_x509 {
+        if $require_x509 =~ String {
+            $clientpki = $require_x509
+        } else {
+            $clientpki = $require_x509['clientpki']
+        }
+        ensure_resource('cfweb::internal::clientpki', $clientpki)
+    }
+
     file { "${conf_prefix}.conf":
         mode    => '0640',
         content => epp('cfweb/app_vhost.epp', {
@@ -359,6 +370,7 @@ define cfweb::site (
             robots_noindex     => $robots_noindex,
             require_realm      => $require_realm,
             require_host_list  => $require_host_list,
+            require_x509       => $require_x509,
         }),
         notify  => $cfg_notify,
         before  => Anchor['cfnginx-ready'],

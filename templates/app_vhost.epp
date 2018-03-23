@@ -18,6 +18,7 @@
     Boolean $robots_noindex,
     Optional[String] $require_realm,
     Optional[Array[String[1]]] $require_host_list,
+    Optional[CfWeb::ClientX509] $require_x509,
 |
 
 $redirect_plain_act = $redirect_plain and size($plain_ports) and size($tls_ports)
@@ -84,6 +85,7 @@ $tls_snippet = inline_epp('
 $acme_challenge_snippet = "
     location /.well-known/acme-challenge/ {
         allow all;
+        satisfy any;
         root /www/acme_challenge;
         limit_req zone=dynamic nodelay;
     }
@@ -147,6 +149,27 @@ Disallow: /
     #---
 <% } -%>
 
+<% if $require_x509 {
+    if $require_x509 =~ String {
+        $client_x509 = {
+            clientpki => $require_x509,
+        }
+    } else {
+        $client_x509 = $require_x509
+    }
+    $clientpki = $client_x509['clientpki']
+    # the check is done in internal::clientpki
+    $clientpki_conf = pick_default($cfweb::global::clientpki[$clientpki], {})
+-%>
+    # Require X.509 client certificates
+    #---
+    ssl_client_certificate <%= "${cfweb::nginx::clientpki_dir}/${clientpki}.ca.pem" %>;
+<% if $clientpki_conf['crl'] or $clientpki_conf['crl_source'] { -%>
+    ssl_crl <%= "${cfweb::nginx::clientpki_dir}/${clientpki}.crl.pem" %>;
+<% } -%>
+    ssl_verify_client <%= pick($client_x509['verify'], 'on') %>;
+    ssl_verify_depth <%= pick($clientpki_conf['depth'], 1) %>;
+<% } -%>
 <%= $custom_conf -%>
 }
 

@@ -51,6 +51,7 @@ class cfweb::nginx (
 
     $conf_dir = '/etc/nginx'
     $sites_dir = "${conf_dir}/sites"
+    $clientpki_dir = "${conf_dir}/clientpki"
 
     $web_dir = $cfweb::web_dir
     $persistent_dir = "${web_dir}/persistent"
@@ -121,7 +122,7 @@ class cfweb::nginx (
             bleeding_edge => $bleeding_edge_security,
         })
     }
-    -> file { $sites_dir:
+    -> file { [$sites_dir, $clientpki_dir]:
         ensure  => directory,
         group   => $group,
         mode    => '0750',
