@@ -1,5 +1,5 @@
 
-# (next)
+# 0.12.4 (2018-03-24)
 - CHANGED: to create per-app clusterssh only if necessary for deployment
 - FIXED: to allow 'local' bind iface for apps
 - FIXED: removed "pip" from external setup whitelist
