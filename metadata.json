@@ -33,19 +33,19 @@
   "dependencies": [
     {
       "name": "codingfuture-cfnetwork",
-      "version_requirement": ">= 0.12.2 < 0.13.0"
+      "version_requirement": ">= 1.0.0 <2.0.0"
     },
     {
       "name": "codingfuture-cfsystem",
-      "version_requirement": ">= 0.12.9 < 0.13.0"
+      "version_requirement": ">= 1.0.0 <2.0.0"
     },
     {
       "name": "codingfuture-cfdb",
-      "version_requirement": ">= 0.12.3 < 0.13.0"
+      "version_requirement": ">= 1.0.0 <2.0.0"
     },
     {
       "name": "codingfuture-cflogsink",
-      "version_requirement": ">= 0.12.3 < 0.13.0"
+      "version_requirement": ">= 1.0.0 <2.0.0"
     }
   ],
   "data_provider": "hiera"
