@@ -30,7 +30,7 @@ This module is also a reference implementation of [FutoIn CID](https://github.co
         * Tunable resource distribution based on available resources
         * Secure auto-deployment user for external calls via SSH
         * Zero-downtime rolling reload
-        * Automatic DB configuration based on [cfdb](https://github.com/codingfuture/puppet-cfdb)
+        * Automatic DB configuration based on [cfdb](https://codingfuture.net/docs/cfdb)
         * Deploy the latest from VCS tag and branch (CID feature)
         * Deploy the latest from RMS packages (CID feature)
     * Auto-configuration of nginx
@@ -55,13 +55,13 @@ This module is also a reference implementation of [FutoIn CID](https://github.co
         * Automatic redirection of aliases to main vhost (SEO friendly)
         * Disallow robot indexing via /robots.txt - avoid showing private sites in search engines
         * Support for very large content site, not suitable for FutoIn CID deployment approach
-        * Firewall configuration through [cfnetwork](https://github.com/codingfuture/puppet-cfnetwork)
+        * Firewall configuration through [cfnetwork](https://codingfuture.net/docs/cfnetwork)
 
 
 ### Terminology & Concept
 
 Cluster is used to name related nodes. There can be only one cluster per system (for now).
-As with [cfdb](https://github.com/codingfuture/puppet-cfdb) there is a primary node which
+As with [cfdb](https://codingfuture.net/docs/cfdb) there is a primary node which
 does all configuration.
 
 Secondary nodes can only scale applications defined in primary node. Secondary nodes need not
@@ -122,14 +122,14 @@ App control helpers:
 ## Setup
 
 Please use [librarian-puppet](https://rubygems.org/gems/librarian-puppet/) or
-[cfpuppetserver module](https://forge.puppetlabs.com/codingfuture/cfpuppetserver) to deal with dependencies.
+[cfpuppetserver module](https://codingfuture.net/docs/cfpuppetserver) to deal with dependencies.
 
 There is a known r10k issue [RK-3](https://tickets.puppetlabs.com/browse/RK-3) which prevents
 automatic dependencies of dependencies installation.
 
 ## Example
 
-Please check real-world complex Redmine issue tracker setup in [cfwebapp](https://github.com/codingfuture/puppet-cfwebapp) recipe.
+Please check real-world complex Redmine issue tracker setup in [cfwebapp](https://codingfuture.net/docs/cfwebapp) recipe.
 
 ## API
 
