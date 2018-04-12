@@ -1,5 +1,5 @@
 
-# (next)
+# 1.0.1 (2018-04-12)
 - FIXED: LetsEncrypt certificate rotation in cron
 
 # 0.12.4 (2018-03-24)
