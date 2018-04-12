@@ -18,7 +18,7 @@ cd $home_dir
     /usr/bin/crontab -r || true
 
     for s in $home_dir/shared/certs/*.acme; do
-        /bin/sh $s || true
+        /bin/sh \$s || true
     done
 
     /opt/codingfuture/bin/cfweb_sync_pki
