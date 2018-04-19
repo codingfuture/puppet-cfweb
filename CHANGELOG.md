@@ -1,4 +1,7 @@
 
+# (next)
+- FIXED: missing module hiera.yaml
+
 # 1.0.1 (2018-04-12)
 - FIXED: LetsEncrypt certificate rotation in cron
 
