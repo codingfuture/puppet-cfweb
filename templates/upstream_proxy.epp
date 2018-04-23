@@ -1,0 +1,29 @@
+<% |
+    String $site,
+    Array[CfWeb::Upstream] $upstreams,
+    Integer $keepalive,
+| -%>
+
+upstream app_<%= $site %> {
+    least_conn;
+<% $upstreams.each |$v| { -%>
+    server <%
+
+    if $v['port'] =~ String {
+-%>
+unix://<%= $v['port'] -%>
+<%  } else { -%>
+<%= $v['host'] -%>:<%= $v['port'] -%>
+<%  }
+
+    if $v['max_conns'] != undef { %> max_conns=<%= $v['max_conns'] %><% }
+    if $v['max_fails'] != undef { %> max_fails=<%= $v['max_fails'] %><% }
+    if $v['fail_timeout'] != undef { %> fail_timeout=<%= $v['fail_timeout'] %><% }
+    if $v['weight'] != undef { %> weight=<%= $v['weight'] %><% }
+    if $v['backup'] { %> backup<% } -%>
+;
+<% } %>
+<% if $keepalive { -%>
+    keepalive <%= $keepalive %>;
+<% } -%>    
+}

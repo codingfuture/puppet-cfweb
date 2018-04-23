@@ -1,0 +1,8 @@
+<% |
+    String $site,
+| -%>
+
+    location / {
+        proxy_pass http://app_<%= $site %>;
+        include /etc/nginx/cf_http_params;
+    }

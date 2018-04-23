@@ -105,7 +105,7 @@ define cfweb::site (
     # Basic file structure
     #---
     $site = "app_${title}"
-    $is_dynamic = (size(keys($apps) - ['static']) > 0)
+    $is_dynamic = (size(keys($apps) - ['static', 'proxy']) > 0)
     $user = $force_user ? {
         undef => $is_dynamic ? {
             true => $site,

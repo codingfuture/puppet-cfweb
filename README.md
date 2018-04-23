@@ -355,6 +355,26 @@ check its README.
     * `upstreamFailTimeout = 0` - fail_timeout for upstream
     * `upstreamZoneSize = 64k' - zone upstreams for consistent hashing
 
+#### `proxy`
+
+Must be exclusive app. Useful for simple reverse proxy of low capability HTTP host with
+advanced security features of cfweb module.
+
+Clients can use TLS with HTTP/2 and require all supported authentication methods. Upstream
+is assumed to be HTTP/1.1 with keepalive support. WebSockets upgrade is also supported.
+
+Example: custom running daemon access and/or network equipment web panel proxy.
+
+Params:
+* `$upstream` - hash or array of hashes:
+    - `$port` - integer(TCP) or string (UNIX socket)
+    - `$host` - optional IP or hostname
+    - `$max_conns` - optional, see nginx.conf    
+    - `$max_fails` - optional, see nginx.conf    
+    - `$fail_timeout` - optional, see nginx.conf    
+    - `$backup` - optional, see nginx.conf    
+    - `$weight` - optional, see nginx.conf
+* `$keepalive = 8` - see nginx.conf
 
 #### `docker`
 
