@@ -8,6 +8,8 @@ class cfweb::appcommon::cid (
     String[1] $version = 'latest',
     Integer[0] $reserve_ram = 256,
 ) {
+    include cfsystem::pip
+
     cfsystem_memory_weight { 'cfweb:cid':
         ensure => present,
         weight => 1,
@@ -56,31 +58,10 @@ class cfweb::appcommon::cid (
         purge_ssh_keys => true,
     }
 
-    package { [ 'python-pip', 'python3-pip']:
-        ensure => absent,
-    }
-    -> package { [ 'python-setuptools', 'python3-setuptools' ]: }
-    # just in case
-    -> exec { '/usr/bin/easy_install pip':
-        creates => '/usr/local/bin/pip2',
-    }
-    -> exec { '/usr/bin/easy_install3 pip':
-        creates => '/usr/local/bin/pip3',
-    }
-    -> package { 'pip':
-        ensure   => latest,
-        provider => cfpip2,
-        require  => Anchor['cfnetwork:firewall'],
-    }
-    -> package { 'pip3':
-        ensure   => latest,
-        name     => 'pip',
-        provider => pip3,
-        require  => Anchor['cfnetwork:firewall'],
-    }
-    -> package { 'futoin-cid':
+    package { 'futoin-cid':
         ensure   => $version,
         provider => cfpip2,
+        require  => Package['pip'],
     }
     # -> exec { '/usr/local/bin/pip install -e /external/cid-tool': }
     -> file { '/etc/futoin':
@@ -151,14 +132,6 @@ class cfweb::appcommon::cid (
     }
     cfnetwork::client_port { "any:https:${user}":
         user => $user,
-    }
-
-    # Allow pip global seetup
-    cfnetwork::client_port { 'any:http:root-pip':
-        user => 'root',
-    }
-    cfnetwork::client_port { 'any:https:root-pip':
-        user => 'root',
     }
 
     class { 'cfweb::internal::cidrepos': stage => 'cf-apt-setup' }
