@@ -1,7 +1,9 @@
 
 # (next)
 - FIXED: missing module hiera.yaml
+- FIXED: to use custom cfpip2 provider for pip packages
 - NEW: implemented native "proxy" app type support
+- NEW: added pip3 installation alognside pip2
 
 # 1.0.1 (2018-04-12)
 - FIXED: LetsEncrypt certificate rotation in cron

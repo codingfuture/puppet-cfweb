@@ -56,22 +56,31 @@ class cfweb::appcommon::cid (
         purge_ssh_keys => true,
     }
 
-    package { 'python-pip':
+    package { [ 'python-pip', 'python3-pip']:
         ensure => absent,
     }
-    -> package { 'python-setuptools': }
+    -> package { [ 'python-setuptools', 'python3-setuptools' ]: }
     # just in case
     -> exec { '/usr/bin/easy_install pip':
-        creates => '/usr/local/bin/pip',
+        creates => '/usr/local/bin/pip2',
+    }
+    -> exec { '/usr/bin/easy_install3 pip':
+        creates => '/usr/local/bin/pip3',
     }
     -> package { 'pip':
         ensure   => latest,
-        provider => pip,
+        provider => cfpip2,
+        require  => Anchor['cfnetwork:firewall'],
+    }
+    -> package { 'pip3':
+        ensure   => latest,
+        name     => 'pip',
+        provider => pip3,
         require  => Anchor['cfnetwork:firewall'],
     }
     -> package { 'futoin-cid':
         ensure   => $version,
-        provider => pip,
+        provider => cfpip2,
     }
     # -> exec { '/usr/local/bin/pip install -e /external/cid-tool': }
     -> file { '/etc/futoin':

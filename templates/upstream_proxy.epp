@@ -18,7 +18,7 @@ unix://<%= $v['port'] -%>
 
     if $v['max_conns'] != undef { %> max_conns=<%= $v['max_conns'] %><% }
     if $v['max_fails'] != undef { %> max_fails=<%= $v['max_fails'] %><% }
-    if $v['fail_timeout'] != undef { %> fail_timeout=<%= $v['fail_timeout'] %><% }
+    %> fail_timeout=<%= pick_default($v['fail_timeout'], 0) %><%
     if $v['weight'] != undef { %> weight=<%= $v['weight'] %><% }
     if $v['backup'] { %> backup<% } -%>
 ;
