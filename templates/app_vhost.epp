@@ -21,7 +21,11 @@
     Optional[CfWeb::ClientX509] $require_x509,
 |
 
-$redirect_plain_act = $redirect_plain and size($plain_ports) and size($tls_ports)
+if size($plain_ports) == 0 and size($tls_ports) == 0 {
+    fail("At least one port must be configured for ${site}")
+}
+
+$redirect_plain_act = $redirect_plain and size($plain_ports) > 0 and size($tls_ports) > 0
 
 $all_server_names = ([$server_name] + $alt_names).join(' ')
 $cond_server_names = $redirect_alt_names ? {
