@@ -1,6 +1,7 @@
 
 # (next)
 - CHANGED: to use cfsystem::pip
+- CHANGED: to use reuseport for nginx listen on privileged ports
 - FIXED: missing module hiera.yaml
 - NEW: implemented native "proxy" app type support
 

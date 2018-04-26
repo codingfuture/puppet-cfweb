@@ -16,6 +16,9 @@ server {
         default_server
         deferred
         bind
+<% if $port <= 1024 { -%>
+        reuseport
+<% } -%>
         so_keepalive=5m::2
 <% if $tls { -%>
         ssl http2
