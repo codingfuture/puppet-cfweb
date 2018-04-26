@@ -12,8 +12,8 @@ define cfweb::app::futoin (
     Array[String[1]] $dbaccess_names,
 
     Integer[1] $memory_weight = 100,
-    Integer[64] $memory_min = 64,
-    Optional[Integer[1]] $memory_max = undef,
+    Variant[Integer[0,0],Integer[64]] $memory_min = 64,
+    Optional[Variant[Integer[0,0],Integer[64]]] $memory_max = undef,
     Cfsystem::CpuWeight $cpu_weight = 100,
     Cfsystem::IoWeight $io_weight = 100,
 

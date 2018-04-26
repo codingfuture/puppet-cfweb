@@ -2,6 +2,7 @@
 # (next)
 - CHANGED: to use cfsystem::pip
 - CHANGED: to use reuseport for nginx listen on privileged ports
+- CHANGED: to allow zero memory distribution to static sites with futoin-cid
 - FIXED: missing module hiera.yaml
 - FIXED: invalid configuration in some cases when only plain HTTP is used per host
 - NEW: implemented native "proxy" app type support
