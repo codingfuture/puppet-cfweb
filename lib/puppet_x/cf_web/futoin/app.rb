@@ -88,6 +88,7 @@ module PuppetX::CfWeb::Futoin::App
         persist_dir = misc['persist_dir']
         
         mem_limit = cf_system.getMemory(service_name)
+        mem_limit = 1 if mem_limit == 0
 
         run_dir = "/run/#{service_name}"
         deployer_group = "deployer_#{site}"
