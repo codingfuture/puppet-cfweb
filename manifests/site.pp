@@ -34,7 +34,7 @@ define cfweb::site (
     Optional[String[1]] $require_realm = undef,
     Optional[String[1]] $require_hosts = undef,
     Optional[CfWeb::ClientX509] $require_x509 = undef,
-    Optional[String[1]] $hsts = 'max-age=15768000;',
+    Optional[String[1]] $hsts = 'max-age=15768000; includeSubDomains; preload',
 ) {
     include cfdb
     include cfweb::nginx
