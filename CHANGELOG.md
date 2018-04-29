@@ -1,4 +1,7 @@
 
+# (next)
+- FIXED: cfweb::app::futoin::fw_ports issue after recent refactoring
+
 # 1.1.0 (2018-04-29)
 - CHANGED: to use cfsystem::pip
 - CHANGED: to use reuseport for nginx listen on privileged ports

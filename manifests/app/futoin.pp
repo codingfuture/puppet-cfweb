@@ -64,6 +64,7 @@ define cfweb::app::futoin (
     #---
     cfweb::internal::appfw { "futoin-${title}":
         fw_ports => $fw_ports,
+        app_user => $user,
     }
 
     #---

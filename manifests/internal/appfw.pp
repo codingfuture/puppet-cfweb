@@ -5,7 +5,7 @@
 
 define cfweb::internal::appfw (
     Hash[String[1], Hash] $fw_ports,
-    String[1] $app_user = $title,
+    String[1] $app_user,
 ) {
     $fw_ports.each |$svc, $def| {
         create_resources('cfnetwork::client_port', {
