@@ -4,6 +4,7 @@
 - CHANGED: to use reuseport for nginx listen on privileged ports
 - CHANGED: to allow zero memory distribution to static sites with futoin-cid
 - CHANGED: to allow multiple apps of the same type per site
+- CHANGED: HSTS not to include subdomains by default
 - FIXED: missing module hiera.yaml
 - FIXED: invalid configuration in some cases when only plain HTTP is used per host
 - FIXED: bug when app group was not added to nginx user, if group is prefix of existing

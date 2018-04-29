@@ -19,6 +19,7 @@
     Optional[String] $require_realm,
     Optional[Array[String[1]]] $require_host_list,
     Optional[CfWeb::ClientX509] $require_x509,
+    Optional[String[1]] $hsts,
 |
 
 if size($plain_ports) == 0 and size($tls_ports) == 0 {
@@ -68,7 +69,7 @@ $trust_proxy_snippet = inline_epp('
 # SSL certs
 #---
 $tls_snippet = inline_epp('
-<% if size($tls_ports) { -%>
+<% if size($tls_ports) > 0 { -%>
 <%  $certs.each |$c| { -%>
     ssl_certificate <%= $c[\'crt_file\'] %>;
     ssl_certificate_key <%= $c[\'key_file\'] %>;
@@ -81,7 +82,10 @@ $tls_snippet = inline_epp('
     ssl_stapling on;
 <%  } -%>
 
-    add_header Strict-Transport-Security \'max-age=15768000; includeSubdomains\';
+<% if $redirect_plain_act and !empty($hsts) { -%>
+    add_header Strict-Transport-Security \'<%= $hsts %>\';
+<% } -%>
+
 <% } -%>
 ', {
 })
