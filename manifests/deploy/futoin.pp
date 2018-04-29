@@ -23,6 +23,7 @@ define cfweb::deploy::futoin(
     Optional[String[1]] $key_name = undef,
 ) {
     include cfweb::appcommon::cid
+    include cfweb::internal::deployuser
 
     $site = $common['site']
     $site_dir = $common['site_dir']
