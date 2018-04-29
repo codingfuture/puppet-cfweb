@@ -4,12 +4,7 @@
 
 
 define cfweb::deploy::futoin(
-    String[1] $site,
-    String[1] $run_user,
-    String[1] $deploy_user,
-    String[1] $site_dir,
-    String[1] $persistent_dir,
-    Array[String[1]] $apps,
+    CfWeb::AppCommonParams $common,
 
     Enum[
         'rms',
@@ -29,15 +24,30 @@ define cfweb::deploy::futoin(
 ) {
     include cfweb::appcommon::cid
 
-    $service_name = "app-${site}-futoin"
-    $cid = '/usr/local/bin/cid'
-    $user = $run_user
-    $deployer_group = "deployer_${site}"
+    $site = $common['site']
+    $site_dir = $common['site_dir']
+    $user = $common['user']
+    $apps = $common['apps']
+    $persistent_dir = $common['persistent_dir']
+
+    $deployer_group = regsubst($user, /^app_/, 'deployer_')
+
+    if size($apps) != 1 {
+        $app_name = $common['app_name']
+        $service_name = "app-${site}-${app_name}"
+        $deploy_dir = "${site_dir}/${app_name}"
+        $app_persistent_dir = "${persistent_dir}/${app_name}"
+    } else {
+        # NOTE: support site-level $deploy
+        $service_name = "app-${site}-${apps[0]}"
+        $deploy_dir = $site_dir
+        $app_persistent_dir = $persistent_dir
+    }
 
     #--------------
 
     Package['futoin-cid']
-    -> file { "${site_dir}/.futoin-deploy.lock":
+    -> file { "${deploy_dir}/.futoin-deploy.lock":
         ensure  => present,
         replace => no,
         content => '',
@@ -45,7 +55,7 @@ define cfweb::deploy::futoin(
         group   => $user,
         mode    => '0700',
     }
-    -> file { "${site_dir}/.futoin.json":
+    -> file { "${deploy_dir}/.futoin.json":
         ensure  => present,
         replace => no,
         content => '{"env":{}}',
@@ -53,57 +63,67 @@ define cfweb::deploy::futoin(
         group   => $user,
         mode    => '0700',
     }
-    -> file { "${site_dir}/persistent":
+    -> file { "${deploy_dir}/persistent":
         ensure => link,
-        target => $persistent_dir,
+        target => $app_persistent_dir,
     }
-    -> anchor { "futoin-deploy-${site}": }
+    -> anchor { "futoin-deploy-${title}": }
 
     #--------------
     if !empty($key_name) {
         ensure_resource( 'cfweb::internal::deploykey', $user, { key_name => $key_name } )
 
         Cfweb::Internal::Deploykey[$user]
-        -> Anchor["futoin-deploy-${site}"]
+        -> Anchor["futoin-deploy-${title}"]
     }
     elsif $url !~ /https?:/ {
         ensure_resource( 'cfweb::internal::clusterssh', $user )
 
         Cfweb::Internal::Clusterssh[$user]
-        -> Anchor["futoin-deploy-${site}"]
+        -> Anchor["futoin-deploy-${title}"]
     }
 
     #--------------
-    Anchor["futoin-deploy-${site}"]
+    Anchor["futoin-deploy-${title}"]
     -> Cfweb_App[$service_name]
 
     #--------------
-    group { $deployer_group:
+    ensure_resource('group', $deployer_group, {
         ensure => present,
-    }
-    -> cfweb::internal::deployerfw { $deployer_group:
-        fw_ports => $fw_ports,
-    }
+    })
     ensure_resource('cfweb::nginx::group', $deployer_group)
+
+    Group[$deployer_group]
+    -> cfweb::internal::deployerfw { "futoin:${title}":
+        fw_ports     => $fw_ports,
+        deploy_group => $deployer_group,
+    }
 
     #--------------
     if $tool == 'svn' {
-        file { "${site_dir}/.subversion":
-            ensure => directory,
-            owner  => $user,
-            group  => $user,
-            mode   => '0750',
-        }
-        -> file { "${site_dir}/.subversion/servers":
-            owner   => $user,
-            group   => $user,
-            mode    => '0640',
-            content => @("EOT"/$)
-            [global]
-            ssl-trust-default-ca = yes
-            ssl-authority-files = /etc/ssl/certs/ca-certificates.crt
-            |EOT
-        }
+        $home_dir = getparam(User[$user], 'home')
+
+        ensure_resources(
+            'file',
+            {
+                "${home_dir}/.subversion" => {
+                    ensure => directory,
+                    owner  => $user,
+                    group  => $user,
+                    mode   => '0750',
+                },
+                "${home_dir}/.subversion/servers" => {
+                    owner   => $user,
+                    group   => $user,
+                    mode    => '0640',
+                    content => @("EOT"/$)
+                    [global]
+                    ssl-trust-default-ca = yes
+                    ssl-authority-files = /etc/ssl/certs/ca-certificates.crt
+                    |EOT
+                }
+            }
+        )
     }
 
     #--------------
@@ -112,10 +132,10 @@ define cfweb::deploy::futoin(
         default => $type
     }
 
-    file { "${cfweb::nginx::bin_dir}/deploy-${site}":
+    file { "${cfweb::nginx::bin_dir}/deploy-${title}":
         mode    => '0700',
         content => epp('cfweb/futoin_manual_deploy.epp', {
-            site_dir    => $site_dir,
+            deploy_dir  => $deploy_dir,
             user        => $user,
             group       => $deployer_group,
             deploy_type => $deploy_type,
@@ -123,10 +143,10 @@ define cfweb::deploy::futoin(
         }),
     }
 
-    file { "${cfweb::nginx::bin_dir}/redeploy-mark-${site}":
+    file { "${cfweb::nginx::bin_dir}/redeploy-mark-${title}":
         mode    => '0700',
         content => epp('cfweb/futoin_mark_redeploy.epp', {
-            site_dir => $site_dir,
+            deploy_dir => $deploy_dir,
         }),
     }
 
@@ -136,7 +156,7 @@ define cfweb::deploy::futoin(
             'cron',
             {
                 "CFWEB AutoDeploy: ${title}" => {
-                    command => "${cfweb::nginx::bin_dir}/deploy-${site}",
+                    command => "${cfweb::nginx::bin_dir}/deploy-${title}",
                 }
             },
             $auto_deploy

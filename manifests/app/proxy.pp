@@ -4,45 +4,50 @@
 
 
 define cfweb::app::proxy (
-    String[1] $site,
-    String[1] $user,
-    String[1] $site_dir,
-    String[1] $conf_prefix,
-    String[1] $type,
-    Array[String[1]] $dbaccess_names,
+    CfWeb::AppCommonParams $common,
 
     Variant[CfWeb::Upstream,Array[CfWeb::Upstream]] $upstream,
-    Integer[0] $keepalive = 8,
+    String[1] $path = '/',
+    Optional[String[0]] $uppath = undef,
+    Optional[Integer[0]] $keepalive = undef,
 ) {
     $upstreams = ($upstream =~ Hash) ? {
         true    => [$upstream],
         default => $upstream
     }
+    $site = $common['site']
+    $app_name = $common['app_name']
+    $conf_prefix = $common['conf_prefix']
+    $user = $common['user']
 
-    file { "${conf_prefix}.global.proxy":
+    $upname = "app_${app_name}"
+
+    file { "${conf_prefix}.global.${app_name}":
         mode    => '0640',
         content => epp('cfweb/upstream_proxy', {
-            site      => $site,
+            upname    => $upname,
             upstreams => $upstreams,
-            keepalive => $keepalive,
+            keepalive => pick($keepalive, 8),
         }),
     }
-    file { "${conf_prefix}.server.proxy":
+    file { "${conf_prefix}.server.${app_name}":
         mode    => '0640',
         content => epp('cfweb/app_proxy', {
-            site            => $site,
+            upname => $upname,
+            path   => $path,
+            uppath => pick_default($uppath, ''),
         }),
     }
 
     $upstreams.each |$v| {
         if $v['port'] =~ Integer {
             $p = $v['port']
-            $s = "app_${site}_${p}"
+            $s = "proxy_${p}"
 
             ensure_resource('cfnetwork::describe_service', $s, {
                 server => "tcp/${p}",
             })
-            ensure_resource('cfnetwork::client_port', "any:${s}", {
+            ensure_resource('cfnetwork::client_port', "any:${s}:${user}", {
                 user => $user,
             })
         }

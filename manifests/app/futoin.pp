@@ -4,12 +4,7 @@
 
 
 define cfweb::app::futoin (
-    String[1] $site,
-    String[1] $user,
-    String[1] $site_dir,
-    String[1] $conf_prefix,
-    String[1] $type,
-    Array[String[1]] $dbaccess_names,
+    CfWeb::AppCommonParams $common,
 
     Integer[1] $memory_weight = 100,
     Variant[Integer[0,0],Integer[64]] $memory_min = 64,
@@ -19,13 +14,45 @@ define cfweb::app::futoin (
 
     Hash $tune = {},
     Hash[String[1], Hash] $fw_ports = {},
+    Optional[Hash[String[1], Any]] $deploy = undef,
 ) {
-    if size(getparam(Cfweb::Site[$site], 'apps')) != 1 {
-        fail('"futoin" CID must be exlusive app per site')
-    }
-
     #---
-    $service_name = "app-${site}-${type}"
+    $site = $common['site']
+    $app_name = $common['app_name']
+    $conf_prefix = $common['conf_prefix']
+    $site_dir = $common['site_dir']
+    $user = $common['user']
+    $persist_dir = $common['persistent_dir']
+
+    $service_name = "app-${site}-${app_name}"
+
+    if size($common['apps']) != 1 {
+        $deploy_dir = "${site_dir}/${app_name}"
+        $app_persist_dir = "${persist_dir}/${app_name}"
+
+        file { $deploy_dir:
+            ensure => directory,
+            owner  => $user,
+            group  => $user,
+            mode   => '0750',
+        }
+        file { $app_persist_dir:
+            ensure => directory,
+            owner  => $user,
+            group  => $user,
+            mode   => '0750',
+        }
+        -> file { "${deploy_dir}/.env":
+            ensure => link,
+            target => '../.env',
+            owner  => $user,
+            group  => $user,
+            mode   => '0640',
+        }
+    } else {
+        $deploy_dir = $site_dir
+        $app_persist_dir = $persist_dir
+    }
 
     cfsystem_memory_weight { $service_name:
         ensure => present,
@@ -35,7 +62,7 @@ define cfweb::app::futoin (
     }
 
     #---
-    cfweb::internal::appfw { $user:
+    cfweb::internal::appfw { "futoin-${title}":
         fw_ports => $fw_ports,
     }
 
@@ -43,8 +70,8 @@ define cfweb::app::futoin (
 
     # prevent global failures on deploy issue
     file { [
-            "${conf_prefix}.global.futoin",
-            "${conf_prefix}.server.futoin",
+            "${conf_prefix}.global.${app_name}",
+            "${conf_prefix}.server.${app_name}",
         ]:
         ensure  => present,
         replace => no,
@@ -54,11 +81,12 @@ define cfweb::app::futoin (
     Class['cfweb::appcommon::cid']
     -> cfweb_app { $service_name:
         ensure       => present,
-        type         => $type,
+        type         => 'futoin',
         site         => $site,
         user         => $user,
+        app_name     => $app_name,
         service_name => $service_name,
-        site_dir     => $site_dir,
+        site_dir     => $common['site_dir'],
 
         cpu_weight   => $cpu_weight,
         io_weight    => $io_weight,
@@ -66,25 +94,37 @@ define cfweb::app::futoin (
         misc         => {
             conf_prefix => $conf_prefix,
             limits      => cfweb::limits_merge($site),
-            deploy      => getparam(Cfweb::Site[$site], 'deploy'),
+            deploy      => pick_default($deploy, getparam(Cfweb::Site[$site], 'deploy')),
             tune        => $tune,
-            persist_dir => "${cfweb::nginx::persistent_dir}/app_${site}",
+            persist_dir => $app_persist_dir,
+            deploy_dir  => $deploy_dir,
         },
         require      => [
             Anchor['cfnetwork:firewall'],
-            Cfweb::Internal::Appfw[$user],
+            Cfweb::Internal::Appfw["futoin-${title}"],
         ],
     }
     -> File["${conf_prefix}.conf"]
 
     #---
     file { [
-            "${cfweb::nginx::bin_dir}/start-${site}-${type}",
-            "${cfweb::nginx::bin_dir}/stop-${site}-${type}",
-            "${cfweb::nginx::bin_dir}/restart-${site}-${type}",
-            "${cfweb::nginx::bin_dir}/reload-${site}-${type}",
+            "${cfweb::nginx::bin_dir}/start-${site}-${app_name}",
+            "${cfweb::nginx::bin_dir}/stop-${site}-${app_name}",
+            "${cfweb::nginx::bin_dir}/restart-${site}-${app_name}",
+            "${cfweb::nginx::bin_dir}/reload-${site}-${app_name}",
         ]:
         ensure => link,
         target => $cfweb::nginx::generic_control
+    }
+
+    #---
+    if $deploy {
+        cfweb::deploy { "${site}-${app_name}":
+            strategy => futoin,
+            params   => $deploy,
+            common   => $common,
+            require  => Cfweb::Appcommon::Dbaccess[$common['dbaccess_names']],
+            before   => Anchor['cfnginx-ready'],
+        }
     }
 }

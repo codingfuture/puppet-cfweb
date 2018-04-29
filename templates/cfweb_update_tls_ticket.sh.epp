@@ -41,5 +41,5 @@ chown -R $user:$user $ticket_dir
 
 if test "$do_sync" = y; then
     /bin/systemctl reload <%= $web_service %>.service
-    $cfweb_sync_pki reload
+    <%= $cfweb_sync_pki %> reload
 fi

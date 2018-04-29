@@ -3,9 +3,10 @@
 - CHANGED: to use cfsystem::pip
 - CHANGED: to use reuseport for nginx listen on privileged ports
 - CHANGED: to allow zero memory distribution to static sites with futoin-cid
+- CHANGED: to allow multiple apps of the same type per site
 - FIXED: missing module hiera.yaml
 - FIXED: invalid configuration in some cases when only plain HTTP is used per host
-- NEW: implemented native "proxy" app type support
+- NEW: implemented native "proxy" and "multiproxy" app type support
 
 # 1.0.1 (2018-04-12)
 - FIXED: LetsEncrypt certificate rotation in cron

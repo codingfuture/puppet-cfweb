@@ -4,12 +4,8 @@
 
 
 define cfweb::app::static (
-    String[1] $site,
-    String[1] $user,
-    String[1] $site_dir,
-    String[1] $conf_prefix,
-    String[1] $type,
-    Array[String[1]] $dbaccess_names,
+    CfWeb::AppCommonParams $common,
+
     String[1] $template = 'cfweb/app_static',
 
     Boolean $serve_root = true,
@@ -29,6 +25,10 @@ define cfweb::app::static (
     ],
     String[1] $web_root = '/',
 ) {
+    $site = $common['site']
+    $conf_prefix = $common['conf_prefix']
+    $site_dir = $common['site_dir']
+
     if $default_app {
         $default_app_act = $default_app
     } else {

@@ -1,8 +1,10 @@
 <% |
-    String $site,
+    String $path,
+    String $upname,
+    String $uppath,
 | -%>
 
-    location / {
-        proxy_pass http://app_<%= $site %>;
+    location <%= $path %> {
+        proxy_pass http://<%= $upname %><%= $uppath %>;
         include /etc/nginx/cf_http_params;
     }

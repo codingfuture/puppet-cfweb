@@ -4,14 +4,7 @@
 
 
 define cfweb::app::docker (
-    String[1] $site,
-    String[1] $user,
-    String[1] $site_dir,
-    String[1] $conf_prefix,
-    String[1] $type,
-    Array[String[1]] $dbaccess_names,
-    String[1] $template_global = 'cfweb/upstream_go',
-    String[1] $template = 'cfweb/app_go',
+    CfWeb::AppCommonParams $common,
 
     Integer[1] $memory_weight = 100,
     Optional[Integer[1]] $memory_max = undef,

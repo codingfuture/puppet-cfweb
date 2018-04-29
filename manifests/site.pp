@@ -105,7 +105,13 @@ define cfweb::site (
     # Basic file structure
     #---
     $site = "app_${title}"
-    $is_dynamic = (size(keys($apps) - ['static', 'proxy']) > 0)
+
+    $is_dynamic = $apps.reduce(false) |$m, $v| {
+        $t = pick($v[1]['type'], $v[0])
+        $r = $t in ['static', 'proxy']
+        $m or !$r
+    }
+
     $user = $force_user ? {
         undef => $is_dynamic ? {
             true => $site,
@@ -113,8 +119,8 @@ define cfweb::site (
         },
         default => $force_user,
     }
+
     $group = $user
-    $deploy_user = $user
 
     $site_dir = "${cfweb::nginx::web_dir}/${site}"
     $deployer_home = $site_dir
@@ -248,10 +254,11 @@ define cfweb::site (
         $dbaccess_app_deps = {}
     }
 
-    $all_db_deps = Cfweb::Appcommon::Dbaccess[
+    $all_db_names = (
         $dbaccess_deps +
         flatten($dbaccess_app_deps.values())
-    ]
+    )
+    $all_db_deps = Cfweb::Appcommon::Dbaccess[$all_db_names]
 
     # Define apps
     #---
@@ -275,10 +282,21 @@ define cfweb::site (
         }
     }
 
+    $common_params = {
+        site           => $title,
+        user           => $user,
+        site_dir       => $site_dir,
+        conf_prefix    => $conf_prefix,
+        dbaccess_names => $all_db_names,
+        persistent_dir => $persistent_dir,
+        apps           => keys($apps),
+    }
+
     $apps.each |$app, $app_info| {
-        $puppet_type = size(split($app, ':')) ? {
-            1       => "cfweb::app::${app}",
-            default => $app,
+        $app_type = pick($app_info['type'], $app)
+        $puppet_type = size(split($app_type, ':')) ? {
+            1       => "cfweb::app::${app_type}",
+            default => $app_type,
         }
 
         $app_dbaccess_deps = $dbaccess_deps +
@@ -287,20 +305,19 @@ define cfweb::site (
         create_resources(
             $puppet_type,
             {
-                $title => {
-                    site           => $title,
-                    user           => $user,
-                    site_dir       => $site_dir,
-                    conf_prefix    => $conf_prefix,
-                    type           => split($app, ':')[-1],
-                    dbaccess_names => $app_dbaccess_deps,
-                    require        =>
+                "${title}:${app}" => {
+                    common => $common_params + {
+                        app_name       => $app,
+                        type           => split($app, ':')[-1],
+                        dbaccess_names => $app_dbaccess_deps,
+                    },
+                    require =>
                         Cfweb::Appcommon::Dbaccess[$app_dbaccess_deps],
-                    notify         => $cfg_notify,
-                    before         => Anchor['cfnginx-ready'],
+                    notify  => $cfg_notify,
+                    before  => Anchor['cfnginx-ready'],
                 },
             },
-            $app_info
+            $app_info - 'type'
         )
     }
 
@@ -391,17 +408,18 @@ define cfweb::site (
     # Deploy procedure
     #---
     if $deploy {
+        $deploy_strategy = pick($deploy['strategy'], 'futoin')
+
         cfweb::deploy { $title:
-            strategy       => pick($deploy['strategy'], 'futoin'),
-            params         => $deploy - strategy,
-            site           => $title,
-            run_user       => $user,
-            deploy_user    => $deploy_user,
-            site_dir       => $site_dir,
-            apps           => keys($apps),
-            persistent_dir => $persistent_dir,
-            require        => $all_db_deps,
-            before         => Anchor['cfnginx-ready'],
+            strategy => $deploy_strategy,
+            params   => $deploy - strategy,
+            common   => $common_params + {
+                type     => $deploy_strategy,
+                app_name => 'deploy',
+                apps     => keys($apps),
+            },
+            require  => $all_db_deps,
+            before   => Anchor['cfnginx-ready'],
         }
     }
 }

@@ -1,5 +1,5 @@
 <% |
-    String[1] $site_dir,
+    String[1] $deploy_dir,
     String[1] $user,
     String[1] $group,
     String[1] $deploy_type,
@@ -20,7 +20,7 @@ action=$(echo $name | cut -d- -f1)
 site=$(echo $name | cut -d- -f2)
 
 set -e
-cd <%= $site_dir %>
+cd <%= $deploy_dir %>
 
 old_val=
 

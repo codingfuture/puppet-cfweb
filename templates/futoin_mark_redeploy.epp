@@ -1,6 +1,6 @@
 <% |
-    String[1] $site_dir,
+    String[1] $deploy_dir,
 |
 -%>
 #!/bin/bash
-touch <%= $site_dir %>/.redeploy
+touch <%= $deploy_dir %>/.redeploy

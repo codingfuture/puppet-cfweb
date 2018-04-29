@@ -297,18 +297,26 @@ Main resource type to define virtualhost with related apps.
 * `$require_x509 = undef` - string of `cfweb::global::clientpki` name or a hash of:
     * `clientpki` - `cfweb::global::clientpki` name
     * `verify = on` - override verification mode
-* `$deploy = undef` - optional deployment parameters
-    * `$strategy = 'futoin'`:
-    * `$type` - 'rms', 'vcstag' or 'vcsref' 
-    * '$tool' - deploy tool: svn, git, hg, scp, archiva, artifactory, nexus, etc.
-    * '$url' - tool URL
-    * `$pool = undef` - RMS pool
-    * `$match = undef` - tag or package glob match
-    * `$deploy_set = []` - custom "cid deploy set {X}" commands
-    * `$fw_ports = {}` - additional firewall ports to open for deployment process
-    * `$custom_script = undef` - custom script to run before actual "cid deploy"
-    * `$auto_deploy = undef` - cron config for periodic re-deploy
-    * `$key_name = undef` - SSH key name to use for read-only access of deployment sources
+* `$deploy = undef` - optional deployment strategy parameters
+
+### Deploy strategy
+
+#### FutoIn
+
+Deployment process is based on FutoIn CID. The source code may have no support for it, but
+it's still possible to do all configuration in target deployment through override mechanism.
+
+* `$strategy = 'futoin'`:
+* `$type` - 'rms', 'vcstag' or 'vcsref' 
+* '$tool' - deploy tool: svn, git, hg, scp, archiva, artifactory, nexus, etc.
+* '$url' - tool URL
+* `$pool = undef` - RMS pool
+* `$match = undef` - tag or package glob match
+* `$deploy_set = []` - custom "cid deploy set {X}" commands
+* `$fw_ports = {}` - additional firewall ports to open for deployment process
+* `$custom_script = undef` - custom script to run before actual "cid deploy"
+* `$auto_deploy = undef` - cron config for periodic re-deploy
+* `$key_name = undef` - SSH key name to use for read-only access of deployment sources
 
 ### app parameters
 
@@ -335,14 +343,14 @@ Params:
 
 #### `futoin`
 
-Must be exclusive app. FutoIn CID inner resource distribution comes into play
-after `cfsystem` distributes resources of system level.
+FutoIn CID inner resource distribution comes into play after `cfsystem` distributes
+resources of system level.
 
 FutoIn CID creates has complex decisions for resource distribution and app instances
 generation to utilize all available resources and support rolling restart. Please
 check its README.
 
-* Site' upper resource limits in scope of `cfsystem` resource distribution framework. 
+* App's resource limits in scope of `cfsystem` resource distribution framework. 
     * `Integer[1] $memory_weight = 100`
     * `Integer[64] $memory_min = 64`
     * `Optional[Integer[1]] $memory_max = undef`
@@ -354,6 +362,7 @@ check its README.
     * `upstreamQueue = undef` - NGINX Plus upstream queue
     * `upstreamFailTimeout = 0` - fail_timeout for upstream
     * `upstreamZoneSize = 64k' - zone upstreams for consistent hashing
+* `$deploy` - see FutoIn deploy strategy paramaters
 
 #### `proxy`
 
@@ -375,9 +384,17 @@ Params:
     - `$backup` - optional, see nginx.conf    
     - `$weight` - optional, see nginx.conf
 * `$keepalive = 8` - see nginx.conf
+* `$path = '/'` - site path
+* `$uppath = ''` - path in upstream (see nginx behavior)
+
+#### `multiproxy`
+
+Easy shortcut to define many `proxy` apps.
+
+* `$paths` - map of `$path` to other `proxy` parameter pairs
 
 #### `docker`
 
-Not implemented, but supported in FutoIn CID
+Not implemented yet, but supported in FutoIn CID
 
 

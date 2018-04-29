@@ -12,8 +12,9 @@ module PuppetX::CfWeb::Futoin::App
         begin
             site_dir = conf[:site_dir]
             service_name = conf[:service_name]
+            deploy_dir = conf[:misc]['deploy_dir'] || site_dir
             
-            futoin_conf_file = "#{site_dir}/.futoin.merged.json"
+            futoin_conf_file = "#{deploy_dir}/.futoin.merged.json"
             return false unless File.exists? futoin_conf_file
             
             futoin_conf = File.read(futoin_conf_file)
@@ -77,6 +78,7 @@ module PuppetX::CfWeb::Futoin::App
         site = conf[:site]
         type = conf[:type]
         user = conf[:user]
+        app_name = conf[:app_name]
         site_dir = conf[:site_dir]
         service_name = conf[:service_name]
         misc = conf[:misc]
@@ -86,6 +88,7 @@ module PuppetX::CfWeb::Futoin::App
         conf_prefix = misc['conf_prefix']
         tune = misc['tune']
         persist_dir = misc['persist_dir']
+        deploy_dir = misc['deploy_dir']
         
         mem_limit = cf_system.getMemory(service_name)
         mem_limit = 1 if mem_limit == 0
@@ -111,22 +114,22 @@ module PuppetX::CfWeb::Futoin::App
         
         deploy_args += [
             "--#{url_arg}=#{deploy_conf['tool']}:#{deploy_conf['url']}",
-            "--deployDir=#{site_dir}",
+            "--deployDir=#{deploy_dir}",
         ]
         
-        redeploy_file = "#{site_dir}/.redeploy"
+        redeploy_file = "#{deploy_dir}/.redeploy"
         redeploy = File.exists? redeploy_file
-        deploy_futoin_file = "#{site_dir}/futoin.json"
+        deploy_futoin_file = "#{deploy_dir}/futoin.json"
         
-        current_file = "#{site_dir}/current"
+        current_file = "#{deploy_dir}/current"
         orig_current = nil
         orig_current = File.readlink(current_file) if File.exists? current_file
         
-        warning("CID deploy: #{site_dir}")
+        warning("CID deploy: #{deploy_dir}")
         orig_cwd = Dir.pwd
         
         begin
-            Dir.chdir(site_dir)
+            Dir.chdir(deploy_dir)
             pre_conf = ''
             pre_conf = File.read(deploy_futoin_file) if File.exists? deploy_futoin_file
             
@@ -163,7 +166,7 @@ module PuppetX::CfWeb::Futoin::App
             phpfpm_tune = {
                 'phpini' => {
                     'open_basedir' => [
-                        "#{File.realpath(site_dir)}/",
+                        "#{File.realpath(deploy_dir)}/",
                         "#{File.realpath(persist_dir)}/",
                     ].join(':'),
                 }
@@ -173,7 +176,7 @@ module PuppetX::CfWeb::Futoin::App
                 'minMemory' => '16M',
                 'uwsgi' => {
                     'chmod-socket' => '660',
-                    'pythonpath' => File.join(site_dir, 'current'),
+                    'pythonpath' => File.join(deploy_dir, 'current'),
                 },
             }
             
@@ -245,8 +248,10 @@ module PuppetX::CfWeb::Futoin::App
                 }
             )
             
-            new_current = File.readlink(current_file)
-            redeploy ||= (new_current != orig_current)
+            if File.exists? current_file
+                new_current = File.readlink(current_file)
+                redeploy ||= (new_current != orig_current)
+            end
                 
             cf_system.atomicWrite(
                 '.deploy.log', res,
@@ -268,7 +273,7 @@ module PuppetX::CfWeb::Futoin::App
         rescue Exception => e
             # allow to continue, to keep services running
             #---
-            futoin_conf_file = "#{site_dir}/.futoin.merged.json"
+            futoin_conf_file = "#{deploy_dir}/.futoin.merged.json"
             raise e unless File.exists? futoin_conf_file
             
             err(e.to_s)
@@ -297,7 +302,7 @@ module PuppetX::CfWeb::Futoin::App
         end
         
         #---
-        futoin_conf = File.read("#{site_dir}/.futoin.merged.json")
+        futoin_conf = File.read("#{deploy_dir}/.futoin.merged.json")
         futoin_conf = JSON.parse(futoin_conf)
         
         entryPoints = futoin_conf['entryPoints']
@@ -316,9 +321,12 @@ module PuppetX::CfWeb::Futoin::App
         vhost_server = []
         
         webroot = webcfg['root']
-        vhost_server << "root #{File.join(site_dir, 'current', webroot)};" if webroot
-        
-        vhost_server << limits['static']['expr']
+
+        if webroot
+            webroot = File.join(deploy_dir, 'current', webroot)
+        else
+            webroot = File.join(deploy_dir, 'current')
+        end
         
         upstream_zone_size = tune.fetch('upstreamZoneSize', '64k')
         fail_timeout = tune.fetch('upstreamFailTimeout', '0')
@@ -441,7 +449,7 @@ module PuppetX::CfWeb::Futoin::App
                 location_conf << "  fastcgi_pass #{upstream_name};"
                 location_conf << "  fastcgi_next_upstream_tries #{next_tries};"
                 location_conf << "  include /etc/nginx/cf_fastcgi_params;"
-                file_path = File.join(site_dir, 'current', ep.fetch('path', ''))
+                file_path = File.join(deploy_dir, 'current', ep.fetch('path', ''))
                 location_conf << "  fastcgi_param SCRIPT_FILENAME #{file_path};"
             elsif protocol == 'scgi'
                 location_conf << "  scgi_pass #{upstream_name};"
@@ -507,6 +515,8 @@ module PuppetX::CfWeb::Futoin::App
             end
             
             if serve_static
+                vhost_server << "  #{limits['static']['expr']}"
+                vhost_server << "  root #{webroot};"
                 vhost_server << "  disable_symlinks if_not_owner;"
                 vhost_server << "  index #{path_tune.fetch('index', 'index.html')};"
                 
@@ -570,8 +580,8 @@ module PuppetX::CfWeb::Futoin::App
             vhost_server << ""
         end
         
-        vhost_global_file = "#{conf_prefix}.global.futoin"
-        vhost_server_file = "#{conf_prefix}.server.futoin"
+        vhost_global_file = "#{conf_prefix}.global.#{app_name}"
+        vhost_server_file = "#{conf_prefix}.server.#{app_name}"
         
         cf_system.atomicWrite(vhost_global_file, vhost_global.join("\n"))
         cf_system.atomicWrite(vhost_server_file, vhost_server.join("\n"))
@@ -599,7 +609,7 @@ module PuppetX::CfWeb::Futoin::App
                     },
                     'Service' => {
                         'LimitNOFILE' => 'infinity',
-                        'WorkingDirectory' => "#{site_dir}",
+                        'WorkingDirectory' => "#{deploy_dir}",
                         'Slice' => "#{PuppetX::CfWeb::SLICE_PREFIX}#{user}.slice",
                         'ExecStart' => "/usr/local/bin/cid service exec #{name} #{i}",
                         'ExecReload' => %Q{/usr/local/bin/cid service reload #{name} #{i} "$MAINPID"},

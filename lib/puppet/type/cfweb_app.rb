@@ -45,6 +45,13 @@ Puppet::Type.newtype(:cfweb_app) do
             value.is_a? String
         end
     end
+
+    newproperty(:app_name) do
+        isrequired
+        validate do |value|
+            value.is_a? String
+        end
+    end
     
     newproperty(:service_name) do
         validate do |value|

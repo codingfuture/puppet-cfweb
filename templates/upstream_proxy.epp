@@ -1,10 +1,10 @@
 <% |
-    String $site,
+    String $upname,
     Array[CfWeb::Upstream] $upstreams,
     Integer $keepalive,
 | -%>
 
-upstream app_<%= $site %> {
+upstream <%= $upname %> {
     least_conn;
 <% $upstreams.each |$v| { -%>
     server <%
