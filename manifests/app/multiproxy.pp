@@ -43,13 +43,13 @@ define cfweb::app::multiproxy (
 
     file { "${conf_prefix}.global.${app_name}":
         mode    => '0640',
-        content => ($paths.map |$k, $v| {
+        content => ($paths_ext.map |$k, $v| {
             "include ${conf_prefix}.global.${v['app_name']};"
         }).join("\n"),
     }
     file { "${conf_prefix}.server.${app_name}":
         mode    => '0640',
-        content => ($paths.map |$k, $v| {
+        content => ($paths_ext.map |$k, $v| {
             "include ${conf_prefix}.server.${v['app_name']};"
         }).join("\n"),
     }

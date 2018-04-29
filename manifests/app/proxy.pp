@@ -20,7 +20,7 @@ define cfweb::app::proxy (
     $conf_prefix = $common['conf_prefix']
     $user = $common['user']
 
-    $upname = "app_${app_name}"
+    $upname = "app_${site}_${app_name}"
 
     file { "${conf_prefix}.global.${app_name}":
         mode    => '0640',

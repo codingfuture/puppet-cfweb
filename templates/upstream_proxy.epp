@@ -13,7 +13,7 @@ upstream <%= $upname %> {
 -%>
 unix://<%= $v['port'] -%>
 <%  } else { -%>
-<%= $v['host'] -%>:<%= $v['port'] -%>
+<%= $v['host'] -%>:<%= pick($v['port'], 80) -%>
 <%  }
 
     if $v['max_conns'] != undef { %> max_conns=<%= $v['max_conns'] %><% }

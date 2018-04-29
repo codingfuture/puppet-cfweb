@@ -473,25 +473,27 @@ module PuppetX::CfWeb::Futoin::App
             vhost_server << ""
         end
         
-        # favicon
-        #---
-        vhost_server << "location /favicon.ico {"
-        vhost_server << "  try_files $uri @empty_gif;"
-        vhost_server << "}"
-        vhost_server << "location @empty_gif {"
-        vhost_server << "  expires 1h;"
-        vhost_server << "  empty_gif;"
-        vhost_server << "}"
-        vhost_server << ""
+        if mounts['/']
+            # favicon
+            #---
+            vhost_server << "location /favicon.ico {"
+            vhost_server << "  try_files $uri @empty_gif;"
+            vhost_server << "}"
+            vhost_server << "location @empty_gif {"
+            vhost_server << "  expires 1h;"
+            vhost_server << "  empty_gif;"
+            vhost_server << "}"
+            vhost_server << ""
         
-        # Forbid dot-files
-        #---
-        vhost_server << "location ~ /\\. {"
-        vhost_server << "  deny all;"
-        vhost_server << "  limit_req zone=unlikely nodelay;"
-        vhost_server << "  log_not_found off;"
-        vhost_server << "}"
-        vhost_server << ""
+            # Forbid dot-files
+            #---
+            vhost_server << "location ~ /\\. {"
+            vhost_server << "  deny all;"
+            vhost_server << "  limit_req zone=unlikely nodelay;"
+            vhost_server << "  log_not_found off;"
+            vhost_server << "}"
+            vhost_server << ""
+        end
         
         # App-defined mounts
         #---        
