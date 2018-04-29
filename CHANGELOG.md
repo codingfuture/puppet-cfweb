@@ -6,6 +6,7 @@
 - CHANGED: to allow multiple apps of the same type per site
 - FIXED: missing module hiera.yaml
 - FIXED: invalid configuration in some cases when only plain HTTP is used per host
+- FIXED: bug when app group was not added to nginx user, if group is prefix of existing
 - NEW: implemented native "proxy" and "multiproxy" app type support
 
 # 1.0.1 (2018-04-12)

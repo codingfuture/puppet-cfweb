@@ -10,7 +10,7 @@ define cfweb::nginx::group(
 
     exec { "add_nginx_to_${group}":
         command => "/usr/sbin/adduser ${cfweb::nginx::user} ${group}",
-        unless  => "/usr/bin/id -Gn ${cfweb::nginx::user} | /bin/grep -q ${group}",
+        unless  => "/usr/bin/id -Gnz ${cfweb::nginx::user} | /bin/grep -zq '^${group}$'",
         require => Group[$group],
         notify  => Exec['cfweb_reload'],
     }
