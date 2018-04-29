@@ -1,5 +1,5 @@
 
-# (next)
+# 1.1.1 (2018-04-29)
 - FIXED: cfweb::app::futoin::fw_ports issue after recent refactoring
 
 # 1.1.0 (2018-04-29)
