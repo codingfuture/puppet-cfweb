@@ -28,6 +28,7 @@ define cfweb::app::static (
     $site = $common['site']
     $conf_prefix = $common['conf_prefix']
     $site_dir = $common['site_dir']
+    $app_name = $common['app_name']
 
     if $default_app {
         $default_app_act = $default_app
@@ -41,11 +42,11 @@ define cfweb::app::static (
         $default_app_act = $other_apps[0]
     }
 
-    file { "${conf_prefix}.global.static":
+    file { "${conf_prefix}.global.${app_name}":
         mode    => '0640',
         content => '',
     }
-    file { "${conf_prefix}.server.static":
+    file { "${conf_prefix}.server.${app_name}":
         mode    => '0640',
         content => epp($template, {
             site            => $site,
