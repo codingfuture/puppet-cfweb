@@ -1,4 +1,8 @@
 
+# (next)
+- FIXED: cfweb::app::static to support arbitrary names
+- NEW: nginx metrics support
+
 # 1.1.1 (2018-04-29)
 - FIXED: cfweb::app::futoin::fw_ports issue after recent refactoring
 

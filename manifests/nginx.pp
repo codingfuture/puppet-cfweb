@@ -224,4 +224,8 @@ class cfweb::nginx (
         ]:
         user => $user
     }
+
+    # Stats
+    #---
+    cfsystem::metric { 'nginx': }
 }
