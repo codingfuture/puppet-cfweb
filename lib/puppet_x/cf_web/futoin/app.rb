@@ -73,6 +73,25 @@ module PuppetX::CfWeb::Futoin::App
         return content
     end
     
+    def parse_mem(mem)
+        mult = mem[-1]
+        case mult
+        when 'G'
+            mult = 1024*1024*1024
+        when 'M'
+            mult = 1024*1024
+        when 'K'
+            mult = 1024
+        when 'B'
+            mult = 1
+        else
+            error("Unsupported memory unit #{mult}")
+        end
+        mem = mem[0..-1].to_i
+        mem = mem * mult / (1024 * 1024)
+        mem.to_i
+    end
+
     def create_futoin(conf)
         cf_system = cf_system()
         site = conf[:site]
@@ -593,17 +612,29 @@ module PuppetX::CfWeb::Futoin::App
         service_names = []
         
         autoServices.each do |name, instances|
-            tool = futoin_conf['entryPoints'][name]['tool']
+            ep_conf = futoin_conf['entryPoints'][name]
+            tool = ep_conf['tool']
             next if tool == 'nginx'
+
+            is_uwsgi = ['uwsgi'].include? tool
+            is_phpfpm = ['phpfpm'].include? tool
             
             max_conn = 0
             i = 0
-            mem_lock = ['uwsgi'].include? tool
+            mem_lock = is_uwsgi
             
             instances.each do |v|
                 service_name_i = "#{service_name}_#{name}-#{i}"
                 service_names << service_name_i
                 max_conn += v['maxConnections']
+                cow_reserve = 0
+
+                mem_limit = parse_mem(v['maxMemory'])
+
+                if is_uwsgi or is_phpfpm
+                    min_memory = parse_mem(ep_conf['tune']['minMemory'])
+                    cow_reserve += v['maxConnections'] * min_memory
+                end
                 
                 content_ini = {
                     'Unit' => {
@@ -632,11 +663,14 @@ module PuppetX::CfWeb::Futoin::App
                     :service_name => service_name_i,
                     :user => user,
                     :content_ini => content_ini,
-                    :mem_limit => v['maxMemory'],
+                    :mem_limit => mem_limit,
                     :mem_lock => mem_lock,
+                    :cow_reserve => cow_reserve,
                 })
                 
                 begin
+                    systemctl('enable', "#{service_name_i}.service")
+
                     if service_changed
                         # if unit changes then we need to restart to get new limits working
                         systemctl('restart', "#{service_name_i}.service")
