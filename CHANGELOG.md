@@ -1,5 +1,5 @@
 
-# (next)
+# 1.1.2 (2018-05-02)
 - FIXED: cfweb::app::static to support arbitrary names
 - NEW: nginx metrics support
 - NEW: Copy-on-Write aware cgroup memory limits (overcommit)
