@@ -25,6 +25,7 @@ This module is also a reference implementation of [FutoIn CID](https://github.co
         * Proper support of TLS tickets with configurable rotation period
         * Per cluster generated DH params
         * Automatic certificate provisioning
+        * Automatic certificate signing: ACME (Let's Encrypt)
     * Continuous Delivery:
         * Automatic deployment via FutoIn CID
         * Tunable resource distribution based on available resources
@@ -71,8 +72,7 @@ All key generation is done on primary node and securely copied to secondary node
 SSH using dedicated user account (`cfwebpki` by default).
 
 By default self-signed certificates are generated on demand. It's possible to provide
-external certificates. Automatic certificate creation (e.g. Let's Encrypt) is not completely
-supported yet.
+external certificates. Automatic certificate creation (e.g. Let's Encrypt) is also supported.
 
 Site types:
 * "Standalone" - internet facing site
