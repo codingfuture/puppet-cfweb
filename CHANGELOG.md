@@ -1,4 +1,7 @@
 
+# (next)
+- CHANGED: updated for Ubuntu 18.04 Bionic support
+
 # 1.1.2 (2018-05-02)
 - FIXED: cfweb::app::static to support arbitrary names
 - NEW: nginx metrics support
