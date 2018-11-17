@@ -13,8 +13,8 @@ class cfweb::nginx::aptrepo {
             true    => 'stretch',
             default => $lsbdistcodename
         },
-        'Ubuntu' => (versioncmp($::facts['operatingsystemrelease'], '16.10') >= 0) ? {
-            true    => 'yakkety',
+        'Ubuntu' => (versioncmp($::facts['operatingsystemrelease'], '18.04') >= 0) ? {
+            true    => 'bionic',
             default => $lsbdistcodename
         },
         default  => $lsbdistcodename
