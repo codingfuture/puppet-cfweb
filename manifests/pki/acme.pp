@@ -90,7 +90,7 @@ class cfweb::pki::acme(
     })
 
     file_line { 'Deny cfwebpki cron':
-        ensure  => present,
+        ensure  => absent,
         path    => '/etc/cron.deny',
         line    => $user,
         require => File['/etc/cron.deny'],
