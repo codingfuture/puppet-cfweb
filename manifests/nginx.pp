@@ -85,10 +85,10 @@ class cfweb::nginx (
         ensure => present,
     }
     -> user { $user:
-        ensure  => present,
-        gid     => $group,
-        home    => $conf_dir,
-        require => Group[$group],
+        ensure => present,
+        gid    => $group,
+        home   => $conf_dir,
+        system => true,
     }
     -> package { $package: }
     -> cfsystem_memory_weight { $service_name:

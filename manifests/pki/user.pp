@@ -23,6 +23,7 @@ class cfweb::pki::user {
         managehome     => true,
         shell          => '/bin/bash',
         purge_ssh_keys => true,
+        system         => true,
     }
 
     cfauth::sudoentry { $user:

@@ -148,6 +148,7 @@ define cfweb::site (
             groups         => [$cid_group],
             home           => $home_dir,
             purge_ssh_keys => true,
+            system         => true,
             require        => Group[$group],
         })
 
