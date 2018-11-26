@@ -17,6 +17,7 @@ class cfweb (
 ) inherits cfweb::global {
     include cfnetwork
     include cfsystem
+    include cflogsink
 
     validate_re($cluster, '^[a-z][a-z0-9_]*$')
     validate_re($web_service, '^[a-z][a-z0-9_]*$')
