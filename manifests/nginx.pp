@@ -218,10 +218,7 @@ class cfweb::nginx (
 
     # OCSP
     #---
-    cfnetwork::client_port { [
-            'any:http:nginx',
-            'any:https:nginx',
-        ]:
+    cfnetwork::client_port { 'any:cfhttp:nginx':
         user => $user
     }
 

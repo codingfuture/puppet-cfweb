@@ -11,10 +11,7 @@ define cfweb::internal::deployerfw (
     ensure_resources(
         'cfnetwork::client_port',
         {
-            "any:http:${deploy_group}" => {
-                group => $deploy_group,
-            },
-            "any:https:${deploy_group}" => {
+            "any:cfhttp:${deploy_group}" => {
                 group => $deploy_group,
             },
             "any:cfssh:${deploy_group}" => {

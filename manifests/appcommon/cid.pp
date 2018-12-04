@@ -127,10 +127,7 @@ class cfweb::appcommon::cid (
     }
 
     # Allow package retrieval
-    cfnetwork::client_port { "any:http:${user}":
-        user => $user,
-    }
-    cfnetwork::client_port { "any:https:${user}":
+    cfnetwork::client_port { "any:cfhttp:${user}":
         user => $user,
     }
 

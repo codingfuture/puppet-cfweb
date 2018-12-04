@@ -1,6 +1,7 @@
 
 # (next)
 - CHANGED: updated for Ubuntu 18.04 Bionic support
+- CHANGED: to use cfhttp service in firewall config
 - FIXED: missing cflogsink dependency
 - FIXED: to create "system users"
 - FIXED: not to disallow cfwebpki through cron.deny
