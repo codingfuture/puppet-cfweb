@@ -26,6 +26,7 @@ class cfweb::nginx (
 
     String $repo = 'http://nginx.org/packages/',
     Boolean $mainline = false,
+    Boolean $enable = true,
 ) {
     include stdlib
     include cfnetwork
@@ -80,6 +81,17 @@ class cfweb::nginx (
     }
     #---
 
+    if $enable {
+        cfsystem_memory_weight { $service_name:
+            ensure => present,
+            weight => $memory_weight,
+            min_mb => 32,
+            max_mb => $memory_max,
+        }
+        $ensure = present
+    } else {
+        $ensure = absent
+    }
 
     group { $group:
         ensure => present,
@@ -91,12 +103,6 @@ class cfweb::nginx (
         system => true,
     }
     -> package { $package: }
-    -> cfsystem_memory_weight { $service_name:
-        ensure => present,
-        weight => $memory_weight,
-        min_mb => 32,
-        max_mb => $memory_max,
-    }
     -> file { $conf_dir:
         ensure  => directory,
         group   => $group,
@@ -175,7 +181,7 @@ class cfweb::nginx (
         mode   => '2770',
     }
     -> cfweb_nginx { $service_name:
-        ensure        => present,
+        ensure        => $ensure,
         memory_weight => $memory_weight,
         cpu_weight    => $cpu_weight,
         io_weight     => $io_weight,
@@ -224,5 +230,7 @@ class cfweb::nginx (
 
     # Stats
     #---
-    cfsystem::metric { 'nginx': }
+    if $enable {
+        cfsystem::metric { 'nginx': }
+    }
 }

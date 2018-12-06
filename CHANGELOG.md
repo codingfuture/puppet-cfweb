@@ -5,6 +5,7 @@
 - FIXED: missing cflogsink dependency
 - FIXED: to create "system users"
 - FIXED: not to disallow cfwebpki through cron.deny
+- NEW: possibility to disable nginx for non-web nodes
 
 # 1.1.2 (2018-05-02)
 - FIXED: cfweb::app::static to support arbitrary names
