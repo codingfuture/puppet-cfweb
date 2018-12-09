@@ -1,5 +1,5 @@
 
-# (next)
+# 1.2.0 (2018-12-09)
 - CHANGED: updated for Ubuntu 18.04 Bionic support
 - CHANGED: to use cfhttp service in firewall config
 - FIXED: missing cflogsink dependency
