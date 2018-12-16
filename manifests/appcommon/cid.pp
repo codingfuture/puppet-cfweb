@@ -9,6 +9,8 @@ class cfweb::appcommon::cid (
     Integer[0] $reserve_ram = 256,
 ) {
     include cfsystem::pip
+    include cfweb
+    include cfweb::nginx
 
     cfsystem_memory_weight { 'cfweb:cid':
         ensure => present,
