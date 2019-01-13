@@ -13,7 +13,7 @@ class cfweb::internal::cidrepos {
         $ruby_release = $::facts['os']['name'] ? {
             'Debian' => $::cfsystem::debian::release ? {
                 'jessie' => 'trusty',
-                default => 'bionic',
+                default => 'xenial',
             },
             'Ubuntu' => $::cfsystem::ubuntu::release,
         }
