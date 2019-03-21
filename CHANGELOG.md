@@ -2,6 +2,7 @@
 # (next)
 - FIXED: appcommon::cid to include deps
 - CHANGED: aligned with CID to install Xenial Ruby repos for Debian
+- NEW: /health.txt for default host
 
 # 1.2.0 (2018-12-09)
 - CHANGED: updated for Ubuntu 18.04 Bionic support

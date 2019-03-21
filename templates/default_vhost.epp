@@ -60,6 +60,11 @@ server {
         limit_req zone=dynamic nodelay;
     }
         
+    location = /health.txt {
+        allow all;
+        return 200 'OK';
+    }
+
     limit_conn peraddr 2;
     
     location / {
