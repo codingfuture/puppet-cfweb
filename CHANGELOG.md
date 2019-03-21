@@ -2,6 +2,7 @@
 # (next)
 - FIXED: appcommon::cid to include deps
 - CHANGED: aligned with CID to install Xenial Ruby repos for Debian
+- CHANGED: to use 'keep-alive' instead of 'close' Connection header for proxy_pass
 - NEW: /health.txt for default host
 
 # 1.2.0 (2018-12-09)

@@ -197,7 +197,7 @@ Puppet::Type.type(:cfweb_nginx).provide(
             "# use for WS & other proxing" => '',
             'map $http_upgrade $connection_upgrade' => {
                 'default' => 'upgrade',
-                "''" => 'close',
+                "''" => 'keep-alive',
             },
             "# misc" => '',
             'include /etc/nginx/cf_mime.types' => '',
