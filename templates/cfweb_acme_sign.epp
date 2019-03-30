@@ -35,12 +35,14 @@ EOS
 
 sh $crt_file.acme
 
-/opt/codingfuture/bin/cfweb_sync_pki
 EOT
 
 exit_code=$?
 
-[ $exit_code -eq 0 ] && /bin/systemctl reload cfnginx.service
+[ $exit_code -eq 0 ] && (
+    /bin/systemctl reload cfnginx.service;
+    /opt/codingfuture/bin/cfweb_sync_pki reload
+)
 
 #exit $exit_code
 exit 0

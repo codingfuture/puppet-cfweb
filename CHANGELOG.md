@@ -2,6 +2,7 @@
 # (next)
 - FIXED: appcommon::cid to include deps
 - FIXED: failed initial acme challenge retry
+- FIXED: new cert sync/reload issues on secondary nodes
 - CHANGED: to proxy_pass acme challenge from secondary nodes
 - CHANGED: aligned with CID to install Xenial Ruby repos for Debian
 - CHANGED: to use 'keep-alive' instead of 'close' Connection header for proxy_pass
