@@ -54,12 +54,8 @@ server {
 
 <% } -%>
 
-    location /.well-known/acme-challenge/ {
-        allow all;
-        root /www/acme_challenge;
-        limit_req zone=dynamic nodelay;
-    }
-        
+    include /etc/nginx/cf_acme_challenge.conf;
+
     location = /health.txt {
         allow all;
         return 200 'OK';

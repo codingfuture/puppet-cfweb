@@ -95,4 +95,24 @@ class cfweb::pki::acme(
         line    => $user,
         require => File['/etc/cron.deny'],
     }
+
+    # Ensure default host
+    #---
+    if $cfweb::is_secondary {
+        include cfweb::nginx
+
+        $web_user = $cfweb::nginx::user
+
+        cfnetwork::client_port { "any:http:${web_user}-acme":
+            user => $web_user,
+            dst  => $cfweb::primary_host
+        }
+    } else {
+        ensure_resource('cfweb::nginx::defaulthost', "main:80", {
+            iface      => 'main',
+            port       => 80,
+            tls        => false,
+            is_backend => false,
+        })
+    }
 }

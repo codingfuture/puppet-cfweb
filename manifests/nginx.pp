@@ -128,6 +128,14 @@ class cfweb::nginx (
             bleeding_edge => $bleeding_edge_security,
         })
     }
+    -> file { "${conf_dir}/cf_acme_challenge.conf":
+        group   => $group,
+        mode    => '0640',
+        content => epp('cfweb/cf_acme_challenge.conf.epp', {
+            is_primary   => !$cfweb::is_secondary,
+            primary_host => $cfweb::primary_host,
+        })
+    }
     -> file { [$sites_dir, $clientpki_dir]:
         ensure  => directory,
         group   => $group,

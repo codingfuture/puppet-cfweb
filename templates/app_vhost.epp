@@ -91,12 +91,7 @@ $tls_snippet = inline_epp('
 })
 
 $acme_challenge_snippet = "
-    location /.well-known/acme-challenge/ {
-        allow all;
-        satisfy any;
-        root /www/acme_challenge;
-        limit_req zone=dynamic nodelay;
-    }
+    include /etc/nginx/cf_acme_challenge.conf;
 "
 
 -%>

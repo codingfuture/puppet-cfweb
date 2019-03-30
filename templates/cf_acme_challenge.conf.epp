@@ -1,0 +1,15 @@
+<% |
+    Boolean $is_primary,
+    String[1] $primary_host,
+| -%>
+    location /.well-known/acme-challenge/ {
+        allow all;
+        satisfy any;
+        limit_req zone=dynamic nodelay;
+
+<% if $is_primary { -%>
+        root /www/acme_challenge;
+<% } else { -%>
+        proxy_pass http://<%= $primary_host %>:80;
+<% } -%>
+    }
