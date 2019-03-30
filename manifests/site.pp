@@ -14,6 +14,7 @@ define cfweb::site (
     Boolean $redirect_plain = true,
 
     Boolean $is_backend = false,
+    Boolean $proxy_protocol = true,
 
     Hash[String[1], Any] $auto_cert = {},
     CfWeb::SharedCert $shared_cert = [],
@@ -91,6 +92,7 @@ define cfweb::site (
                 port       => $port,
                 tls        => false,
                 is_backend => $is_backend,
+                proxy_protocol => $proxy_protocol,
             })
         }
         $tls = $tls_ports.each |$port| {
@@ -99,6 +101,7 @@ define cfweb::site (
                 port       => $port,
                 tls        => true,
                 is_backend => $is_backend,
+                proxy_protocol => $proxy_protocol,
             })
         }
     }
@@ -109,7 +112,7 @@ define cfweb::site (
 
     $is_dynamic = $apps.reduce(false) |$m, $v| {
         $t = pick($v[1]['type'], $v[0])
-        $r = $t in ['static', 'proxy']
+        $r = $t in ['static', 'proxy', 'backend']
         $m or !$r
     }
 
@@ -379,7 +382,8 @@ define cfweb::site (
             plain_ports        => $plain_ports,
             tls_ports          => $tls_ports,
             redirect_plain     => $redirect_plain,
-            proxy_protocol     => $is_backend,
+            proxy_protocol     => $is_backend and $proxy_protocol,
+            is_backend         => $is_backend,
             trusted_proxy      => $trusted_proxy,
 
             certs              => $certs,
@@ -423,6 +427,21 @@ define cfweb::site (
             },
             require  => $all_db_deps,
             before   => Anchor['cfnginx-ready'],
+        }
+    }
+
+    # Auto discovery
+    #---
+    if $is_backend {
+        $backend_host = $ifaces[0] ? {
+            'any' => cfnetwork::bind_address('main'),
+            default => cfnetwork::bind_address($ifaces[0]),
+        }
+        cfweb::internal::backend { $title:
+            host     => $backend_host,
+            port     => $plain_ports[0],
+            location => $cfsystem::hierapool::location,
+            pool     => $cfsystem::hierapool::pool,
         }
     }
 }

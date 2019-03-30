@@ -7,6 +7,7 @@ define cfweb::nginx::defaulthost (
     $iface,
     $port,
     $tls,
+    $proxy_protocol,
     $is_backend,
 ) {
     assert_private()
@@ -52,7 +53,8 @@ define cfweb::nginx::defaulthost (
             port           => $port,
             backlog        => pick($cfweb::nginx::backlog),
             tls            => $tls,
-            proxy_protocol => $is_backend,
+            proxy_protocol => $is_backend and $proxy_protocol,
+            is_backend     => $is_backend,
             trusted_proxy  => pick($trusted_proxy, []),
             certs          => $certs,
         }),

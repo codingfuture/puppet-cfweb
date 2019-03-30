@@ -10,6 +10,7 @@
     Array[Integer] $tls_ports,
     Boolean $redirect_plain,
     Boolean $proxy_protocol,
+    Boolean $is_backend,
     Optional[Array[String]] $trusted_proxy,
             
     Array[Hash] $certs,
@@ -54,15 +55,20 @@ $listen_tls = flatten($bind.map |$b| {
 # Trust proxy protocol
 #---
 $trust_proxy_snippet = inline_epp('
-<% if $proxy_protocol { -%>
+<% if $proxy_protocol or $is_backend { -%>
 <%  $trusted_proxy.each |$p| { -%>
     set_real_ip_from <%= $p %>;
 <%  } -%>
+<%  if $proxy_protocol { -%>
     real_ip_header proxy_protocol;
+<%  } else { -%>
+    real_ip_header X-Real-IP;
+<%  } -%>
     real_ip_recursive off;
 <% } -%>    
 ', {
     proxy_protocol => $proxy_protocol,
+    is_backend => $is_backend,
     trusted_proxy => $trusted_proxy,
 })
 

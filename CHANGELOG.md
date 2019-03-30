@@ -7,6 +7,7 @@
 - CHANGED: aligned with CID to install Xenial Ruby repos for Debian
 - CHANGED: to use 'keep-alive' instead of 'close' Connection header for proxy_pass
 - NEW: /health.txt for default host
+- NEW: backend auto-discovery support
 
 # 1.2.0 (2018-12-09)
 - CHANGED: updated for Ubuntu 18.04 Bionic support
