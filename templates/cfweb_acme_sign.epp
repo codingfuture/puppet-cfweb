@@ -19,22 +19,23 @@ cd $home_dir
 /usr/bin/sudo -n -H -u "${user}" bash -s <<EOT
 set -e
 
-cat >$crt_file.acme <<EOS
-    cat $acme_dir/$cn/$cn.cer $acme_dir/$cn/ca.cer > $crt_file
-    cat $acme_dir/$cn/ca.cer > $crt_file.trusted
-EOS
-
 if [ ! -e $acme_dir/$cn/$cn.cer ]; then
     $acme_dir/acme.sh \
         --syslog 3 \
         --signcsr \
         --webroot "<%= $cfweb::acme_challenge_root %>" \
         $staging \
-        --csr "${csr_file}" \
-        --pre-hook "/opt/codingfuture/bin/cfweb_sync_pki"
+        --csr "${csr_file}"
 fi
 
+cat >$crt_file.acme <<EOS
+    cat $acme_dir/$cn/$cn.cer $acme_dir/$cn/ca.cer > $crt_file
+    cat $acme_dir/$cn/ca.cer > $crt_file.trusted
+EOS
+
 sh $crt_file.acme
+
+/opt/codingfuture/bin/cfweb_sync_pki
 EOT
 
 exit_code=$?
