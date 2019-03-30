@@ -108,7 +108,7 @@ class cfweb::pki::acme(
             dst  => $cfweb::primary_host
         }
     } else {
-        ensure_resource('cfweb::nginx::defaulthost', "main:80", {
+        ensure_resource('cfweb::nginx::defaulthost', 'main:80', {
             iface      => 'main',
             port       => 80,
             tls        => false,
