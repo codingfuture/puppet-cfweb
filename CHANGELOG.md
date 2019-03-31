@@ -7,6 +7,7 @@
 - CHANGED: to proxy_pass acme challenge from secondary nodes
 - CHANGED: aligned with CID to install Xenial Ruby repos for Debian
 - CHANGED: to use 'keep-alive' instead of 'close' Connection header for proxy_pass
+- CHANGED: to apply "static" limit on vhost basis
 - NEW: /health.txt for default host
 - NEW: backend auto-discovery support
 - NEW: "unlimited" placeholder for site limits

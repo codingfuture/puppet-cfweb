@@ -44,10 +44,6 @@ $text_assets = [
 ]
 -%>
 
-    # Global catch all limit with the highest number.
-    # All other limits should have lower boundary.
-    <%= cfweb::limit_req($site, 'static') %>
-
 <% if $forbid_dotpath { -%>
     # Forbid dotfiles access (e.g. VCS metadata, .ht*)
     location ~ /\. {

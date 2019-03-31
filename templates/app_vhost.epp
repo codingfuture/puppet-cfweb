@@ -125,6 +125,10 @@ server {
 
     <%= cfweb::limit_conn($site, 'peraddrpersrv') %>
 
+    # Global catch all limit with the highest number.
+    # All other limits should have lower boundary.
+    <%= cfweb::limit_req($site, 'static') %>
+
 <% $apps.each |$a| { -%>
     include <%= "${conf_prefix}.server.${a}" %>;
 <% } -%>
