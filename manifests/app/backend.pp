@@ -10,13 +10,15 @@ define cfweb::app::backend (
 ) {
     $sites_raw = cfsystem::query([
         'from', 'resources', ['extract', [ 'certname', 'parameters' ],
-        ['and',
-            ['=', 'type', 'Cfweb::Internal::Backend'],
-            ['=', 'title', $site],
-            ['=', ['parameter', 'location'], $cfsystem::hierapool::location],
-            ['=', ['parameter', 'pool'], $cfsystem::hierapool::pool],
+            ['and',
+                ['=', 'type', 'Cfweb::Internal::Backend'],
+                ['=', 'title', $site],
+                ['=', ['parameter', 'location'], $cfsystem::hierapool::location],
+                ['=', ['parameter', 'pool'], $cfsystem::hierapool::pool],
+            ],
         ],
-    ]])
+        ["order_by", [["certname", "asc"]]],
+    ])
 
     if $sites_raw.empty {
         fail("Failed to find backend for ${site}")
@@ -36,7 +38,7 @@ define cfweb::app::backend (
         $host = $v['host'].regsubst('.', '_', 'G')
         $port = $v['port']
         "${host}_${port}"
-    }).sort().join('__'))
+    }).join('__'))
     $upname = "common_${upname_tmp}"
     $upfile = "${cfweb::nginx::sites_dir}/upstream.${upname}.conf"
 
