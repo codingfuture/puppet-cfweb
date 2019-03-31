@@ -12,6 +12,8 @@ Puppet::Functions.create_function(:'cfweb::limit_conn') do
         limits = closure_scope["cfweb::nginx::limits"]
         overrides = closure_scope.findresource("Cfweb::Site[#{site}]")['limits']
 
+        return '' if overrides == 'unlimited'
+
         info = limits.fetch(name, {}).merge(overrides.fetch(name, {}))
 
         return '' if info['disabled']

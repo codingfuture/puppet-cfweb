@@ -3,11 +3,13 @@
 - FIXED: appcommon::cid to include deps
 - FIXED: failed initial acme challenge retry
 - FIXED: new cert sync/reload issues on secondary nodes
+- FIXED: to support "disabled" in limits configuration
 - CHANGED: to proxy_pass acme challenge from secondary nodes
 - CHANGED: aligned with CID to install Xenial Ruby repos for Debian
 - CHANGED: to use 'keep-alive' instead of 'close' Connection header for proxy_pass
 - NEW: /health.txt for default host
 - NEW: backend auto-discovery support
+- NEW: "unlimited" placeholder for site limits
 
 # 1.2.0 (2018-12-09)
 - CHANGED: updated for Ubuntu 18.04 Bionic support

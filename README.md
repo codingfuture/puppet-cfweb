@@ -195,7 +195,7 @@ Main setup and configuration of nginx web server.
 * `$trusted_proxy = []` - list of trusted reverse-proxies
 * `$default_certs = {}` - cert names to use for the default catch all vhosts
 * `$backlog = 4096` - tune backlog
-* `$limits = {}` - override default limit settings and/or add custom
+* `$limits = {} or "unlimited"` - override default limit settings and/or add custom
     - `type` - 'conn' or 'req'
     - `var` - nginx variable to use
     - `count` - for 'conn' type
@@ -203,6 +203,7 @@ Main setup and configuration of nginx web server.
     - `rate` - rate for 'req' type
     - `burst` - burst for 'req' type
     - `nodelay` - control no-delay rejection behavior
+    - `disabled` - disable particular limit
 * `$stress_hosts` - list of hosts for which limits are ignored
 * `$bleeding_edge_security = false` - add more strict TLS security based on MDN definitions
 * `$repo = 'http://nginx.org/packages/'` - repo to get nginx packages from
