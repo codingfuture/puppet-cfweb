@@ -17,7 +17,7 @@ define cfweb::app::backend (
                 ['=', ['parameter', 'pool'], $cfsystem::hierapool::pool],
             ],
         ],
-        ["order_by", [["certname", "asc"]]],
+        ['order_by', [['certname', 'asc']]],
     ])
 
     if $sites_raw.empty {
