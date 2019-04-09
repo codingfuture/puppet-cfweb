@@ -11,6 +11,7 @@
 - NEW: /health.txt for default host
 - NEW: backend auto-discovery support
 - NEW: "unlimited" placeholder for site limits
+- NEW: cfbackup integration for persistent directories
 
 # 1.2.0 (2018-12-09)
 - CHANGED: updated for Ubuntu 18.04 Bionic support

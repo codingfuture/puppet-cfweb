@@ -198,6 +198,11 @@ define cfweb::site (
             group   => $group,
             require => User[$user],
         }
+        -> cfbackup::path { $persistent_dir:
+            namespace => cfweb,
+            id        => $site,
+            type      => files,
+        }
     }
 
 

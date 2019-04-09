@@ -168,5 +168,12 @@ class cfweb::pki::dir {
             ],
             notify      => Exec['cfweb_reload'],
         }
+
+        #---
+        cfbackup::path { $root_dir:
+            namespace => cfweb,
+            id        => pki,
+            type      => files,
+        }
     }
 }
