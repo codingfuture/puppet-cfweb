@@ -8,6 +8,7 @@
 - CHANGED: aligned with CID to install Xenial Ruby repos for Debian
 - CHANGED: to use 'keep-alive' instead of 'close' Connection header for proxy_pass
 - CHANGED: to apply "static" limit on vhost basis
+- CHANGED: got rid of historical cf-apt-update workaround
 - NEW: /health.txt for default host
 - NEW: backend auto-discovery support
 - NEW: "unlimited" placeholder for site limits

@@ -24,13 +24,11 @@ class cfweb::internal::cidrepos {
         }
 
         apt::source { 'brightbox-ruby':
-            location      =>'http://ppa.launchpad.net/brightbox/ruby-ng/ubuntu',
-            release       => $ruby_release,
-            repos         => 'main',
-            pin           => $cfsystem::apt_pin,
-            notify_update => false,
-            notify        => Exec['cf-apt-update'],
-            require       => Apt::Key['brightbox-ruby'],
+            location =>'http://ppa.launchpad.net/brightbox/ruby-ng/ubuntu',
+            release  => $ruby_release,
+            repos    => 'main',
+            pin      => $cfsystem::apt_pin,
+            require  => Apt::Key['brightbox-ruby'],
         }
     }
 
@@ -44,13 +42,11 @@ class cfweb::internal::cidrepos {
                 }
 
                 apt::source { 'sury-php':
-                    location      =>'http://packages.sury.org/php',
-                    release       => $::cfsystem::debian::release,
-                    repos         => 'main',
-                    pin           => $cfsystem::apt_pin,
-                    notify_update => false,
-                    notify        => Exec['cf-apt-update'],
-                    require       => Apt::Key['sury-php'],
+                    location =>'http://packages.sury.org/php',
+                    release  => $::cfsystem::debian::release,
+                    repos    => 'main',
+                    pin      => $cfsystem::apt_pin,
+                    require  => Apt::Key['sury-php'],
                 }
             }
             'Ubuntu' : {
@@ -60,13 +56,11 @@ class cfweb::internal::cidrepos {
                 }
 
                 apt::source { 'sury-php':
-                    location      =>'http://ppa.launchpad.net/ondrej/php/ubuntu',
-                    release       => $::cfsystem::ubuntu::release,
-                    repos         => 'main',
-                    pin           => $cfsystem::apt_pin,
-                    notify_update => false,
-                    notify        => Exec['cf-apt-update'],
-                    require       => Apt::Key['sury-php'],
+                    location =>'http://ppa.launchpad.net/ondrej/php/ubuntu',
+                    release  => $::cfsystem::ubuntu::release,
+                    repos    => 'main',
+                    pin      => $cfsystem::apt_pin,
+                    require  => Apt::Key['sury-php'],
                 }
             }
             default : { fail('Unsupported OS') }

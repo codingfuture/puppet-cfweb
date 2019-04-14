@@ -40,7 +40,7 @@ class cfweb::nginx (
 
     case $::operatingsystem {
         'Debian', 'Ubuntu': {
-            class { 'cfweb::nginx::aptrepo': stage => 'cf-apt-setup' }
+            class { 'cfweb::nginx::aptrepo': stage => 'setup' }
             $package = 'nginx'
         }
         default: { fail("Not supported OS ${::operatingsystem}") }

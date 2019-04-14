@@ -133,5 +133,5 @@ class cfweb::appcommon::cid (
         user => $user,
     }
 
-    class { 'cfweb::internal::cidrepos': stage => 'cf-apt-setup' }
+    class { 'cfweb::internal::cidrepos': stage => 'setup' }
 }
