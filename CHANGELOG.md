@@ -1,5 +1,5 @@
 
-# (next)
+# 1.3.0 (2019-04-14)
 - FIXED: appcommon::cid to include deps
 - FIXED: failed initial acme challenge retry
 - FIXED: new cert sync/reload issues on secondary nodes
