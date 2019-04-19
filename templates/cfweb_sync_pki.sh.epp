@@ -29,7 +29,6 @@ for h in $HOSTS; do
         --links \
         --safe-links \
         --perms \
-        --times \
         --whole-file \
         --delete \
         --force \
@@ -44,7 +43,6 @@ for h in $HOSTS; do
         --links \
         --safe-links \
         --perms \
-        --times \
         --whole-file \
         --delete \
         --force \

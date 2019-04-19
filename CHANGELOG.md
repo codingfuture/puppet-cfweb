@@ -1,3 +1,5 @@
+# (next)
+- FIXED: minor warning on cfweb_sync_pki due to times issue
 
 # 1.3.0 (2019-04-14)
 - FIXED: appcommon::cid to include deps
