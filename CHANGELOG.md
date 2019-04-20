@@ -1,5 +1,6 @@
 # (next)
 - FIXED: minor warning on cfweb_sync_pki due to times issue
+- CHANGED: to use ControlMaster SSH option for deployments
 
 # 1.3.0 (2019-04-14)
 - FIXED: appcommon::cid to include deps
