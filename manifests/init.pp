@@ -67,7 +67,7 @@ class cfweb (
     }
 
     #---
-    $primary_host = $cluster_instances.reduce('') |$memo, $val| {
+    $primary_host = $cluster_instances.reduce($::trusted['certname']) |$memo, $val| {
         if $val[1]['is_secondary'] {
             $memo
         } else {
@@ -75,8 +75,7 @@ class cfweb (
         }
     }
 
-    if $primary_host != '' and
-        $primary_host != $::trusted['certname'] and
+    if $primary_host != $::trusted['certname'] and
         $cfweb::is_secondary != true
     {
         fail([

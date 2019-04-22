@@ -109,10 +109,11 @@ class cfweb::pki::acme(
         }
     } else {
         ensure_resource('cfweb::nginx::defaulthost', 'main:80', {
-            iface      => 'main',
-            port       => 80,
-            tls        => false,
-            is_backend => false,
+            iface          => 'main',
+            port           => 80,
+            tls            => false,
+            is_backend     => false,
+            proxy_protocol => false,
         })
     }
 }

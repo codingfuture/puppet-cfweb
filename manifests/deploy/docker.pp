@@ -32,7 +32,7 @@ define cfweb::deploy::docker (
         target => $persistent_dir,
     }
     -> anchor { "docker-deploy-${title}": }
-    
+
     # Ensuring an image
     # ---
     if !empty($image) and !empty($dockerfile) {
