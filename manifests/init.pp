@@ -85,6 +85,8 @@ class cfweb (
         ].join("\n"))
     }
 
+    $primary_internal_host = "${internal_face}.${primary_host}"
+
     # Standalone - public facing
     # NOTE: they still can work in HA cluster
     #---

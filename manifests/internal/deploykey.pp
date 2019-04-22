@@ -36,7 +36,7 @@ define cfweb::internal::deploykey(
             "IdentityFile ${ssh_idkey}",
             'ControlMaster auto',
             "ControlPath ${ssh_dir}/%C",
-            "ControlPersist 10s",
+            'ControlPersist 10s',
             ''
         ].join("\n"),
     }

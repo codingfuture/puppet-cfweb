@@ -44,6 +44,12 @@ define cfweb::site (
     validate_re($title, '^[a-z][a-z0-9_]*$')
 
     #---
+    if 'docker' in $apps {
+        # Ensure cfnetwork resource
+        include cfweb::appcommon::docker
+    }
+
+    #---
     $shared_certs = any2array($shared_cert)
 
     if size($shared_certs) > 0 {
@@ -420,7 +426,13 @@ define cfweb::site (
     # Deploy procedure
     #---
     if $deploy {
-        $deploy_strategy = pick($deploy['strategy'], 'futoin')
+        if 'docker' in $apps {
+            $def_deploy_strategy = 'docker'
+        } else {
+            $def_deploy_strategy = 'futoin'
+        }
+
+        $deploy_strategy = pick($deploy['strategy'], $def_deploy_strategy)
 
         cfweb::deploy { $title:
             strategy => $deploy_strategy,

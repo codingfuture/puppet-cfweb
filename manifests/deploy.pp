@@ -13,7 +13,7 @@ define cfweb::deploy(
     assert_private()
 
     case $strategy {
-        'futoin' : {
+        'futoin', 'docker' : {
             $impl = "cfweb::deploy::${strategy}"
         }
         default : {

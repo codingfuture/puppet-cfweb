@@ -23,7 +23,6 @@ lookup_options:
   cfweb::pki::certs:
     merge: unique
 
-
 cfweb::nginx::limits:
     peraddr:
         type: conn

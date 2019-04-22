@@ -15,6 +15,7 @@ module PuppetX::CfWeb
     CFWEB_TYPES = [
         'global',
         'futoin',
+        'docker',
     ]
 
     SLICE_PREFIX = 'system-'
