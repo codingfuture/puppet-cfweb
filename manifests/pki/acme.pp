@@ -113,7 +113,6 @@ class cfweb::pki::acme(
             port           => 80,
             tls            => false,
             is_backend     => false,
-            proxy_protocol => false,
         })
     }
 }
