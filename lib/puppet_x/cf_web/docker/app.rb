@@ -117,12 +117,17 @@ module PuppetX::CfWeb::Docker::App
             }
         ).tr("\n", ':')
 
+        #---
+        config_hash = Digest::SHA256.hexdigest(conf.to_yaml)
+
+        #---
         content_ini = {
             'Unit' => {
                 'Description' => "CFWEB App: #{site} (#{app_name})",
             },
             'Service' => {
                 '# image ver' => image_ver,
+                '# config digest' => config_hash,
                 'LimitNOFILE' => 'infinity',
                 'WorkingDirectory' => "#{deploy_dir}",
                 'Slice' => "#{PuppetX::CfWeb::SLICE_PREFIX}#{user}.slice",
@@ -160,6 +165,7 @@ module PuppetX::CfWeb::Docker::App
             systemctl('enable', "#{service_name}.service")
 
             if service_changed
+                warning("Restarting #{service_name}")
                 # if unit changes then we need to restart to get new limits working
                 systemctl('restart', "#{service_name}.service")
             else
