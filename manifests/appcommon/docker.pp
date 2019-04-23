@@ -87,7 +87,12 @@ class cfweb::appcommon::docker (
         fail("Docker requires \$cfnetwork::sysctl::enable_bridge_filter=true")
     }
 
-    # Just make firewall aware of such interface
+    # Just make firewall aware of such interfaces
+    cfnetwork::iface { 'dockerbr':
+        device          => 'docker0',
+        debian_template => 'cfweb/docker_gwbridge_iface',
+        address         => '172.17.0.1/16',
+    }
     cfnetwork::iface { 'docker':
         device          => 'docker_gwbridge',
         debian_template => 'cfweb/docker_gwbridge_iface',
@@ -95,8 +100,14 @@ class cfweb::appcommon::docker (
     }
 
     # allow docker-proxy
-    cfnetwork::client_port { 'docker:allports:root':
+    cfnetwork::client_port { [
+        'dockerbr:allports:root',
+        'docker:allports:root',
+    ]:
         user => root,
     }
-    cfnetwork::router_port { 'docker/any:dns': }
+    cfnetwork::router_port { [
+        'dockerbr/any:dns',
+        'docker/any:dns',
+    ]: }
 }

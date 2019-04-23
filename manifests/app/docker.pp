@@ -106,8 +106,9 @@ define cfweb::app::docker (
     ensure_resource('cfnetwork::describe_service', $fw_service, {
         server => "tcp/${upstream_port}",
     })
+    ensure_resource('cfnetwork::service_port', "local:${fw_service}")
     ensure_resource('cfnetwork::client_port', "local:${fw_service}:${user}", {
-        user => $user,
+        user => $cfweb::nginx::user,
     })
 
     #---
