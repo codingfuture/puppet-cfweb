@@ -8,7 +8,7 @@ define cfweb::deploy::docker (
 
     Cfnetwork::Port $target_port,
 
-    Optional[Hash]
+    Optional[CfWeb::DockerImage]
         $image = undef,
     Optional[String[1]]
         $dockerfile = undef,
@@ -20,6 +20,8 @@ define cfweb::deploy::docker (
         $tune = {},
     Optional[String[1]]
         $custom_script = undef,
+    Array[String[1]]
+        $config_files = [],
 ){
     include cfweb::appcommon::docker
 

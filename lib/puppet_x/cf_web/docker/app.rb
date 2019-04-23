@@ -118,7 +118,10 @@ module PuppetX::CfWeb::Docker::App
         ).tr("\n", ':')
 
         #---
-        config_hash = Digest::SHA256.hexdigest(conf.to_yaml)
+        config_hash = Digest::SHA256.hexdigest(
+                conf.to_yaml +
+                (deploy_conf['config_files'].map { |v| File.read(v) }).join('')
+        )
 
         #---
         content_ini = {

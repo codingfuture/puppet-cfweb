@@ -20,6 +20,7 @@ define cfweb::app::docker (
     Optional[String[0]] $uppath = undef,
     Optional[Integer[0]] $keepalive = undef,
     CfWeb::Upstream $upstream = {},
+    Boolean $skip_nginx = false,
 ) {
     include cfweb::appcommon::docker
 
