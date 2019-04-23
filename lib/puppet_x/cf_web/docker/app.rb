@@ -120,7 +120,7 @@ module PuppetX::CfWeb::Docker::App
         #---
         config_hash = Digest::SHA256.hexdigest(
                 conf.to_yaml +
-                (deploy_conf['config_files'].map { |v| File.read(v) }).join('')
+                (deploy_conf.fetch('config_files', []).map { |v| File.read(v) }).join('')
         )
 
         #---
