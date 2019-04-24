@@ -77,9 +77,10 @@ define cfweb::app::docker (
     }
 
     #---
+    $upstream_host = pick($upstream['host'], '127.0.0.1')
     $upstream_port = cfsystem::gen_port($service_name, $upstream['port'])
     $act_upstream = $upstream + {
-        host => '127.0.0.1',
+        host => $upstream_host,
         port => $upstream_port,
 
     }
@@ -133,6 +134,7 @@ define cfweb::app::docker (
             tune        => $tune,
             persist_dir => $app_persist_dir,
             deploy_dir  => $deploy_dir,
+            bind_host   => $upstream_host,
             bind_port   => $upstream_port,
         },
         require      => [

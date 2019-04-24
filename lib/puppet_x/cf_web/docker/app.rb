@@ -146,7 +146,7 @@ module PuppetX::CfWeb::Docker::App
                     %Q{--memory-reservation=#{mem_limit}m},
                     %Q{--memory=#{(mem_limit*1.1).to_i}m},
                     %Q{--network=#{network}},
-                    %Q{-p 127.0.0.1:#{misc['bind_port']}:#{deploy_conf['target_port']}},
+                    %Q{-p #{misc['bind_host']}:#{misc['bind_port']}:#{deploy_conf['target_port']}},
                     '--restart=no',
                     '--rm',
                 ] + mounts + hosts + [
