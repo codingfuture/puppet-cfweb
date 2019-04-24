@@ -124,6 +124,9 @@ module PuppetX::CfWeb::Docker::App
         )
 
         #---
+        network = deploy_conf.fetch('network', site)
+
+        #---
         content_ini = {
             'Unit' => {
                 'Description' => "CFWEB App: #{site} (#{app_name})",
@@ -142,7 +145,7 @@ module PuppetX::CfWeb::Docker::App
                     #'--log-driver=syslog',
                     %Q{--memory-reservation=#{mem_limit}m},
                     %Q{--memory=#{(mem_limit*1.1).to_i}m},
-                    %Q{--network=#{site}},
+                    %Q{--network=#{network}},
                     %Q{-p 127.0.0.1:#{misc['bind_port']}:#{deploy_conf['target_port']}},
                     '--restart=no',
                     '--rm',

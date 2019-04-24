@@ -22,6 +22,8 @@ define cfweb::deploy::docker (
         $custom_script = undef,
     Array[String[1]]
         $config_files = [],
+    String[1]
+        $network = $title,
 ){
     include cfweb::appcommon::docker
 
@@ -61,9 +63,9 @@ define cfweb::deploy::docker (
 
     # Ensuring overlay network
     # ---
-    docker_network { $title:
+    ensure_resource('docker_network', $network, {
         ensure           => present,
         driver           => overlay,
         additional_flags => ['--attachable'],
-    }
+    })
 }
