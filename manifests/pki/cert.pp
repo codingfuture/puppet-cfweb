@@ -41,7 +41,9 @@ define cfweb::pki::cert(
     $trusted_file = "${crt_file}.trusted"
     $pki_user = $cfweb::pki::ssh_user
 
-    if $cfweb::is_secondary {
+    if !$cfweb::pki::enable {
+        # pass
+    } elsif $cfweb::is_secondary {
         exec { $exec_name:
             command => '/bin/true',
             creates => $crt_file,

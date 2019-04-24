@@ -44,6 +44,7 @@ class cfweb::pki(
     include cfweb::pki::user
 
     #---
+    $enable = $cfweb::nginx::enable
     $openssl = '/usr/bin/openssl'
     $root_dir = "${cfweb::pki::user::home_dir}/shared"
     $dhparam = "${root_dir}/dh${dhparam_bits}.pem"

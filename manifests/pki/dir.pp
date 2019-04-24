@@ -17,7 +17,7 @@ class cfweb::pki::dir {
     #---
     ensure_packages(['rsync'])
 
-    if !$cfweb::nginx::enable {
+    if !$cfweb::pki::enable {
         # pass
     } elsif $cfweb::is_secondary {
         if !($cfweb::primary_host =~ String[1]) {

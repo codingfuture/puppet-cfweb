@@ -14,7 +14,9 @@ define cfweb::pki::key(
     $exec_name = "cfweb::pki::key::${key_name}"
     $key_file = "${cfweb::pki::key_dir}/${key_name}.key"
 
-    if $cfweb::is_secondary {
+    if !$cfweb::pki::enable {
+        # pass
+    } elsif $cfweb::is_secondary {
         exec { $exec_name:
             command => '/bin/true',
             creates => $key_file,
