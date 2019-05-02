@@ -1,6 +1,7 @@
 # (next)
 - FIXED: minor warning on cfweb_sync_pki due to times issue
 - FIXED: minor issues in deployment
+- FIXED: scheme/protocol when behind trusted reverse-proxy
 - CHANGED: to use ControlMaster SSH option for deployments
 
 # 1.3.0 (2019-04-14)

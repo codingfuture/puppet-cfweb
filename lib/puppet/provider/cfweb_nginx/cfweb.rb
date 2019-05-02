@@ -199,6 +199,18 @@ Puppet::Type.type(:cfweb_nginx).provide(
                 'default' => 'upgrade',
                 "''" => 'keep-alive',
             },
+            'map $http_x_forwarded_proto $cf_real_scheme_helper' => {
+                "default" => '$http_x_forwarded_proto',
+                "''" => '$scheme',
+            },
+            'map $realip_remote_addr $cf_real_scheme' => {
+                "default" => '$cf_real_scheme_helper',
+                "''" => '$scheme',
+            },
+            'map $cf_real_scheme $cf_real_https' => {
+                "default" => "''",
+                'https' => 'on',
+            },
             "# misc" => '',
             'include /etc/nginx/cf_mime.types' => '',
             'include /etc/nginx/cf_tls.conf' => '',
