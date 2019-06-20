@@ -1,3 +1,6 @@
+# (next)
+- FIXED: proxy location not to limit max client body size
+
 # 1.3.1 (2019-06-17)
 - FIXED: minor warning on cfweb_sync_pki due to times issue
 - FIXED: minor issues in deployment
