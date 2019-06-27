@@ -6,5 +6,6 @@
 
     location <%= $path %> {
         proxy_pass http://<%= $upname %><%= $uppath %>;
+        client_max_body_size 0;
         include /etc/nginx/cf_http_params;
     }

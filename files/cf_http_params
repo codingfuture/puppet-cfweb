@@ -11,5 +11,3 @@ proxy_set_header X-Forwarded-Proto $cf_real_scheme;
 
 proxy_cache_bypass $http_upgrade;
 proxy_next_upstream error timeout http_502 non_idempotent;
-
-client_max_body_size 0;
