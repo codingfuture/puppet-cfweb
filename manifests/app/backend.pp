@@ -24,7 +24,7 @@ define cfweb::app::backend (
         fail("Failed to find backend for ${site}")
     }
 
-    $upstreams = $sites_raw.map |$v| {
+    $upstreams = cfsystem::stable_sort($sites_raw.map |$v| {
         $params = $v['parameters']
 
         $r = {
@@ -32,10 +32,10 @@ define cfweb::app::backend (
             port => $params['port'],
         }
         $r
-    }
+    })
 
     $upname_tmp = sha256(($upstreams.map |$v| {
-        $host = $v['host'].regsubst('.', '_', 'G')
+        $host = $v['host']
         $port = $v['port']
         "${host}_${port}"
     }).join('__'))
