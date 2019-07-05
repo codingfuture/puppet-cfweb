@@ -37,7 +37,7 @@ define cfweb::site (
     Optional[CfWeb::ClientX509] $require_x509 = undef,
     Optional[String[1]] $hsts = 'max-age=15768000; includeSubDomains; preload',
 
-    Boolean $backup_persistent = false,
+    Boolean $backup_persistent = true,
 ) {
     include cfdb
     include cfweb::nginx
