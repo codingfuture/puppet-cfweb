@@ -1,6 +1,7 @@
 # (next)
 - FIXED: proxy location not to limit max client body size
 - FIXED: upstream hash to properly use hosts
+- NEW: backup_persistent option support for cfweb::site
 
 # 1.3.1 (2019-06-17)
 - FIXED: minor warning on cfweb_sync_pki due to times issue

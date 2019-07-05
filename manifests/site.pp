@@ -36,6 +36,8 @@ define cfweb::site (
     Optional[String[1]] $require_hosts = undef,
     Optional[CfWeb::ClientX509] $require_x509 = undef,
     Optional[String[1]] $hsts = 'max-age=15768000; includeSubDomains; preload',
+
+    Boolean $backup_persistent = false,
 ) {
     include cfdb
     include cfweb::nginx
@@ -204,10 +206,14 @@ define cfweb::site (
             group   => $group,
             require => User[$user],
         }
-        -> cfbackup::path { $persistent_dir:
-            namespace => cfweb,
-            id        => $site,
-            type      => files,
+
+        if $backup_persistent {
+            cfbackup::path { $persistent_dir:
+                namespace => cfweb,
+                id        => $site,
+                type      => files,
+                require   => FIle[$persistent_dir],
+            }
         }
     }
 
