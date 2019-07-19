@@ -118,7 +118,7 @@ class cfweb::appcommon::cid (
     }
 
     # Disable PHP-fpm regardless if installed
-    ['', '5.6', '7.0', '7.1', '7.2'].each |$ver| {
+    ['', '5.6', '7.0', '7.1', '7.2', '7.3', '7.4'].each |$ver| {
         exec { "cfweb-mask-php-fpm-${ver}":
             command => [
                 "/bin/systemctl stop php${ver}-fpm",

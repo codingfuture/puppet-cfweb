@@ -67,4 +67,19 @@ class cfweb::internal::cidrepos {
         }
     }
     #====
+    if $cfweb::global::erlang {
+        file { '/etc/apt/preferences.d/erlang-solutions.pref':
+            content => [
+                'Explanation: cfweb: erlang',
+                'Package: *',
+                'Pin: origin binaries.erlang-solutions.com',
+                "Pin-Priority: ${cfsystem::apt_pin}",
+                '',
+            ].join("\n"),
+        }
+        -> file { '/etc/apt/sources.list.d/erlang-solutions.list':
+            content => '',
+            replace => false,
+        }
+    }
 }

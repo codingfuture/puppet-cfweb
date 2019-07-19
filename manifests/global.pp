@@ -23,5 +23,6 @@ class cfweb::global (
     Boolean $ruby = true,
     Boolean $php = true,
     Boolean $nodejs = true,
+    Boolean $erlang = true,
 ) {
 }
