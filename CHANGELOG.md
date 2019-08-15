@@ -1,6 +1,7 @@
 # (next)
 - FIXED: proxy location not to limit max client body size
 - FIXED: upstream hash to properly use hosts
+- FIXED: edge case of static files location backed by app
 - NEW: backup_persistent option support for cfweb::site
 - NEW: CID Erlang stack support
 

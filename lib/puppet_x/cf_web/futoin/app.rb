@@ -567,6 +567,8 @@ module PuppetX::CfWeb::Futoin::App
                     ]
                     
                     vhost_server << "  location ~* \\.(#{text_assets.join('|')})$ {"
+                        vhost_server << "    try_files $uri @#{app};"
+
                         if path_tune.fetch('gzip', true)
                             vhost_server << "    gzip on;"
                             vhost_server << "    gzip_types *;"
