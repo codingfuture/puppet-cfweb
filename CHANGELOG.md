@@ -2,6 +2,7 @@
 - FIXED: proxy location not to limit max client body size
 - FIXED: upstream hash to properly use hosts
 - FIXED: edge case of static files location backed by app
+- FIXED: minor issues in some docker configurations
 - NEW: backup_persistent option support for cfweb::site
 - NEW: CID Erlang stack support
 - NEW: --env-file for Docker support

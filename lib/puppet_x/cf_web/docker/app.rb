@@ -74,7 +74,7 @@ module PuppetX::CfWeb::Docker::App
 
         # Services
         #---
-        mounts = deploy_conf['binds'].map { |k, v|
+        mounts = (deploy_conf['binds'] || {}).map { |k, v|
             %Q{--mount type=bind,source=#{persist_dir}/#{k},destination=#{v}}
         }
 

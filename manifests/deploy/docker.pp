@@ -15,7 +15,7 @@ define cfweb::deploy::docker (
     Optional[String[1]]
         $env_file = undef,
     Hash[String[1],String[1]]
-        $binds = [],
+        $binds = {},
     Array[String[1]]
         $hosts = [],
     Hash

@@ -72,7 +72,7 @@ define cfweb::app::docker (
     #---
     $fw_ports.each |$svc, $def| {
         create_resources('cfnetwork::router_port', {
-            "docker/any:${svc}:${user}" => merge($def),
+            "docker/any:${svc}:${user}" => $def,
         })
     }
 
