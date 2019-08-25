@@ -12,6 +12,8 @@ define cfweb::deploy::docker (
         $image = undef,
     Optional[String[1]]
         $dockerfile = undef,
+    Optional[String[1]]
+        $env_file = undef,
     Hash[String[1],String[1]]
         $binds = [],
     Array[String[1]]

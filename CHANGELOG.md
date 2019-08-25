@@ -4,6 +4,7 @@
 - FIXED: edge case of static files location backed by app
 - NEW: backup_persistent option support for cfweb::site
 - NEW: CID Erlang stack support
+- NEW: --env-file for Docker support
 
 # 1.3.1 (2019-06-17)
 - FIXED: minor warning on cfweb_sync_pki due to times issue

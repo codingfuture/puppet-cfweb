@@ -127,6 +127,10 @@ module PuppetX::CfWeb::Docker::App
         network = deploy_conf.fetch('network', site)
 
         #---
+        misc_args = []
+        misc_args << %Q{--env-file=#{deploy_conf['env_file']}} if deploy_conf['env_file']
+
+        #---
         content_ini = {
             'Unit' => {
                 'Description' => "CFWEB App: #{site} (#{app_name})",
@@ -149,7 +153,7 @@ module PuppetX::CfWeb::Docker::App
                     %Q{-p #{misc['bind_host']}:#{misc['bind_port']}:#{deploy_conf['target_port']}},
                     '--restart=no',
                     '--rm',
-                ] + mounts + hosts + [
+                ] + mounts + hosts + misc_args + [
                     image_name,
                 ]).join(' '),
                 'ExecStop' => [
