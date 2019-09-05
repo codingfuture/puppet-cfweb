@@ -152,7 +152,7 @@ class cfweb::nginx (
     }
     -> file { [$empty_root, $bin_dir]:
         ensure  => directory,
-        mode    => '0751',
+        mode    => '0755',
         owner   => root,
         group   => $group,
         purge   => true,
