@@ -298,7 +298,10 @@ Main resource type to define virtualhost with related apps.
 * `$require_x509 = undef` - string of `cfweb::global::clientpki` name or a hash of:
     * `clientpki` - `cfweb::global::clientpki` name
     * `verify = on` - override verification mode
-* `$hsts = 'max-age=15768000; includeSubDomains; preload'` - can be set to undef to disable HSTS
+* `$hsts = 'max-age=15768000; includeSubDomains; preload'` - HSTS, optional
+    * enabled only at TLS termination
+* `$xfo = 'sameorigin' - X-Frame-Options, optional
+    * enabled only at TLS termination
 * `$deploy = undef` - optional deployment strategy parameters
 
 ### Deploy strategy

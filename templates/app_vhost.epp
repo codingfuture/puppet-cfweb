@@ -21,6 +21,7 @@
     Optional[Array[String[1]]] $require_host_list,
     Optional[CfWeb::ClientX509] $require_x509,
     Optional[String[1]] $hsts,
+    Optional[String[1]] $xfo,
 |
 
 if size($plain_ports) == 0 and size($tls_ports) == 0 {
@@ -90,6 +91,10 @@ $tls_snippet = inline_epp('
 
 <% if $redirect_plain_act and !empty($hsts) { -%>
     add_header Strict-Transport-Security \'<%= $hsts %>\';
+<% } -%>
+
+<% if !empty($xfo) { -%>
+    add_header X-Frame-Options \'<%= $xfo %>\';
 <% } -%>
 
 <% } -%>
