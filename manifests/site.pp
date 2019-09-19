@@ -72,15 +72,31 @@ define cfweb::site (
             'cfweb::pki::cert',
             $auto_cert_name,
             merge(
-                $auto_cert,
+                $auto_cert - [rsa_key_name, ecc_key_name],
                 {
+                    key_name  => pick($auto_cert['rsa_key_name'], $cfweb::pki::rsa_key_name),
                     cert_name => $server_name,
                     alt_names => $alt_names,
                 }
             )
         )
 
-        $dep_certs = [$auto_cert_name]
+        $autoec_cert_name = "autoec#${server_name}"
+        ensure_resource(
+            'cfweb::pki::cert',
+            $autoec_cert_name,
+            merge(
+                $auto_cert - [key_name, rsa_key_name, ecc_key_name],
+                {
+                    key_name    => pick($auto_cert['ecc_key_name'], $cfweb::pki::ecc_key_name),
+                    cert_name   => $server_name,
+                    alt_names   => $alt_names,
+                    cert_suffix => '_ecc',
+                }
+            )
+        )
+
+        $dep_certs = [$auto_cert_name, $autoec_cert_name]
     } else {
         $dep_certs = []
     }

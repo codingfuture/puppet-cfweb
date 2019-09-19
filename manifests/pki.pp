@@ -13,11 +13,10 @@ class cfweb::pki(
 
     Integer[1024, 8192] $dhparam_bits = 2048,
 
-    String[1] $key_name = 'multi',
-    Enum['rsa', 'ecdsa'] $key_type = 'rsa',
-    Cfsystem::Rsabits
-        $key_bits = 2048,
-    String[1] $key_curve = 'prime256v1',
+    String[1] $rsa_key_name = 'multi',
+    Cfsystem::Rsabits $rsa_bits = 2048,
+    String[1] $ecc_key_name = 'multiec',
+    String[1] $ecc_curve = 'prime256v1',
     String[1] $cert_hash = 'sha256',
 
     String $ssh_user = 'cfwebpki',
@@ -64,13 +63,20 @@ class cfweb::pki(
     }
 
     #---
-    ensure_resource('cfweb::pki::key', $key_name, {
-        key_type  => $key_type,
-        key_bits  => $key_bits,
-        key_curve => $key_curve,
+    ensure_resource('cfweb::pki::key', $rsa_key_name, {
+        key_type  => 'rsa',
+        rsa_bits  => $rsa_bits,
+    })
+    ensure_resource('cfweb::pki::key', $ecc_key_name, {
+        key_type  => 'ecdsa',
+        ecc_curve  => $ecc_curve,
     })
     ensure_resource('cfweb::pki::cert', 'default', {
-        key_name => $key_name,
+        key_name => $rsa_key_name,
+        x509_cn => 'www.example.com',
+    })
+    ensure_resource('cfweb::pki::cert', 'defaultec', {
+        key_name => $ecc_key_name,
         x509_cn => 'www.example.com',
     })
 }

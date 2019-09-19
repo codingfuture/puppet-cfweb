@@ -6,8 +6,8 @@
 define cfweb::pki::key(
     String[1] $key_name = $title,
     Optional[Enum['rsa', 'ecdsa']] $key_type = undef,
-    Optional[Cfsystem::Rsabits] $key_bits = undef,
-    Optional[String[1]] $key_curve = undef,
+    Optional[Cfsystem::Rsabits] $rsa_bits = undef,
+    Optional[String[1]] $ecc_curve = undef,
 ){
     include cfweb::pki
 
@@ -23,7 +23,7 @@ define cfweb::pki::key(
             notify  => Exec['cfweb_sync_pki']
         }
     } else {
-        $key_type_act = pick($key_type, $cfweb::pki::key_type)
+        $key_type_act = pick($key_type, 'rsa')
 
         case $key_type_act {
             'rsa': {
@@ -31,7 +31,7 @@ define cfweb::pki::key(
                     command => [
                         "${cfweb::pki::openssl} genrsa",
                         '-out', $key_file,
-                        pick($key_bits, $cfweb::pki::key_bits)
+                        pick($rsa_bits, $cfweb::pki::rsa_bits)
                     ].join(' '),
                     creates => $key_file,
                     notify  => Exec['cfweb_sync_pki'],
@@ -43,7 +43,7 @@ define cfweb::pki::key(
                     command => [
                         "${cfweb::pki::openssl} ecparam",
                         '-name',
-                        pick($key_curve, $cfweb::pki::key_curve),
+                        pick($ecc_curve, $cfweb::pki::ecc_curve),
                         '-genkey -noout',
                         '-out', $key_file,
                     ].join(' '),

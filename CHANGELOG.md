@@ -9,6 +9,7 @@
 - NEW: CID Erlang stack support
 - NEW: --env-file for Docker support
 - NEW: X-Frame-Options with sameorigin by default
+- NEW: dual RSA+ECDSA certificate support
 
 # 1.3.1 (2019-06-17)
 - FIXED: minor warning on cfweb_sync_pki due to times issue

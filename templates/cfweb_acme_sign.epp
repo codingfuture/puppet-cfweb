@@ -7,6 +7,7 @@ staging=<%= $cfweb::pki::acme::staging ? {
     true => '--string',
     default => '',
 } %>
+ecc=
 
 csr_file="$2"
 crt_file="$3"
@@ -14,23 +15,32 @@ cn="$4"
 
 [ -z "$cn" ] && exit 1
 
+case "$csr_file" in
+    *_ecc.*)
+        dn="${cn}_ecc"
+        ecc="--ecc"
+        ;;
+    *) dn=$cn ;;
+esac
+
 cd $home_dir
 
 /usr/bin/sudo -n -H -u "${user}" bash -s <<EOT
 set -e
 
-if [ ! -e $acme_dir/$cn/$cn.cer ]; then
+if [ ! -e $acme_dir/$dn/$cn.cer ]; then
     $acme_dir/acme.sh \
         --syslog 3 \
         --signcsr \
         --webroot "<%= $cfweb::acme_challenge_root %>" \
         $staging \
+        $ecc \
         --csr "${csr_file}"
 fi
 
 cat >$crt_file.acme <<EOS
-    cat $acme_dir/$cn/$cn.cer $acme_dir/$cn/ca.cer > $crt_file
-    cat $acme_dir/$cn/ca.cer > $crt_file.trusted
+    cat $acme_dir/$dn/$cn.cer $acme_dir/$dn/ca.cer > $crt_file
+    cat $acme_dir/$dn/ca.cer > $crt_file.trusted
 EOS
 
 sh $crt_file.acme

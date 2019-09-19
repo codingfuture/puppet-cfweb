@@ -26,6 +26,7 @@ This module is also a reference implementation of [FutoIn CID](https://github.co
         * Per cluster generated DH params
         * Automatic certificate provisioning
         * Automatic certificate signing: ACME (Let's Encrypt)
+        * Dual RSA+ECDSA setup
     * Continuous Delivery:
         * Automatic deployment via FutoIn CID
         * Tunable resource distribution based on available resources
@@ -225,10 +226,10 @@ All keys and CSRs are generated on primary node and then distributed to slaves.
     * `$x509_ou`
     * `$x509_email`
 * `$dhparam_bits = 2048` - default bits for DH params
-* `$key_name = 'multi'` - default key name to use for CSRs and certs
-* `Enum['rsa', 'ecdsa'] $key_type = 'rsa'` - default type for keys
-* `Cfsystem::Rsabits $key_bits = 2048` - default size of RSA keys
-* `$key_curve = 'prime256v1'` - default curve for ecdsa keys
+* `$rsa_key_name = 'multi'` - default key name to use for RSA CSRs and certs
+* `Cfsystem::Rsabits $rsa_bits = 2048` - default size of RSA keys
+* `$ecc_key_name = 'multiec'` - default key name to use for ECC CSRs and certs
+* `$ecc_curve = 'prime256v1'` - default curve for ecdsa keys
 * `$cert_hash = 'sha256'` - cert hash to use
 * Inter-node SSH rsync, see `cfsystem::clusterssh`:
     * `$ssh_user = 'cfwebpki'`

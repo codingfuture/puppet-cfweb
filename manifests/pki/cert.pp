@@ -28,13 +28,15 @@ define cfweb::pki::cert(
         $x509_email = undef,
     Optional[String[1]]
         $cert_hash = undef,
+    String
+        $cert_suffix = '',
 ){
     include cfweb::pki
 
-    $key_name_act = pick($key_name, $cfweb::pki::key_name)
-    $exec_name = "cfweb::pki::cert::${cert_name}"
+    $key_name_act = pick($key_name, $cfweb::pki::rsa_key_name)
+    $exec_name = "cfweb::pki::cert::${cert_name}${cert_suffix}"
     $key_file = "${cfweb::pki::key_dir}/${key_name_act}.key"
-    $cert_base = "${cfweb::pki::cert_dir}/${cert_name}"
+    $cert_base = "${cfweb::pki::cert_dir}/${cert_name}${cert_suffix}"
     $crt_file = "${cert_base}.crt"
     $csr_file = "${cert_base}.csr"
     $cnf_file = "${cert_base}.cnf"
@@ -50,7 +52,7 @@ define cfweb::pki::cert(
             notify  => Exec['cfweb_sync_pki']
         }
     } else {
-        if $key_name_act != $cfweb::pki::key_name {
+        if !($key_name_act in [$cfweb::pki::rsa_key_name, $cfweb::pki::ecc_key_name]) {
             $key_info = $cfweb::global::keys[$key_name_act]
 
             if $key_info {
