@@ -90,7 +90,7 @@ $tls_snippet = inline_epp('
 <%  } -%>
 
 <% if $redirect_plain_act and !empty($hsts) { -%>
-    add_header Strict-Transport-Security \'<%= $hsts %>\';
+    add_header Strict-Transport-Security \'<%= $hsts %>\' always;
 <% } -%>
 
 <% if !empty($xfo) { -%>
