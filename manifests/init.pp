@@ -59,6 +59,7 @@ class cfweb (
     }
 
     $cluster_hosts = cfsystem::stable_sort($cluster_instances.keys())
+    $is_cluster = size($cluster_hosts) > 1
 
     $cluster_ipset = "cfweb_${cluster}"
     cfnetwork::ipset { $cluster_ipset:

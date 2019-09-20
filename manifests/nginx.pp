@@ -65,15 +65,16 @@ class cfweb::nginx (
 
     #---
     $act_settings_tune = merge(
+        $settings_tune,
         {
             cfweb => merge(
                 {
                     use_syslog => $cflogsink::centralized,
+                    is_cluster => $cfweb::is_cluster,
                 },
                 pick($settings_tune['cfweb'], {})
             )
-        },
-        $settings_tune
+        }
     )
 
     if $act_settings_tune['cfweb']['use_syslog'] {

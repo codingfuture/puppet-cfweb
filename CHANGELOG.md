@@ -1,6 +1,7 @@
 # (next)
 - CHANGED: /www/empty permission to 0755 for CID v0.8.29+ support
 - CHANGED: revised TLS configuration to current recommendations
+- CHANGED: to disable SSL session cache in clusters by default
 - FIXED: proxy location not to limit max client body size
 - FIXED: upstream hash to properly use hosts
 - FIXED: edge case of static files location backed by app

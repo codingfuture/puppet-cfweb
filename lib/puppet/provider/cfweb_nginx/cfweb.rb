@@ -67,6 +67,7 @@ Puppet::Type.type(:cfweb_nginx).provide(
         worker_connections = (mem_limit * 1024 / mem_per_conn / worker_processes).to_i
         ssl_sess_factor = cfweb_tune.fetch('ssl_sess_factor', 3).to_i
         ssl_sess_per_mb = 4000
+        is_cluster = cfweb_tune.fetch('is_cluster', false)
 
         #---
         if cfweb_tune.fetch('use_syslog', false)
@@ -108,7 +109,12 @@ Puppet::Type.type(:cfweb_nginx).provide(
         
         max_conn = global_conf['worker_processes'].to_i *
                    events_conf['worker_connections'].to_i
-        ssl_sess_cache = (max_conn * ssl_sess_factor / ssl_sess_per_mb + 1).to_i
+        if is_cluster
+            ssl_sess_cache = 'off'
+        else
+            ssl_sess_cache = (max_conn * ssl_sess_factor / ssl_sess_per_mb + 1).to_i
+            ssl_sess_cache = "shared:SSL:#{ssl_sess_cache}m"
+        end
 
         http_conf = {
             'default_type' => 'application/octet-stream',
@@ -141,7 +147,7 @@ Puppet::Type.type(:cfweb_nginx).provide(
             'root' => '/www/empty',
             'etag' => 'off',
             #
-            'ssl_session_cache' => "shared:SSL:#{ssl_sess_cache}m",
+            'ssl_session_cache' => ssl_sess_cache,
             'ssl_session_timeout' => '1d',
             #
             'resolver_timeout' => '5s',
