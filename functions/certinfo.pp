@@ -7,9 +7,11 @@ function cfweb::certinfo(String[1] $cert_name) >> Hash {
     if $cert_name == 'default' {
         $cert = {}
         $cert_name_act = $cert_name
+        $def_key_name = $cfweb::pki::rsa_key_name
     } elsif $cert_name == 'defaultec' {
         $cert = {}
         $cert_name_act = $cert_name
+        $def_key_name = $cfweb::pki::ecc_key_name
     } elsif $cert_name =~ /^auto(ec)?#/ {
         $cert_source = pick_default(
             getparam(Cfweb::Pki::Cert[$cert_name], 'cert_source'),
@@ -17,9 +19,13 @@ function cfweb::certinfo(String[1] $cert_name) >> Hash {
         )
 
         $cn1 = $cert_name.regsubst(/^auto(ec)?#/, '')
-        $cn2 = $cert_name ? {
-            /^autoec#/ => '_ecc',
-            default    => ''
+
+        if $cert_name =~ /^autoec#/ {
+            $cn2 = '_ecc'
+            $def_key_name = $cfweb::pki::ecc_key_name
+        } else {
+            $cn2 = ''
+            $def_key_name = $cfweb::pki::rsa_key_name
         }
 
         $cert_name_act = "${cn1}${cn2}"
@@ -29,6 +35,7 @@ function cfweb::certinfo(String[1] $cert_name) >> Hash {
     } else {
         $cert = $cfweb::global::certs[$cert_name]
         $cert_name_act = $cert_name
+        $def_key_name = $cfweb::pki::rsa_key_name
     }
 
     if !$cert {
@@ -43,7 +50,7 @@ function cfweb::certinfo(String[1] $cert_name) >> Hash {
         $trusted_file = undef
     }
 
-    $key_name = pick($cert['key_name'], $cfweb::pki::rsa_key_name)
+    $key_name = pick($cert['key_name'], $def_key_name)
 
     ({
         cert_name    => $cert_name,
