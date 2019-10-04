@@ -164,17 +164,21 @@ Puppet::Type.type(:cfweb_nginx).provide(
         one_mb = 1024**2
         
         http_conf["# global limit helper vars"] = ''
-        http_conf["geo $cf_binary_remote_addr"] = geo_addr_conf = {
-            'default' => '$binary_remote_addr'
+        http_conf["geo $cf_enable_limit"] = geo_addr_conf = {
+            'default' => '1'
         }
-        http_conf["geo $cf_server_name"] = geo_server_name_conf = {
-            'default' => '$server_name'
+        http_conf["map $cf_enable_limit $cf_binary_remote_addr"] = {
+            'default' => '$binary_remote_addr',
+            '0'       => "''",
+        }
+        http_conf["map $cf_enable_limit $cf_server_name"] = {
+            'default' => '$server_name',
+            '0'       => "''",
         }
         
         if stress_hosts && stress_hosts.size then
             stress_hosts.each { |shost|
-                geo_addr_conf[shost] = "''"
-                geo_server_name_conf[shost] = "''"
+                geo_addr_conf[shost] = "0"
             }
         end
         
