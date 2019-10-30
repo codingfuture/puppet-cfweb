@@ -7,6 +7,7 @@
 - FIXED: edge case of static files location backed by app
 - FIXED: minor issues in some docker configurations
 - FIXED: a bug in limits configuration related stress host mapping
+- FIXED: to add Docker apps into docker group
 - NEW: backup_persistent option support for cfweb::site
 - NEW: CID Erlang stack support
 - NEW: --env-file for Docker support

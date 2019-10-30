@@ -20,10 +20,14 @@ class cfweb::appcommon::docker (
 
     $dockerfile_dir = "${cfweb::web_dir}/docker"
     $is_manager = !$cfweb::is_secondary
+    $group = 'docker'
 
     file { $dockerfile_dir:
         ensure => directory,
         mode   => '0700',
+    }
+    group { $group:
+        system => true,
     }
 
     # Default configuration

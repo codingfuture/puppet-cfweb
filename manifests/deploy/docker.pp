@@ -32,11 +32,13 @@ define cfweb::deploy::docker (
     # ---
     $persistent_dir = $common['persistent_dir']
     $site_dir = $common['site_dir']
+    $user = $common['user']
 
     file { "${site_dir}/persistent":
         ensure => link,
         target => $persistent_dir,
     }
+    -> cfsystem::add_group($user, $cfweb::appcommon::docker::group)
     -> anchor { "docker-deploy-${title}": }
 
     # Ensuring an image
