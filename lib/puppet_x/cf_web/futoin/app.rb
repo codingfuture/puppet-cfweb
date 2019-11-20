@@ -114,7 +114,9 @@ module PuppetX::CfWeb::Futoin::App
 
         run_dir = "/run/#{service_name}"
         deployer_group = "deployer_#{site}"
-        
+
+        env_file = "#{deploy_dir}/.env"
+
         #---
         if deploy_conf['type'] == 'rms'
             url_arg = 'rmsRepo'
@@ -206,6 +208,17 @@ module PuppetX::CfWeb::Futoin::App
                 %Q{env syslogTag #{service_name}}
             ] + (deploy_conf['deploy_set'] || [])
             
+            if File.exists? env_file
+                env_entries = File.read(env_file).split("\n")
+
+                env_entries.each do |l|
+                    l = l.split("=", 2)
+                    next unless l.size == 2
+
+                    deploy_set << %Q{env #{l[0]} #{l[1]}}
+                end
+            end
+
             deploy_set.each do |v|
                 res = Puppet::Util::Execution.execute(
                     [
@@ -271,7 +284,7 @@ module PuppetX::CfWeb::Futoin::App
                 new_current = File.readlink(current_file)
                 redeploy ||= (new_current != orig_current)
             end
-                
+
             cf_system.atomicWrite(
                 '.deploy.log', res,
                 {
@@ -660,7 +673,7 @@ module PuppetX::CfWeb::Futoin::App
                     content_ini['Service']['ExecStartPre'] = "/bin/rm -f #{sock_path}"
                     content_ini['Service']['ExecStartPost'] = "/bin/sh -c '#{script}'"
                 end
-                
+
                 service_changed = self.cf_system().createService({
                     :service_name => service_name_i,
                     :user => user,
