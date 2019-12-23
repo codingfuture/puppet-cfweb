@@ -26,6 +26,8 @@ define cfweb::deploy::docker (
         $config_files = [],
     String[1]
         $network = $title,
+    Array[String[1]]
+        $custom_args = [],
 ){
     include cfweb::appcommon::docker
 
