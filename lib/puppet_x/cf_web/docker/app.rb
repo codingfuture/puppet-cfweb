@@ -153,7 +153,7 @@ module PuppetX::CfWeb::Docker::App
                     %Q{-p #{misc['bind_host']}:#{misc['bind_port']}:#{deploy_conf['target_port']}},
                     '--restart=no',
                     '--rm',
-                ] + mounts + hosts + misc_args + deploy_conf['custom_args'] + [
+                ] + mounts + hosts + misc_args + deploy_conf.fetch('custom_args', []) + [
                     image_name,
                 ]).join(' '),
                 'ExecStop' => [
