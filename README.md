@@ -14,6 +14,7 @@ This module is also a reference implementation of [FutoIn CID](https://github.co
         * **PHP (FPM)** multi-version via Sury
         * **Python (uWSGI)** - only system py2 & py3 for now
         * **Ruby (Puma)** multi-version via Brightbox
+	* **Docker** - any docker image
         * any custom on top of **FutoIn CID** technology
     * Advanced limits framework
         * Virtual-host aware
@@ -401,6 +402,25 @@ Easy shortcut to define many `proxy` apps.
 
 #### `docker`
 
-Not implemented yet, but supported in FutoIn CID
+Docker is implemented as a standalone solution.
 
+* App's resource limits in scope of `cfsystem` resource distribution framework. 
+    * `Integer[1] $memory_weight = 100`
+    * `Integer[64] $memory_min = 64`
+    * `Optional[Integer[1]] $memory_max = undef`
+    * `Cfsystem::CpuWeight $cpu_weight = 100`
+    * `Cfsystem::IoWeight $io_weight = 100`
+* `$fw_ports = {}` - hash of fw service => params for `cfnetwork::client_ports`
+* `$tune = {}` - fine tune behavior
+    * `upstreamKAPercent = 25` - percent of upstream max connection to keep alive
+    * `upstreamQueue = undef` - NGINX Plus upstream queue
+    * `upstreamFailTimeout = 0` - fail_timeout for upstream
+    * `upstreamZoneSize = 64k' - zone upstreams for consistent hashing
+* Overrides:
+    * `$path = '/'`
+    * `$uppath = undef`
+    * `$keepalive = undef`
+    * `$upstream = {}`
+    * `$skip_nginx = false`
+* `$deploy` - specific to Docker deploy strategy
 
