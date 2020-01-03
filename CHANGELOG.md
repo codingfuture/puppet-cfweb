@@ -1,4 +1,5 @@
 # (next)
+- BREAKING: X-Frame-Options changed to deny by default
 - CHANGED: CID deployment to set env based on .env file
 - FIXED: pattern-based static file serving config with no apps (try_files)
 - NEW: docker::custom_args support

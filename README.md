@@ -302,7 +302,7 @@ Main resource type to define virtualhost with related apps.
     * `verify = on` - override verification mode
 * `$hsts = 'max-age=15768000; includeSubDomains; preload'` - HSTS, optional
     * enabled only at TLS termination
-* `$xfo = 'sameorigin' - X-Frame-Options, optional
+* `$xfo = 'deny' - X-Frame-Options, optional
     * enabled only at TLS termination
 * `$deploy = undef` - optional deployment strategy parameters
 
