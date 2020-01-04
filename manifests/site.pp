@@ -37,6 +37,7 @@ define cfweb::site (
     Optional[CfWeb::ClientX509] $require_x509 = undef,
     Optional[String[1]] $hsts = 'max-age=15768000; includeSubDomains; preload',
     Optional[String[1]] $xfo = 'deny',
+    Boolean $frl = true,
 
     Boolean $backup_persistent = true,
 ) {
@@ -430,6 +431,7 @@ define cfweb::site (
             require_x509       => $require_x509,
             hsts               => $hsts,
             xfo                => $xfo,
+            frl                => $frl,
         }),
         notify  => $cfg_notify,
         before  => Anchor['cfnginx-ready'],

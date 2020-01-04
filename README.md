@@ -50,6 +50,7 @@ This module is also a reference implementation of [FutoIn CID](https://github.co
         * Apps cannot access each other, nginx service has aux group of each app
         * HTTP_PROXY and other known attack mitigation
         * Automatic systemd-based restart
+        * Basic protection against DDoS through victim browsers
     * Misc:
         * HTTP/2
         * Multiple IP/interface aware
@@ -302,8 +303,9 @@ Main resource type to define virtualhost with related apps.
     * `verify = on` - override verification mode
 * `$hsts = 'max-age=15768000; includeSubDomains; preload'` - HSTS, optional
     * enabled only at TLS termination
-* `$xfo = 'deny' - X-Frame-Options, optional
+* `$xfo = 'deny'` - X-Frame-Options, optional
     * enabled only at TLS termination
+* `$frl = true` - foreign referrer limit, 50kps after 100kb if Referrer mismatch by default
 * `$deploy = undef` - optional deployment strategy parameters
 
 ### Deploy strategy

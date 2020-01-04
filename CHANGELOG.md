@@ -3,6 +3,7 @@
 - CHANGED: CID deployment to set env based on .env file
 - FIXED: pattern-based static file serving config with no apps (try_files)
 - NEW: docker::custom_args support
+- NEW: foreign referrer limits
 
 # 1.3.2 (2019-11-13)
 - CHANGED: /www/empty permission to 0755 for CID v0.8.29+ support

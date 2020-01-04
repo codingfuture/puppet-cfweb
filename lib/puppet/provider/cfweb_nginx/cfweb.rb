@@ -175,6 +175,19 @@ Puppet::Type.type(:cfweb_nginx).provide(
             'default' => '$server_name',
             '0'       => "''",
         }
+
+        cf_invalid_referer_rate = cfweb_tune.fetch('cf_invalid_referer_rate', '50k')
+        cf_invalid_referer_rate_after = cfweb_tune.fetch('cf_invalid_referer_rate_after', '100k')
+        http_conf["map $invalid_referer $cf_invalid_referer_rate"] = {
+            'default' => '0',
+            '1'       => cf_invalid_referer_rate,
+        }
+        http_conf["map $invalid_referer $cf_invalid_referer_rate_after"] = {
+            'default' => '0',
+            '1'       => cf_invalid_referer_rate_after,
+        }
+        http_conf["# variables are supported only since v1.17"] = ''
+        http_conf["limit_rate_after"] = cf_invalid_referer_rate_after
         
         if stress_hosts && stress_hosts.size then
             stress_hosts.each { |shost|
