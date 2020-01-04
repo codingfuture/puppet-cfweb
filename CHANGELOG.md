@@ -2,6 +2,7 @@
 - BREAKING: X-Frame-Options changed to deny by default
 - CHANGED: CID deployment to set env based on .env file
 - FIXED: pattern-based static file serving config with no apps (try_files)
+- FIXED: CID redeploy detection with the same version of app
 - NEW: docker::custom_args support
 - NEW: foreign referrer limits
 

@@ -144,7 +144,9 @@ module PuppetX::CfWeb::Futoin::App
         
         current_file = "#{deploy_dir}/current"
         orig_current = nil
+        orig_current_ts = 0
         orig_current = File.readlink(current_file) if File.exists? current_file
+        orig_current_ts = File.lstat(current_file).mtime if File.exists? current_file
         
         warning("CID deploy: #{deploy_dir}")
         orig_cwd = Dir.pwd
@@ -282,7 +284,9 @@ module PuppetX::CfWeb::Futoin::App
             
             if File.exists? current_file
                 new_current = File.readlink(current_file)
+                new_current_ts = File.lstat(current_file).mtime
                 redeploy ||= (new_current != orig_current)
+                redeploy ||= (orig_current_ts != new_current_ts)
             end
 
             cf_system.atomicWrite(
