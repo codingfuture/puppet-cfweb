@@ -80,7 +80,7 @@ class cfweb::appcommon::cid (
         group  => $group,
         mode   => '0755',
     }
-    -> file { "${home}/futoin.json":
+    -> file { "${home}/.futoin.json":
         mode    => '0444',
         content => cfsystem::pretty_json($user_futoin_json),
     }
