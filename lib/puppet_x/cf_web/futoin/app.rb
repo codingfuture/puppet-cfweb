@@ -541,7 +541,9 @@ module PuppetX::CfWeb::Futoin::App
             app = mp['app']
             path_tune = mp.fetch('tune', {})
             serve_static = mp.fetch('static', false)
-            
+            index_file = path_tune.fetch('index', 'index.html')
+            spa_path = path.gsub(/\/+$/, '')
+
             if app
                 if serve_static
                     vhost_server << "  try_files $uri @#{app};"
@@ -550,13 +552,17 @@ module PuppetX::CfWeb::Futoin::App
                 end
             else
                 serve_static = true # force
+
+                if path_tune.fetch('spaRoutes', false)
+                    vhost_server << "  try_files $uri #{spa_path}/#{index_file};"
+                end
             end
             
             if serve_static
                 vhost_server << "  #{limits['static']['expr']}"
                 vhost_server << "  root #{webroot};"
                 vhost_server << "  disable_symlinks if_not_owner;"
-                vhost_server << "  index #{path_tune.fetch('index', 'index.html')};"
+                vhost_server << "  index #{index_file};"
                 
                 if path_tune.fetch('etag', false)
                     vhost_server << "  etag on;"
@@ -586,6 +592,8 @@ module PuppetX::CfWeb::Futoin::App
                     vhost_server << "  location ~* \\.(#{text_assets.join('|')})$ {"
                         if app
                             vhost_server << "    try_files $uri @#{app};"
+                        elsif path_tune.fetch('spaRoutes', false)
+                            vhost_server << "    try_files $uri #{spa_path}/#{index_file};"
                         end
 
                         if path_tune.fetch('gzip', true)

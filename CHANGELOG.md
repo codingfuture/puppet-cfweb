@@ -1,5 +1,6 @@
 # (next)
 - FIXED: futoin tools user to properly setup .futoin.json file (name)
+- NEW: FTN16 v1.3 .spaRoutes support
 
 # 1.3.3 (2020-01-04)
 - BREAKING: X-Frame-Options changed to deny by default
